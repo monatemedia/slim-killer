@@ -1,0 +1,19 @@
+# Core environment overrides
+.env
+
+# Dependencies & Local Packages
+/vendor/
+
+# Local Database Backups & State
+/database/database.sqlite
+/database/database.sqlite-journal
+
+# Compiled View Layer Templates cache
+/storage/cache/views/*
+!/storage/cache/views/.gitkeep
+
+# Operating System & IDE Artifacts
+.DS_Store
+Thumbs.db
+/.idea/
+/.vscode/
