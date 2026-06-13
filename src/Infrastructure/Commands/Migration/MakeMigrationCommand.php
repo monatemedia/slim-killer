@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Commands\Migration;
 
 use App\Infrastructure\Commands\CommandInterface;
@@ -15,29 +17,24 @@ class MakeMigrationCommand implements CommandInterface {
     }
 
     public function handle(array $argv): void {
-        // Corrected Validation: Looks at $argv[2] for the migration name
         if (!isset($argv[2])) {
             echo "\e[31m[ERROR] Missing migration name.\e[0m\n";
-            echo "Usage:   php hammer make:migration [Name]\n";
-            echo "Example: php hammer make:migration CreateBlogPostsTable\n";
+            echo "Usage:     php hammer make:migration [Name]\n";
+            echo "Example:   php hammer make:migration CreateUsersTable\n";
             exit(1);
         }
 
         $name = $argv[2];
-
-        // 1. Transform PascalCase / camelCase / snake_case cleanly
         $snakeName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
         $snakeName = str_replace('__', '_', $snakeName);
 
-        // 2. Dynamic Table Name Guessing
         $tableName = 'table_name';
         if (preg_match('/(?:create|update)_(.*)_table/', $snakeName, $matches)) {
             $tableName = $matches[1];
         }
 
-        // 3. Absolute Path Generation & Directory Autocreation
-        // Climes out of 'app/Commands/Migration' (3 levels) to root folder
-        $rootDir = dirname(__DIR__, 3);
+        // Climb out of src/Infrastructure/Commands/Migration to root (4 levels)
+        $rootDir = dirname(__DIR__, 4);
         $dir = $rootDir . '/database/migrations';
         
         if (!is_dir($dir)) {
@@ -47,10 +44,10 @@ class MakeMigrationCommand implements CommandInterface {
         $timestamp = date('Y_m_d_His');
         $filename = "{$dir}/{$timestamp}_{$snakeName}.php";
 
-        // 4. Blueprint Generation
-        $template = "<?php\n\nuse Illuminate\Database\Schema\Blueprint;\nuse Illuminate\Database\Capsule\Manager as Capsule;\n\nreturn new class {\n    public function up() {\n        Capsule::schema()->create('$tableName', function (Blueprint \$table) {\n            \$table->id();\n            \$table->timestamps();\n        });\n    }\n\n    public function down() {\n        Capsule::schema()->dropIfExists('$tableName');\n    }\n};";
+        // Pure PHP database migrations leveraging native connection execution
+        $template = "<?php\n\ndeclare(strict_types=1);\n\nuse Pixie\QueryBuilder\QueryBuilderHandler;\n\nreturn new class {\n    public function up(QueryBuilderHandler \$db): void {\n        // Execute raw migration layout schemes via connection bindings\n        \$pdo = \$db->getConnection()->getPdoInstance();\n        \$pdo->exec(\"\n            CREATE TABLE IF NOT EXISTS `{$tableName}` (\n                `id` INTEGER PRIMARY KEY AUTOINCREMENT,\n                `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP\n            );\n        \");\n    }\n\n    public function down(QueryBuilderHandler \$db): void {\n        \$pdo = \$db->getConnection()->getPdoInstance();\n        \$pdo->exec(\"DROP TABLE IF EXISTS `{$tableName}`;\");\n    }\n};";
 
         file_put_contents($filename, $template);
-        echo "\e[32mCreated migration:\e[0m $filename\n";
+        echo "\e[32mCreated migration stub:\e[0m $filename\n";
     }
 }
