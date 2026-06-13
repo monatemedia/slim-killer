@@ -30,17 +30,38 @@ class Migrate implements CommandInterface {
         $this->ensureMigrationTableExists($pdo);
 
         // 2. Resolve outstanding files
-        $rootDir = dirname(__DIR__, 4);
+        $rootDir = dirname(__DIR__, 3);
         $files = glob($rootDir . '/database/migrations/*.php');
+        
+        if ($files === false) {
+            $files = [];
+        }
         sort($files);
 
-        // Parse historically executed log references
-        $executed = $db->table('migrations')->pluck('migration') ?: [];
-        if (!is_array($executed)) {
-            $executed = iterator_to_array($executed);
+        // --- IDE COMPLIANT: Fetch historical rows safely via get() ---
+        $migrationRecords = $db->table('migrations')->select('migration')->get() ?: [];
+        $executed = [];
+        foreach ($migrationRecords as $record) {
+            if (is_object($record) && isset($record->migration)) {
+                $executed[] = (string)$record->migration;
+            } elseif (is_array($record) && isset($record['migration'])) {
+                $executed[] = (string)$record['migration'];
+            }
         }
 
-        $batch = (int)($db->table('migrations')->max('batch') ?? 0) + 1;
+        // --- IDE COMPLIANT: Use a raw query selection to find the max batch ---
+        $maxResult = $db->table('migrations')
+            ->select($db->raw('MAX(`batch`) as max_batch'))
+            ->first();
+
+        $currentMax = 0;
+        if (is_object($maxResult) && isset($maxResult->max_batch)) {
+            $currentMax = (int)$maxResult->max_batch;
+        } elseif (is_array($maxResult) && isset($maxResult['max_batch'])) {
+            $currentMax = (int)$maxResult['max_batch'];
+        }
+        
+        $batch = $currentMax + 1;
         $count = 0;
 
         // Filter file pathways down to pending items

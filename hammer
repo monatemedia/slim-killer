@@ -3,6 +3,9 @@
 
 declare(strict_types=1);
 
+// Suppress vendor deprecations to keep terminal interfaces immaculate
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 use DI\ContainerBuilder;
 use App\Infrastructure\Commands\CommandInterface;
 
