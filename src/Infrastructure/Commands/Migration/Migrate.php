@@ -14,7 +14,7 @@ class Migrate implements CommandInterface {
     ) {}
 
     public function getName(): string {
-        return 'migrate';
+        return 'migration:migrate';
     }
 
     public function getDescription(): string {
@@ -30,7 +30,7 @@ class Migrate implements CommandInterface {
         $this->ensureMigrationTableExists($pdo);
 
         // 2. Resolve outstanding files
-        $rootDir = dirname(__DIR__, 3);
+        $rootDir = dirname(__DIR__, 4);
         $files = glob($rootDir . '/database/migrations/*.php');
         
         if ($files === false) {

@@ -1,17 +1,32 @@
 <?php
-use Illuminate\Database\Schema\Blueprint;
-use illuminate\Database\Capsule\Manager as Capsule;
+
+declare(strict_types=1);
+
+use Pixie\QueryBuilder\QueryBuilderHandler;
 
 return new class {
-    public function up() {
-        Capsule::schema()->create('subscribers', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('email')->unique();
-            $table->timestamps();
-        });
+    public function up(QueryBuilderHandler $db): void {
+        $pdo = $db->getConnection()->getPdoInstance();
+        $driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        $primaryKey = ($driver === 'sqlite') 
+            ? 'INTEGER PRIMARY KEY AUTOINCREMENT' 
+            : 'INT AUTO_INCREMENT PRIMARY KEY';
+
+        $timestampDefault = ($driver === 'sqlite') ? 'CURRENT_TIMESTAMP' : 'NOW()';
+
+        $sql = "CREATE TABLE IF NOT EXISTS `subscribers` (
+            `id` {$primaryKey},
+            `email` VARCHAR(255) NOT NULL UNIQUE,
+            `created_at` TIMESTAMP DEFAULT {$timestampDefault},
+            `updated_at` TIMESTAMP DEFAULT {$timestampDefault}
+        );";
+
+        $pdo->exec($sql);
     }
 
-    public function down() {
-        Capsule::schema()->dropIfExists('subscribers');
+    public function down(QueryBuilderHandler $db): void {
+        $pdo = $db->getConnection()->getPdoInstance();
+        $pdo->exec("DROP TABLE IF EXISTS `subscribers`;");
     }
 };

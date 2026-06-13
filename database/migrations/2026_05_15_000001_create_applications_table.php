@@ -1,24 +1,39 @@
 <?php
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Capsule\Manager as Capsule;
+
+declare(strict_types=1);
+
+use Pixie\QueryBuilder\QueryBuilderHandler;
 
 return new class {
-    public function up() {
-        Capsule::schema()->create('applications', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email');
-            $table->string('phone');
-            $table->string('province')->nullable();
-            $table->string('city')->nullable();
-            $table->decimal('bond_amount', 15, 2);
-            $table->text('message')->nullable();
-            $table->timestamps();
-        });
+    public function up(QueryBuilderHandler $db): void {
+        $pdo = $db->getConnection()->getPdoInstance();
+        $driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        $primaryKey = ($driver === 'sqlite') 
+            ? 'INTEGER PRIMARY KEY AUTOINCREMENT' 
+            : 'INT AUTO_INCREMENT PRIMARY KEY';
+
+        $timestampDefault = ($driver === 'sqlite') ? 'CURRENT_TIMESTAMP' : 'NOW()';
+
+        $sql = "CREATE TABLE IF NOT EXISTS `applications` (
+            `id` {$primaryKey},
+            `first_name` VARCHAR(255) NOT NULL,
+            `last_name` VARCHAR(255) NOT NULL,
+            `email` VARCHAR(255) NOT NULL,
+            `phone` VARCHAR(100) NOT NULL,
+            `province` VARCHAR(255) NULL,
+            `city` VARCHAR(255) NULL,
+            `bond_amount` DECIMAL(15, 2) NOT NULL,
+            `message` TEXT NULL,
+            `created_at` TIMESTAMP DEFAULT {$timestampDefault},
+            `updated_at` TIMESTAMP DEFAULT {$timestampDefault}
+        );";
+
+        $pdo->exec($sql);
     }
 
-    public function down() {
-        Capsule::schema()->dropIfExists('applications');
+    public function down(QueryBuilderHandler $db): void {
+        $pdo = $db->getConnection()->getPdoInstance();
+        $pdo->exec("DROP TABLE IF EXISTS `applications`;");
     }
 };
