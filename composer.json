@@ -1,0 +1,17 @@
+{
+    "require": {
+        "php-di/php-di": "^7.0",
+        "slim/slim": "^4.13",
+        "slim/psr7": "^1.7",
+        "usmanhalalit/pixie": "^2.6",
+        "twig/twig": "^3.0",
+        "slim/twig-view": "^3.4"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

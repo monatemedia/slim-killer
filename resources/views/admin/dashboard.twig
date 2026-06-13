@@ -1,0 +1,32 @@
+@extends('layouts.main')
+
+@section('title', 'Admin Dashboard')
+
+@section('content')
+<div class="container mx-auto mt-10 p-6">
+    <h1 class="text-3xl font-bold mb-6">Recent Applications</h1>
+    <table class="min-w-full bg-white border">
+        <thead>
+            <tr class="bg-sky-900 text-white">
+                <th class="py-2 px-4">Name</th>
+                <th class="py-2 px-4">Email</th>
+                <th class="py-2 px-4">Amount</th>
+                <th class="py-2 px-4">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($leads as $lead)
+            <tr class="border-b">
+                <td class="py-2 px-4">{{ $lead->first_name }} {{ $lead->last_name }}</td>
+                <td class="py-2 px-4">{{ $lead->email }}</td>
+                <td class="py-2 px-4">R{{ number_format($lead->bond_amount, 2) }}</td>
+                <td class="py-2 px-4">{{ $lead->created_at }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <div class="mt-6">
+        <a href="/logout" class="text-red-600 font-bold">Logout</a>
+    </div>
+</div>
+@endsection

@@ -1,0 +1,34 @@
+<header>
+    <nav class="container">
+        <div class="nav-wrapper">
+            <a href="/">
+                <img src="/img/logo.svg" alt="Logo">
+            </a>
+            
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/calculator">Calculator</a>
+                <a href="/buyers-guide">Buyer's Guide</a>
+                <a href="/property-secrets">Property Secrets</a>
+            </div>
+
+            <a href="/apply" class="btn btn-primary nav-cta">Apply Now</a>
+
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="hamburger">
+                <span class="hamburger-top"></span>
+                <span class="hamburger-middle"></span>
+                <span class="hamburger-bottom"></span>
+            </button>
+        </div>
+
+        <div x-show="mobileMenuOpen" x-transition class="mobile-menu-container">
+            <div id="menu" class="mobile-menu-wrapper">
+                <a href="/" @click="mobileMenuOpen = false">Home</a>
+                <a href="/calculator" @click="mobileMenuOpen = false">Calculator</a>
+                <a href="/buyers-guide" @click="mobileMenuOpen = false">Buyer's Guide</a>
+                <a href="/property-secrets" @click="mobileMenuOpen = false">Property Secrets</a>
+                <a href="/apply" class="btn btn-primary mobile-menu-cta" @click="mobileMenuOpen = false">Apply Now</a>
+            </div>
+        </div>
+    </nav>
+</header>

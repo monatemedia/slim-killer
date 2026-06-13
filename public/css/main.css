@@ -1,0 +1,805 @@
+/* --- Core Reset & Palette Variables --- */
+:root {
+    --primary: #dc2626;      /* Red-600 */
+    --primary-hover: #ef4444;/* Red-500 */
+    --dark: #0c4a6e;         /* Sky-900 */
+    --light: #ffffff;
+    --slate: #f1f5f9;        /* Slate-200 */
+    --text-main: #0f172a;    /* Slate-900 */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    background-color: var(--light);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Core Structural Containers --- */
+.container {
+    width: 100%;
+    max-width: 1110px; /* Aligns with Tailwind's desktop max-width profile */
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Give the navbar room to breathe */
+header {
+    padding: 2.5rem 0 1.5rem 0; /* Generates beautiful spacing at the top of the document */
+}
+
+/* Narrow down the text block width profiles */
+.max-w-md { max-width: 28rem; }
+.max-w-sm { max-width: 24rem; }
+
+/* --- Layout Elements --- */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+a {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--light);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-white {
+    background-color: var(--light);
+    color: var(--primary);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-white:hover {
+    background-color: var(--text-main);
+    color: var(--light);
+}
+
+/* --- Navigation --- */
+nav {
+    position: relative;
+    padding: 1.5rem 0;
+}
+
+.nav-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-links {
+    display: none;
+}
+
+.nav-links a {
+    color: var(--text-main);
+    margin-right: 1.5rem;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    color: var(--dark);
+}
+
+/* --- Navigation Conversion Action Elements --- */
+.nav-cta {
+    display: none;
+}
+
+/* Mobile Flyout UI Specifications */
+.mobile-menu-container {
+    display: none;
+}
+
+.mobile-menu-wrapper {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: #fff;
+    left: 1.5rem;
+    right: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    border-radius: 4px;
+}
+
+.mobile-menu-cta {
+    width: 200px;
+    text-align: center;
+}
+
+/* Back-To-Top Dynamic Overlay Utility Button */
+.scroll-top-btn {
+    position: fixed;
+    z-index: 50;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    border: none;
+    background-color: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s ease;
+}
+
+.scroll-top-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.scroll-top-btn svg {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+/* Copyright Visibility Breakpoint Matrices */
+.mobile-copyright { margin-top: 1.5rem; display: block; }
+.desktop-copyright { display: none; }
+.footer-logo-img { height: 2rem; }
+
+/* --- Responsive Media Query Interface Matrix --- */
+@media (min-width: 768px) {
+    .nav-cta {
+        display: block;
+    }
+    
+    .mobile-copyright {
+        display: none;
+    }
+    
+    .desktop-copyright {
+        display: block;
+    }
+}
+
+/* --- Hero Section --- */
+#hero {
+    padding: 2.5rem 0;
+}
+
+.hero-wrapper {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 2rem;
+}
+
+.hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.hero-left h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    color: var(--text-main);
+}
+
+.hero-left p {
+    color: var(--dark);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* --- Features Layout --- */
+#features {
+    padding: 4rem 0;
+}
+
+.features-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.features-left {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.features-left h2 {
+    font-size: 2rem;
+}
+
+.features-left p {
+    color: var(--dark);
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.feature-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #fee2e2;
+    border-radius: 9999px 0 0 9999px;
+}
+
+.feature-badge {
+    background-color: var(--primary);
+    color: var(--light);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: bold;
+}
+
+.feature-title {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.feature-desc {
+    color: var(--dark);
+    padding-left: 0;
+}
+
+/* --- Testimonials Layout --- */
+#testimonials {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+#testimonials h2 {
+    font-size: 2rem;
+    margin-bottom: 4rem;
+}
+
+.testimonials-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+.testimonial-card {
+    background-color: var(--slate);
+    padding: 2rem 1.5rem;
+    border-radius: 0.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.testimonial-avatar {
+    width: 64px;
+    height: 64px;
+    margin-top: -4rem;
+}
+
+.testimonial-card h5 {
+    font-size: 1.125rem;
+}
+
+.testimonial-card p {
+    font-size: 0.875rem;
+    color: var(--dark);
+}
+
+/* --- CTA Banner --- */
+#cta {
+    background-color: var(--primary);
+    color: var(--light);
+    padding: 4rem 0;
+}
+
+.cta-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    text-align: center;
+}
+
+.cta-wrapper h2 {
+    font-size: 2.25rem;
+}
+
+/* --- Footer Area --- */
+footer {
+    background-color: var(--dark);
+    color: var(--light);
+    padding: 2.5rem 0;
+}
+
+.footer-wrapper {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2.5rem;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 2rem;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-socials img {
+    height: 32px;
+}
+
+.footer-links-grid {
+    display: flex;
+    justify-content: space-around;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footer-col a {
+    color: var(--light);
+}
+
+.footer-col a:hover {
+    color: var(--primary);
+}
+
+.footer-form-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.form-inline {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.form-inline input {
+    flex: 1;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    border: none;
+    outline: none;
+}
+
+.copyright {
+    color: var(--light);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* --- Dynamic Mobile Hamburger State Elements --- */
+.hamburger {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+}
+.hamburger-top, .hamburger-middle, .hamburger-bottom {
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: #000;
+    transition: all 0.25s;
+}
+.hamburger-middle { transform: translateY(7px); }
+.hamburger-bottom { transform: translateY(14px); }
+
+/* --- Tablet & Desktop Overrides (Media Breakpoint Matrix) --- */
+@media (min-width: 768px) {
+    .nav-links { display: flex; }
+    .nav-wrapper .btn { display: block; }
+    .hamburger { display: none; }
+    
+    .hero-wrapper { flex-direction: row; }
+    .hero-left { text-align: left; width: 50%; }
+    .hero-left h1 { font-size: 3rem; }
+    
+    .features-wrapper { flex-direction: row; }
+    .features-left { text-align: left; width: 50%; }
+    .features-list { width: 50%; }
+    .feature-header { background-color: transparent; }
+    .feature-desc { padding-left: 4rem; }
+    
+    .testimonials-grid { flex-direction: row; }
+    .testimonial-card { width: 33.333%; }
+    .testimonial-card:not(:first-child) { display: flex; }
+    
+    .cta-wrapper { flex-direction: row; justify-content: space-between; text-align: left; }
+    .cta-wrapper h2 { max-width: 36rem; }
+    
+    .footer-wrapper { flex-direction: row; justify-content: space-between; }
+    .footer-brand { flex-direction: column; align-items: flex-start; justify-content: space-between; }
+    .footer-links-grid { gap: 5rem; }
+    .footer-form-side { align-items: flex-end; }
+}
+
+/* --- Centered Hero Structural Modifications --- */
+.hero-container-centered {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.hero-title-centered {
+    width: 100%;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.hero-title-centered h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.hero-right.img-container-right {
+    display: flex;
+    justify-content: center;
+}
+
+/* --- Reusable Section Layout Blocks --- */
+.section-split, .section-split-reverse {
+    padding: 2.5rem 0;
+}
+
+.split-wrapper, .split-wrapper-reverse {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.split-text-side {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+}
+
+.split-text-side h2 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.split-text-side p {
+    color: var(--dark);
+    margin: 0 auto;
+}
+
+/* Helper Utilities for Spacing and Display States */
+.text-block-narrow p {
+    max-width: 24rem; /* Equivalent to max-w-sm */
+}
+
+.py-32 { padding-top: 2rem; padding-bottom: 2rem; }
+.py-24 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-16 { padding-top: 1rem; padding-bottom: 1rem; }
+.pt-6  { padding-top: 0.5rem; }
+.pb-12 { padding-bottom: 3rem; }
+.my-16 { margin-top: 2rem; margin-bottom: 2rem; }
+
+.testimonials-alt {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.cta-block-alt h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+/* Feature & Question Item Extensions */
+.list-container h2 {
+    max-width: 28rem; /* max-w-md */
+    margin: 0 auto;
+}
+
+.list-intro-text, .list-outro-text {
+    max-width: 24rem;
+    margin: 0 auto;
+    color: var(--dark);
+}
+
+.feature-body {
+    text-align: center;
+}
+
+.desktop-title { display: none; }
+.mobile-title { display: block; }
+
+/* --- Responsive Layout Breaks --- */
+@media (min-width: 768px) {
+    .hero-title-centered {
+        margin-top: 0;
+    }
+    
+    .hero-title-centered h1 {
+        font-size: 3rem;
+    }
+    
+    .hero-right.img-container-right {
+        justify-content: flex-end;
+        width: 50%;
+    }
+
+    .split-wrapper {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .split-wrapper-reverse {
+        flex-direction: row-reverse;
+        align-items: center;
+    }
+
+    .split-text-side {
+        width: 50%;
+        text-align: left;
+    }
+
+    .split-text-side p {
+        margin: 0;
+    }
+
+    .split-img-side {
+        width: 50%;
+    }
+
+    /* Desktop Spacing Overrides */
+    .py-32 { padding-top: 8rem; padding-bottom: 8rem; }
+    .py-24 { padding-top: 6rem; padding-bottom: 6rem; }
+    .pt-desktop-48 { padding-top: 12rem; }
+    .pt-desktop-24 { padding-top: 6rem; }
+    .pb-mobile-0 { padding-bottom: 0; }
+    .pr-desktop-20 .feature-desc { padding-right: 5rem; }
+
+    /* Alternate Title Toggles for Feature Items */
+    .desktop-title { display: block; margin-bottom: 1rem; font-size: 1.125rem; }
+    .mobile-title { display: none; }
+    .feature-body { text-align: left; }
+    .feature-desc { padding-left: 4rem; }
+}
+
+/* --- Property Secrets Layout Specifics --- */
+.section-subtitle {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.gap-24 {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Local utilities matching raw spacings */
+.py-12 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.pb-20 { padding-bottom: 1.25rem; }
+.pb-16 { padding-bottom: 1rem; }
+.mt-12 { margin-top: 0.75rem; }
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+    .section-subtitle {
+        text-align: left;
+        font-size: 2.5rem;
+    }
+    
+    .gap-24 {
+        gap: 2rem;
+    }
+
+    .py-desktop-32 { 
+        padding-top: 8rem; 
+        padding-bottom: 8rem; 
+    }
+}
+
+/* --- Application Form Element Styles --- */
+.form-card {
+    width: 100%;
+    max-width: 32rem; /* Matches max-w-lg (512px) */
+    margin: 0 auto;
+    padding: 1.5rem;
+    background-color: var(--slate); /* Inherits #f1f5f9 palette token */
+    border-radius: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    text-align: left; /* Keeps label alignment natural */
+}
+
+.form-row-split {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row-split .form-group {
+    margin-bottom: 0; /* Clear nested gaps to allow container layout rules to prevail */
+}
+
+.form-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+    color: var(--dark); /* Secondary tone alignment rules */
+}
+
+.form-control {
+    width: 100%;
+    background-color: #e2e8f0; /* Soft slate input fill backdrop edge */
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: var(--text-main);
+    outline: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    background-color: var(--light);
+    border-color: var(--dark);
+}
+
+/* AlpineJS Error State Modifiers */
+.form-control-error {
+    border-color: var(--primary) !important;
+    background-color: #fef2f2 !important;
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.error-text {
+    color: var(--primary);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    font-weight: 600;
+}
+
+/* Layout structural utility support rules */
+.flex-1 {
+    flex: 1;
+}
+
+/* --- Responsive Layout Adjustments --- */
+@media (min-width: 768px) {
+    .form-card {
+        padding: 2rem;
+    }
+    
+    .form-row-split {
+        flex-direction: row;
+    }
+}
+
+/* --- Decorative Background Shapes --- */
+.bg-tablet-pattern {
+    background-image: url('/img/bg-tablet-pattern.svg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: 90% -25%;
+}
+
+/* Update your existing #cta section to map the asset correctly */
+#cta {
+    background-color: var(--primary); /* Red-600 */
+    background-image: url('/img/bg-simplify-section-desktop.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+@media (max-width: 768px) {
+    #cta {
+        background-image: url('/img/bg-simplify-section-mobile.svg');
+    }
+}
+
+/* --- Global Body Multi-Background Setup --- */
+body {
+    position: relative;
+    overflow-x: hidden;
+    background-color: var(--light);
+    
+    /* Layer 1 (Top Pattern), Layer 2 (Bottom Pattern) */
+    background-image: 
+        url('/img/bg-tablet-pattern.svg'), 
+        url('/img/bg-tablet-pattern.svg');
+    background-repeat: no-repeat, no-repeat;
+    
+    /* Mobile Positioning Defaults */
+    background-size: 450px, 450px;
+    background-position: 
+        calc(50% + 200px) -150px, /* Top graphic position */
+        calc(50% - 250px) 700px;   /* Bottom graphic position */
+}
+
+/* Remove background images from individual sections so they don't fight with the body layers */
+#hero, 
+#features {
+    position: relative;
+    background: transparent !important;
+    z-index: 1;
+}
+
+/* --- Responsive Adjustments for Tablets and Desktops --- */
+@media (min-width: 768px) {
+    body {
+        background-size: 700px, 700px;
+        background-position: 
+            calc(50% + 350px) -120px,
+            calc(50% - 450px) 900px;
+    }
+}
+
+@media (min-width: 1150px) {
+    body {
+        background-size: 800px, 800px;
+        background-position: 
+            right -150px top -150px,   /* Top graphic shifts upper right */
+            left -350px top 950px;     /* Bottom graphic peaks out lower left */
+    }
+}

@@ -1,0 +1,100 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+// --- Bulletproof DB Check ---
+$dbPath = __DIR__ . '/database/database.sqlite'; 
+if (!file_exists($dbPath)) { 
+    echo "Database file missing. Creating it at $dbPath...\n"; 
+    touch($dbPath);  
+}
+
+// Unpack the pre-compiled container instance natively returned by the config file
+$container = require __DIR__ . '/config/services.php'; 
+
+use Pixie\Connection;
+$connection = $container->get(Connection::class);
+
+// Safe, native fallback that reads your active SQLite file path directly
+$pdo = new \PDO('sqlite:' . __DIR__ . '/database/database.sqlite');
+
+// --- Migration Global Helper (Native SQLite Realignment) --- 
+function ensureMigrationTableExists(\PDO $pdo) { 
+    $query = "CREATE TABLE IF NOT EXISTS migrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        migration TEXT NOT NULL,
+        batch INTEGER NOT NULL
+    );";
+    $pdo->exec($query);
+}
+
+// Ensure database state is tracked seamlessly
+ensureMigrationTableExists($pdo);
+
+// --- Dynamic Auto-Discovery Command Registry ---
+$commands = [];
+// Scan your new Infrastructure layer folder path
+$commandsDir = __DIR__ . '/src/Infrastructure/Commands';
+$commandInterface = \App\Infrastructure\Commands\CommandInterface::class;
+
+if (is_dir($commandsDir)) {
+    $directory = new RecursiveDirectoryIterator($commandsDir);
+    $iterator = new RecursiveIteratorIterator($directory);
+    $regex = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
+
+    foreach ($regex as $fileInfo) {
+        $filePath = $fileInfo[0];
+        
+        // 1. Force unify all directory slashes to forward slashes regardless of OS
+        $standardizedPath = str_replace('\\', '/', $filePath);
+        $standardizedCommandsDir = str_replace('\\', '/', $commandsDir);
+
+        // 2. Extract relative path and systematically map it to valid PascalCase namespaces
+        $relativePath = str_replace([$standardizedCommandsDir, '.php', '/'], ['', '', '\\'], $standardizedPath);
+        $className = 'App\\Infrastructure\\Commands' . $relativePath;
+
+        // 3. Ensure the class is safely instantiable and implements the contract
+        if (class_exists($className)) {
+            $reflection = new ReflectionClass($className);
+            if ($reflection->isInstantiable() && $reflection->implementsInterface($commandInterface)) {
+                // Instantiated automatically via container autowiring definitions
+                $commands[] = $container->get($className);
+            }
+        }
+    }
+}
+
+// --- Dynamic Command Execution ---
+$commandName = $argv[1] ?? 'help';
+
+if ($commandName === 'help') {
+    display_banner();
+    echo "Usage: php hammer [command] [options]\n\n";
+    echo "Available commands:\n";
+    foreach ($commands as $cmd) {
+        printf("  %-20s %s\n", $cmd->getName(), $cmd->getDescription());
+    }
+    exit(0);
+}
+
+foreach ($commands as $cmd) {
+    if ($cmd->getName() === $commandName) {
+        $cmd->handle($argv);
+        exit(0);
+    }
+}
+
+echo "\e[31m[ERROR] Unknown command signature:\e[0m '$commandName'. Run 'php hammer help'.\n";
+exit(1);
+
+function display_banner() { 
+    echo "\e[33m"; 
+    echo "  _   _                                     \n"; 
+    echo " | | | | __ _ _ __ ___  _ __ ___   ___ _ __ \n"; 
+    echo " | |_| |/ _` | '_ ` _ \| '_ ` _ \ / _ \ '__|\n"; 
+    echo " |  _  | (_| | | | | | | | | | | |  __/ |   \n"; 
+    echo " |_| |_|\__,_|_| |_| |_|_| |_| |_|\___|_|   \n"; 
+    echo "       SLIM-KILLER CLI RUNTIME KERNEL 🔨    \n"; 
+    echo "\e[0m\n"; 
+}

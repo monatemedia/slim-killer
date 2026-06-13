@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+// 1. Fire our custom insult service notice cleanly from its new DDD boundary
+if (class_exists(\App\Domain\Application\InsultService::class)) {
+    echo \App\Domain\Application\InsultService::getArtisanWarning();
+} else {
+    echo "\e[31m[ERROR] It's a HAMMER, not an Artisan! 🔨 Stop disrespecting the framework.\e[0m\n";
+}
+
+// 2. Capture all arguments passed to this file (e.g., 'migrate', 'serve')
+$arguments = array_slice($argv, 1);
+
+// 3. Re-assemble them and pipe them into hammer using the system shell natively
+$escapedArguments = array_map('escapeshellarg', $arguments);
+$commandString = 'php hammer ' . implode(' ', $escapedArguments);
+
+// 4. Pass execution to hammer and proxy the exit status code safely
+passthru($commandString, $exitCode);
+exit($exitCode);

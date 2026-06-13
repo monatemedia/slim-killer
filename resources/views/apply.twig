@@ -1,0 +1,158 @@
+{% extends 'layouts/main.twig' %}
+
+{% block title %}Bond Application | Manage{% endblock %}
+
+{% block content %}
+<section id="hero">
+    <div class="container hero-wrapper">
+        
+        <div class="hero-left">
+            <h1>Bond Application</h1>
+            <p>Complete the form below and one of our agents will be in touch shortly.</p>
+        </div>
+        
+        <div style="width: 100%; max-width: 500px;">
+            <img src="/img/pic_candle_chart-edit.png" alt="Application">
+        </div>
+
+    </div>
+</section>
+
+<section id="form" class="section-split">
+    <div class="container split-wrapper">
+        
+        <div class="split-img-side">
+            <img src="/img/pic_piechart_edit.png" alt="Process" style="width: 100%; max-width: 500px; display: block; margin: 0 auto;">
+        </div>
+        
+        <div class="split-text-side">
+            <form action="/apply" method="POST" class="form-card"
+                  x-data="applyFormValidation()"
+                  @submit.prevent="submitForm($el)">
+                
+                <div class="form-row-split">
+                    <div class="form-group flex-1">
+                        <label class="form-label">First Name*</label>
+                        <input class="form-control" 
+                               :class="errors.first_name ? 'form-control-error' : ''"
+                               name="first_name" 
+                               type="text" 
+                               x-model="fields.first_name" 
+                               @blur="validateField('first_name')">
+                        <p class="error-text" x-show="errors.first_name" x-text="errors.first_name"></p>
+                    </div>
+                    
+                    <div class="form-group flex-1">
+                        <label class="form-label">Last Name*</label>
+                        <input class="form-control" 
+                               :class="errors.last_name ? 'form-control-error' : ''"
+                               name="last_name" 
+                               type="text" 
+                               x-model="fields.last_name" 
+                               @blur="validateField('last_name')">
+                        <p class="error-text" x-show="errors.last_name" x-text="errors.last_name"></p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Phone Number*</label>
+                    <input class="form-control" 
+                           :class="errors.phone ? 'form-control-error' : ''"
+                           name="phone" 
+                           type="tel" 
+                           placeholder="012 345 6789" 
+                           maxlength="10"
+                           x-model="fields.phone" 
+                           @blur="validateField('phone')">
+                    <p class="error-text" x-show="errors.phone" x-text="errors.phone"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address*</label>
+                    <input class="form-control" 
+                           :class="errors.email ? 'form-control-error' : ''"
+                           name="email" 
+                           type="email" 
+                           x-model="fields.email" 
+                           @blur="validateField('email')">
+                    <p class="error-text" x-show="errors.email" x-text="errors.email"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bond Amount*</label>
+                    <input class="form-control" 
+                           :class="errors.bond_amount ? 'form-control-error' : ''"
+                           name="bond_amount" 
+                           type="text" 
+                           x-model="fields.bond_amount" 
+                           @blur="validateField('bond_amount')">
+                    <p class="error-text" x-show="errors.bond_amount" x-text="errors.bond_amount"></p>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <button class="btn btn-primary" type="submit">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+function applyFormValidation() {
+    return {
+        fields: { first_name: '', last_name: '', phone: '', email: '', bond_amount: '' },
+        errors: { first_name: '', last_name: '', phone: '', email: '', bond_amount: '' },
+
+        validateField(name) {
+            let value = this.fields[name].trim();
+            this.errors[name] = '';
+
+            if (!value) {
+                if (name === 'first_name') this.errors[name] = "Please enter your first name";
+                if (name === 'last_name') this.errors[name] = "Please enter your last name";
+                if (name === 'phone') this.errors[name] = "Please enter your phone number";
+                if (name === 'email') this.errors[name] = "Please enter your email";
+                if (name === 'bond_amount') this.errors[name] = "Please enter your bond amount";
+                return false;
+            }
+
+            if ((name === 'first_name' || name === 'last_name') && value.length < 2) {
+                this.errors[name] = "Name at least 2 characters";
+            }
+
+            if (name === 'phone') {
+                if (!/^\d+$/.test(value)) {
+                    this.errors[name] = "Enter numbers only please";
+                } else if (value.length !== 10) {
+                    this.errors[name] = "Please enter a 10 digit number";
+                }
+            }
+
+            if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                this.errors[name] = "Not a valid email address";
+            }
+
+            if (name === 'bond_amount') {
+                if (!/^\d+$/.test(value)) {
+                    this.errors[name] = "Please enter numbers only";
+                } else if (value.length < 6) {
+                    this.errors[name] = "Please enter at least six figures";
+                }
+            }
+
+            return this.errors[name] === '';
+        },
+
+        submitForm(formElement) {
+            let isValid = true;
+            Object.keys(this.fields).forEach(key => {
+                if (!this.validateField(key)) { isValid = false; }
+            });
+            if (isValid) { formElement.submit(); }
+        }
+    }
+}
+</script>
+{% endblock %}
