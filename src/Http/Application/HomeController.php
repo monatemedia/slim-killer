@@ -13,7 +13,7 @@ class HomeController {
     ) {}
 
     public function __invoke(Request $request, Response $response, array $args): Response {
-        return $this->view->render($response, 'home.twig', [
+        return $this->view->render($response, 'pages/home.twig', [
             'title' => 'Manage Home — Apply for your loan in minutes'
         ]);
     }

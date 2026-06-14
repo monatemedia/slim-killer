@@ -13,7 +13,7 @@ class BuyersGuideController {
     ) {}
 
     public function __invoke(Request $request, Response $response, array $args): Response {
-        return $this->view->render($response, 'buyersguide.twig', [
+        return $this->view->render($response, 'pages/buyersguide.twig', [
             'title' => 'Buyers Guide | Manage'
         ]);
     }

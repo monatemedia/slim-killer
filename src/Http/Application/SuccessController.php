@@ -15,11 +15,9 @@ class SuccessController {
     public function __invoke(Request $request, Response $response, array $args): Response {
         if (session_status() === PHP_SESSION_NONE) { session_start(); }
         $name = $_SESSION['flash_name'] ?? 'Client';
-        
-        // Clean up transient flash session memory keys
         unset($_SESSION['flash_name']);
 
-        return $this->view->render($response, 'success.twig', [
+        return $this->view->render($response, 'pages/success.twig', [
             'name' => $name
         ]);
     }
