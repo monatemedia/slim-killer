@@ -5,6 +5,8 @@ use Pixie\Connection;
 use Slim\Views\Twig;
 use Psr\Container\ContainerInterface;
 use Pixie\QueryBuilder\QueryBuilderHandler;
+use App\Infrastructure\Persistence\Application\ApplicationRepository;
+use App\Infrastructure\Persistence\Subscriber\SubscriberRepository;
 
 /**
  * Slim Killer Service Definitions
@@ -45,5 +47,14 @@ return [
             'cache' => $cache,
             'debug' => true,
         ]);
+    },
+    
+    // 4. Initialize the Infrastructure Persistence Repository Layer
+    ApplicationRepository::class => function (ContainerInterface $c) {
+        return new ApplicationRepository($c->get('db'));
+    },
+
+    SubscriberRepository::class => function (ContainerInterface $c) {
+        return new SubscriberRepository($c->get('db'));
     },
 ];
