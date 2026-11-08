@@ -1,0 +1,18 @@
+* text=auto eol=lf
+
+*.php diff=php
+*.md diff=markdown
+*.html diff=html
+*.css diff=css
+*.sh text eol=lf
+hammer text eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
+
+/.github export-ignore
+/.gitattributes export-ignore
+/.editorconfig export-ignore
+/feature-branch-*.sh export-ignore

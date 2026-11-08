@@ -48,7 +48,14 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <li>
+      <a href="#contributing">Contributing</a>
+      <ul>
+        <li><a href="#branching-and-releases">Branching and Releases</a></li>
+        <li><a href="#branch-helper-scripts">Branch Helper Scripts</a></li>
+        <li><a href="#versioning">Versioning</a></li>
+      </ul>
+    </li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -197,7 +204,56 @@ See the [open issues](https://github.com/monatemedia/slim-killer/issues) for pro
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues).
+Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues). Before changing code, read [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md): six rules the codebase follows.
+
+### Branching and Releases
+
+There is **one long-lived branch, `main`**. Everything else is short-lived and deleted after it is merged. A **release is a version tag** (`v0.1.0`) on a commit of `main`; client sites pin core to a tag, never to a branch.
+
+- **`main`**: the default branch. Every short-lived branch starts here and merges back here.
+- **`feature/<name>`**, **`fix/<name>`**, **`chore/<name>`**, **`docs/<name>`**: short-lived, created from `main`, merged back into `main` with `--no-ff`, then deleted. `chore/` is for tooling and housekeeping, `docs/` for documentation only.
+- **`archive/v1`** (and the tag `slim-killer-v1`): the first attempt at Slim Killer, kept for reference. Do not delete it.
+
+### Branch Helper Scripts
+
+`feature-branch-start.sh` and `feature-branch-stop.sh` handle the short-lived branch workflow. Run them from Git Bash in the repository root.
+
+```sh
+./feature-branch-start.sh <name>           # feature/<name>, from main
+./feature-branch-start.sh --fix <name>     # fix/<name>
+./feature-branch-start.sh --chore <name>   # chore/<name>
+./feature-branch-start.sh --docs <name>    # docs/<name>
+```
+
+```sh
+./feature-branch-stop.sh                   # check, gate, merge into main, clean up
+./feature-branch-stop.sh --skip-gates      # same, without the quality gates (asks you to confirm)
+```
+
+The start script refuses to run with uncommitted changes. The stop script checks that `CHANGELOG.md` was updated, runs whichever quality gates are installed (Pint, PHPStan, Pest, `npm test`), pushes, merges into `main`, deletes the branch locally and on GitHub, and returns you to `main`. A failing gate stops it before anything is pushed or merged. Both scripts read the branch rules from `feature-branch-types.sh`.
+
+### Versioning
+
+Slim Killer uses [semantic versioning](https://semver.org/), `vMAJOR.MINOR.PATCH`. Because client sites depend on core, the version number is a promise about upgrades:
+
+- **MAJOR** (`v1.4.2` → `v2.0.0`): a client site may need changes to upgrade, for example a new Astro major version, a removed or renamed interface, or a changed content folder layout.
+- **MINOR** (`v1.4.2` → `v1.5.0`): new features that existing client sites can take without changes.
+- **PATCH** (`v1.4.2` → `v1.4.3`): bug fixes and security fixes only.
+
+Tag releases with annotated tags, and never move or reuse a tag; a fix is always a new patch tag.
+
+```sh
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+```
+
+Record every release in [`CHANGELOG.md`](CHANGELOG.md), moving the entries from **[Unreleased]** under the new version.
+
+### Top Contributors
+
+<a href="https://github.com/monatemedia/slim-killer/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=monatemedia/slim-killer" alt="contrib.rocks image" />
+</a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
