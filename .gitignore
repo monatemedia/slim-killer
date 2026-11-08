@@ -1,7 +1,24 @@
-# Private design notes (PRD etc.), never part of the public repo
+# Private design notes (PRD, session notes), kept in a separate private repo
 /docs/
+
+# Wiki working copy (its own repo: slim-killer.wiki.git)
+/wiki/
+
+# Pointer to the private session notes in docs/
+/CLAUDE.md
+/.claude/
+
+# Local scratch output and reference material, never committed
+/Claude outputs/
+*-output.txt
 
 # Environment and dependencies
 .env
 /vendor/
 /node_modules/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+/.idea/
+/.vscode/
