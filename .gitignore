@@ -1,19 +1,7 @@
-# Core environment overrides
+# Private design notes (PRD etc.), never part of the public repo
+/docs/
+
+# Environment and dependencies
 .env
-
-# Dependencies & Local Packages
 /vendor/
-
-# Local Database Backups & State
-/database/database.sqlite
-/database/database.sqlite-journal
-
-# Compiled View Layer Templates cache
-/storage/cache/views/*
-!/storage/cache/views/.gitkeep
-
-# Operating System & IDE Artifacts
-.DS_Store
-Thumbs.db
-/.idea/
-/.vscode/
+/node_modules/
