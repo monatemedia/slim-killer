@@ -25,6 +25,14 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 - **`AGENTS.md`.** Instructions for AI coding assistants working on Slim Killer: the three
   layers (core, site, content), the build rules, the git workflow, and what never to do.
 
+### Changed
+
+- **`BUILD_PHILOSOPHY.md` now covers both PHP courses.** Part 1 (Wiring) restores the full
+  "type system is a security layer" rule; Part 2 (Modelling) adds six domain-architecture
+  rules, gated by "ceremony must be paid for", with a table of where Slim Killer applies
+  them (the deploy pipeline and the shop) and where it does not (content editing,
+  settings). `AGENTS.md` summarises both parts.
+
 ### Removed
 
 - **The first attempt's code.** Kept at the tag `slim-killer-v1` and the branch `archive/v1`.
