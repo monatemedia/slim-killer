@@ -204,7 +204,7 @@ See the [open issues](https://github.com/monatemedia/slim-killer/issues) for pro
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues). Before changing code, read [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md): six rules the codebase follows.
+Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues). Before changing code, read [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md): six rules the codebase follows. If you work with an AI coding assistant, it will pick up its instructions from [`AGENTS.md`](AGENTS.md).
 
 ### Branching and Releases
 

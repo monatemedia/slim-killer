@@ -22,6 +22,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   `.editorconfig`, `.gitattributes` (LF line endings everywhere) and issue templates for bug
   reports and feature requests.
 
+- **`AGENTS.md`.** Instructions for AI coding assistants working on Slim Killer: the three
+  layers (core, site, content), the build rules, the git workflow, and what never to do.
+
 ### Removed
 
 - **The first attempt's code.** Kept at the tag `slim-killer-v1` and the branch `archive/v1`.
