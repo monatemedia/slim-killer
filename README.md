@@ -186,9 +186,10 @@ composer format    # fix code style
 <!-- ROADMAP -->
 ## Roadmap
 
+- [x] Spikes S1 and S2: shared hosting can commit to GitHub, fetch and switch builds, and run cron
+- [x] Host checker: `hammer doctor`
 - [ ] Spikes S3 to S5: export Astro's Zod schemas; editor round trip; time from save to live
-- [x] Spikes S1 and S2 (shared hosting can commit to GitHub, fetch and switch builds, run cron)
-- [ ] Core skeleton: PHP-DI and `hammer` with `doctor` (done); Slim, Twig, SQLite migrations, login with two-factor, `install`
+- [ ] Control panel skeleton: Slim, Twig, SQLite migrations, login with two-factor, `install`, the setup page
 - [ ] One collection end to end on a pilot client site
 - [ ] All collections, including nested lists and single pages
 - [ ] Releases and recovery: panel self-update, rollbacks, backups with a test restore
