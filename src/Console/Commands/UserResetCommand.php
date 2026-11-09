@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace SlimKiller\Console\Commands;
 
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\UserRepository;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;

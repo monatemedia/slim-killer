@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\InvalidEmailAddress;
-use SlimKiller\Auth\WelcomeLinks;
-use SlimKiller\Auth\SignInThrottle;
 use SlimKiller\Auth\PasswordPolicy;
 use SlimKiller\Auth\RecoveryCodes;
 use SlimKiller\Auth\Role;
+use SlimKiller\Auth\SignInThrottle;
 use SlimKiller\Auth\UserAlreadyExists;
 use SlimKiller\Auth\UserRepository;
+use SlimKiller\Auth\WelcomeLinks;
 use Tests\Fakes\SteppingClock;
 
 it('treats an email address the same however it is typed', function (): void {

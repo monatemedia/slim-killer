@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\UserRepository;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
