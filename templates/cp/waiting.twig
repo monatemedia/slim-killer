@@ -1,0 +1,19 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}{{ link_refused ? 'Setup link expired' : 'Being set up' }}{% endblock %}
+
+{% block main %}
+<section class="card notice">
+  <div class="card-pad">
+    {% if link_refused %}
+      <h1>This setup link has expired.</h1>
+      <p>A setup link works for one hour, and each run of the doctor replaces the last one.</p>
+      <p>For a new link, run <code>php hammer doctor</code> on the server.</p>
+    {% else %}
+      <h1>This control panel is being set up.</h1>
+      <p>There is nothing to see here yet.</p>
+      <p>Setting it up? Run <code>php hammer doctor</code> on the server. It ends with a private link to the setup page.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

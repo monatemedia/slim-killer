@@ -12,7 +12,10 @@
         "php": "^8.4",
         "ext-curl": "*",
         "ext-json": "*",
-        "php-di/php-di": "^7.1"
+        "php-di/php-di": "^7.1",
+        "slim/psr7": "^1.8",
+        "slim/slim": "^4.15",
+        "twig/twig": "^3.30"
     },
     "require-dev": {
         "laravel/pint": "^1.24",

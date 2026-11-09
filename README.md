@@ -262,6 +262,8 @@ Record every release in [`CHANGELOG.md`](CHANGELOG.md), moving the entries from 
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
 
+The Monate Media name and logo (`public/logo-wide.png`, `public/cp/assets/monate-media.png`) are not covered by the MIT License. The clown logo is CC0, from SVG Repo.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->

@@ -1,0 +1,9 @@
+# Apache and LiteSpeed: every control panel path that is not a real file goes to
+# index.php. (Herd and other nginx setups: public/index.php hands /cp/ paths over.)
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
