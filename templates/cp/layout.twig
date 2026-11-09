@@ -6,11 +6,11 @@
 <meta name="robots" content="noindex, nofollow">
 <title>{% block title %}Control panel{% endblock %} · Slim Killer</title>
 <link rel="icon" type="image/svg+xml" href="{{ base }}/assets/logo.svg">
-<link rel="stylesheet" href="{{ base }}/assets/cp.css">
-<script src="{{ base }}/assets/cp.js" defer></script>
+<link rel="stylesheet" href="{{ asset('cp.css') }}">
+<script src="{{ asset('cp.js') }}" defer></script>
 </head>
 <body>
-<div class="shell">
+<div class="shell{% block shell %}{% endblock %}">
 
   <header class="page-header">
     <a class="logo" href="{{ base }}/"><img src="{{ base }}/assets/logo.svg" alt="Slim Killer home"></a>

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string", "title": "Page title" },
+    "description": { "type": "string", "title": "Description for search results", "input": "textarea", "description": "One or two sentences." },
+    "heroImage": { "type": "string" },
+    "gallery": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": { "type": "string" },
+          "alt": { "default": "", "type": "string" }
+        },
+        "required": ["src"]
+      }
+    },
+    "$schema": { "type": "string" }
+  },
+  "required": ["title", "description", "heroImage"]
+}

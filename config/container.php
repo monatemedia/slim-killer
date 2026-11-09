@@ -17,6 +17,7 @@ use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
+use SlimKiller\Content\ContentLocation;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
@@ -42,6 +43,7 @@ use SlimKiller\Support\Paths;
 use SlimKiller\Support\SystemClock;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFunction;
 
 /*
  * Core container definitions. A client site can extend or override any of these in
@@ -62,6 +64,11 @@ return [
     // One SQLite file in storage, outside the web root. Opened only when needed.
     PDO::class => factory(static fn(Paths $paths): PDO => Database::open($paths->storage(Database::FILE))),
     Migrator::class => autowire()->constructorParameter('directory', dirname(__DIR__) . '/database/migrations'),
+
+    // --- Content -----------------------------------------------------------------
+    // The working copy the panel reads from: in storage on a client's host, or wherever
+    // CONTENT_DIR and SCHEMA_DIR point for local development.
+    ContentLocation::class => factory(static fn(AppConfig $config, Paths $paths): ContentLocation => ContentLocation::from($config, $paths)),
 
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
@@ -117,6 +124,15 @@ return [
         ]);
         $twig->addGlobal('base', ControlPanel::BASE_PATH);
         $twig->addGlobal('site_name', $config->name);
+
+        // asset('cp.css') gives the file's address with its change time on the end,
+        // so a browser fetches the file again after it changes, not an old copy.
+        $assets = dirname(__DIR__) . '/public/cp/assets';
+        $twig->addFunction(new TwigFunction('asset', static function (string $file) use ($assets): string {
+            $changed = @filemtime($assets . '/' . $file);
+
+            return ControlPanel::BASE_PATH . '/assets/' . $file . ($changed === false ? '' : '?v=' . $changed);
+        }));
 
         return $twig;
     }),

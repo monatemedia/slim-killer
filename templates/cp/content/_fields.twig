@@ -1,0 +1,55 @@
+{#
+ # Editing fields, built from the collection's schema (Field objects). Read-only for
+ # now: saving arrives in the next version of the control panel.
+ #}
+{% macro field(field, value, id) %}
+  {% import _self as forms %}
+  {% set editor = field.editor() %}
+  {% set text = value is iterable ? value|json_encode : value %}
+  {% if editor == 'group' %}
+    <fieldset class="group-field">
+      <legend>{{ field.label }}</legend>
+      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
+      {% for child in field.children %}
+        {{ forms.field(child, value[child.name] ?? null, id ~ '-' ~ child.name) }}
+      {% endfor %}
+    </fieldset>
+  {% elseif editor == 'list' %}
+    <fieldset class="list-field">
+      <legend>{{ field.label }} <span class="count">{{ value is iterable ? value|length : 0 }}</span></legend>
+      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
+      {% for item in value is iterable ? value : [] %}
+        <div class="list-item">
+          <p class="list-item-label">{{ loop.index }}</p>
+          {% for child in field.children %}
+            {{ forms.field(child, item[child.name] ?? null, id ~ '-' ~ loop.parent.loop.index ~ '-' ~ child.name) }}
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="field-help">None yet.</p>
+      {% endfor %}
+    </fieldset>
+  {% else %}
+    <div class="field">
+      <label for="{{ id }}">{{ field.label }}{% if not field.required %} <span class="optional">(optional)</span>{% endif %}</label>
+      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
+      {% if editor == 'textarea' or editor == 'markdown' %}
+        <textarea id="{{ id }}" rows="{{ editor == 'markdown' ? 10 : 4 }}" readonly class="{{ editor == 'markdown' ? 'markdown-input' : '' }}">{{ text }}</textarea>
+      {% elseif editor == 'select' %}
+        <select id="{{ id }}" disabled>
+          {% for option in field.options %}
+            <option{{ option == (value ?? field.default) ? ' selected' : '' }}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      {% elseif editor == 'toggle' %}
+        <input id="{{ id }}" type="checkbox" disabled{{ value ? ' checked' : '' }}>
+      {% elseif editor == 'tags' %}
+        <input id="{{ id }}" type="text" readonly value="{{ value is iterable ? value|join(', ') : value }}">
+      {% elseif editor == 'image' %}
+        <input id="{{ id }}" type="text" readonly value="{{ text }}" class="image-input">
+      {% else %}
+        <input id="{{ id }}" type="{{ editor == 'number' ? 'number' : 'text' }}" readonly value="{{ text }}">
+      {% endif %}
+    </div>
+  {% endif %}
+{% endmacro %}

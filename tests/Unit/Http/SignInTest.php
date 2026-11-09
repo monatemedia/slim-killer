@@ -2,63 +2,8 @@
 
 declare(strict_types=1);
 
-use DI\ContainerBuilder;
-use Psr\Container\ContainerInterface;
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\EmailAddress;
-use SlimKiller\Auth\Role;
 use SlimKiller\Auth\Totp;
-use SlimKiller\Auth\UserRepository;
-use SlimKiller\Auth\WelcomeLinks;
-use SlimKiller\Database\Migrator;
-use SlimKiller\Doctor\Environment\Environment;
-use SlimKiller\Http\ControlPanel\ControlPanel;
-use SlimKiller\Support\Clock;
-use SlimKiller\Support\Paths;
-use Tests\Fakes\Browser;
-use Tests\Fakes\SteppingClock;
-
-const PASSWORD = 'correct horse battery staple';
-
-/** @return array{0: Browser, 1: ContainerInterface, 2: SteppingClock} */
-function installedPanel(): array
-{
-    $clock = new SteppingClock('2026-11-09 12:00:00');
-    $builder = new ContainerBuilder();
-    $builder->addDefinitions(dirname(__DIR__, 3) . '/config/container.php');
-    $builder->addDefinitions([
-        Paths::class => new Paths(temporaryFolder()),
-        Clock::class => $clock,
-        Environment::class => environment(['sapi' => 'litespeed'], 'Website'),
-    ]);
-    $container = $builder->build();
-    $container->get(Migrator::class)->migrate();
-
-    return [new Browser(ControlPanel::create($container, showErrorDetails: true, logErrors: false)), $container, $clock];
-}
-
-function welcomeLink(ContainerInterface $container, string $email = 'edward@example.com'): string
-{
-    $user = $container->get(UserRepository::class)->create(EmailAddress::from($email), 'Edward', Role::Admin);
-
-    return WelcomeLinks::pathFor($container->get(WelcomeLinks::class)->issue($user->id));
-}
-
-/** Takes a new user from the welcome link to signed in. Returns the secret and recovery codes. */
-function enrol(Browser $browser, ContainerInterface $container, SteppingClock $clock): array
-{
-    $browser->get(welcomeLink($container));
-    $browser->get('/cp/welcome');
-    $browser->post('/cp/welcome', ['password' => PASSWORD, 'password_confirmation' => PASSWORD]);
-    $browser->get('/cp/two-factor/setup');
-    preg_match('#<code class="secret">([A-Z2-7 ]+)</code>#', $browser->body(), $match);
-    $secret = str_replace(' ', '', $match[1] ?? '');
-    $browser->post('/cp/two-factor/setup', ['code' => (new Totp($clock))->codeAt($secret, $clock->now()->getTimestamp())]);
-    preg_match_all('#<li><code>([a-z0-9-]{11})</code></li>#', $browser->body(), $codes);
-    $browser->get('/cp/');
-
-    return [$secret, $codes[1]];
-}
 
 it('takes a new user from the welcome link, through a password and two-factor, to the dashboard', function (): void {
     [$browser, $container, $clock] = installedPanel();
