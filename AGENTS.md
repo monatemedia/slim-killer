@@ -82,16 +82,23 @@ Other conventions:
 
 ## Commands
 
-Planned, not yet available: `php hammer` lists the CLI commands (`doctor`, `install`,
-`user:create`, `deploy:fetch`, `cp:update`, `backup:run` and others).
-
-Quality checks, once installed (the branch scripts run them automatically):
-
 ```sh
-php vendor/bin/pint --test        # code style
-php vendor/bin/phpstan analyse    # static analysis
-php vendor/bin/pest               # tests
+php hammer                     # list the commands
+php hammer doctor              # check this host (add --url and --webroot to check the website)
+php hammer cron:heartbeat      # what cron runs every minute, for now
+composer check                 # Pint, PHPStan and Pest: run before handing work back
 ```
+
+`hammer` starts with a pre-flight guard written in old PHP syntax, so it can explain
+itself on an old PHP. Keep that part of the file old-syntax. The same goes for
+`src/Doctor/WebProbe/probe-template.php`, which runs on the website's PHP.
+
+Commands implement `SlimKiller\Console\Command` and are registered in the container's
+`console.commands` list (`config/container.php`). Doctor checks implement `PhpCheck`
+(runs against the command line's PHP and again against the website's) or `HostCheck`
+(runs once), and are registered in `doctor.php_checks` / `doctor.host_checks`. What a
+host must provide is defined once, in `SlimKiller\Doctor\Requirements`; the wiki page
+"Host requirements" is written from it, so change them together.
 
 ## Git workflow
 

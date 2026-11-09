@@ -76,7 +76,7 @@ Why another one?
 
 This is the second attempt. The first one is kept at the tag `slim-killer-v1` and the branch `archive/v1`.
 
-> **Status:** planning. There is no runnable code yet.
+> **Status:** early. `hammer` and the host checker (`hammer doctor`) work; the control panel is next.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -122,74 +122,73 @@ Core, client-specific code and client content are kept apart, so a core update n
 <!-- GETTING STARTED -->
 ## Getting Started
 
-There is nothing to install yet. The steps below describe the planned setup and will be filled in as the code lands.
+The command-line tool (`hammer`) and the host checker (`hammer doctor`) work today. The control panel is next.
 
 ### Prerequisites
 
 For development (Windows with Laravel Herd, using Git Bash):
 
 * PHP 8.4 and Composer
-* Node.js 24 LTS and npm (for building the Astro sites)
+* Node.js 24 LTS and npm (for building the Astro sites, later)
 * Git
 
-For a client's host (checked by `hammer doctor`):
-
-* PHP 8.4 or newer with `pdo_sqlite`, `curl`, `zip`, `gd` (with WebP), `openssl`, `mbstring` and `fileinfo`
-* Outbound HTTPS from PHP to GitHub
-* A writable folder outside the web root
-* `.htaccess` rewrites
-* Cron (preferred, not required)
+For a client's host, see [Host requirements](https://github.com/monatemedia/slim-killer/wiki/Host-requirements) in the wiki. In short: PHP 8.4 for the website and the command line, a handful of common extensions, outgoing HTTPS to GitHub, `.htaccess` rewrites and cron. `php hammer doctor` checks all of it.
 
 ### Installation
-
-_Planned._
 
 1. Clone the repo
    ```sh
    git clone https://github.com/monatemedia/slim-killer.git
    cd slim-killer
    ```
-2. Install PHP dependencies
+2. Install the dependencies
    ```sh
    composer install
    ```
-3. Copy the environment file and fill it in
-   ```sh
-   cp .env.example .env
-   ```
-4. Check the machine and set up the control panel
+3. Check the machine
    ```sh
    php hammer doctor
-   php hammer install
    ```
+
+On a hosting account, follow [Installing on a new host](https://github.com/monatemedia/slim-killer/wiki/Installing-on-a-new-host) in the wiki: the code goes outside the web root, and the doctor also checks the website itself.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-_Planned._ Day to day, clients only ever see `/cp`. Edward works through `hammer`:
+Day to day, clients only ever see `/cp`. Developers work through `hammer`:
 
 ```sh
-php hammer                  # list every command
-php hammer doctor           # does this host meet the requirements?
-php hammer user:create      # add a control panel user (prompts for the password)
-php hammer deploy:fetch     # fetch and switch to the latest site build
-php hammer deploy:rollback  # go back one build
-php hammer cp:update        # update the control panel itself
-php hammer backup:run       # encrypted backup of the panel's database
-php hammer fleet:test       # developer only: test a core change against every client site
+php hammer                     # list every command
+php hammer doctor              # does this host have what Slim Killer needs?
+php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html
+                               # ...including the website's own PHP and web server
+php hammer cron:heartbeat      # what cron runs every minute (for now)
 ```
 
-And yes, `php artisan` still works. It just insults you first and then hands over to `hammer`.
+Planned: `user:create`, `deploy:fetch`, `deploy:rollback`, `cp:update`, `backup:run` and `fleet:test`.
+
+And yes, `php hammer artisan` is a thing. Try it.
+
+### Quality checks
+
+```sh
+composer check     # Pint (style), PHPStan (static analysis) and Pest (tests), in that order
+composer test      # tests only
+composer format    # fix code style
+```
+
+`feature-branch-stop.sh` runs the same checks before it merges a branch.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Spikes: commit to GitHub from PHP on shared hosting; fetch and swap a site build; export Astro's Zod schemas; editor round trip; time from save to live
-- [ ] Core skeleton: Slim, PHP-DI, Twig, `hammer`, SQLite migrations, login with two-factor, `doctor`, `install`
+- [ ] Spikes S3 to S5: export Astro's Zod schemas; editor round trip; time from save to live
+- [x] Spikes S1 and S2 (shared hosting can commit to GitHub, fetch and switch builds, run cron)
+- [ ] Core skeleton: PHP-DI and `hammer` with `doctor` (done); Slim, Twig, SQLite migrations, login with two-factor, `install`
 - [ ] One collection end to end on a pilot client site
 - [ ] All collections, including nested lists and single pages
 - [ ] Releases and recovery: panel self-update, rollbacks, backups with a test restore

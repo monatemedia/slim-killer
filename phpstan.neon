@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - bootstrap
+        - config
+    excludePaths:
+        # Copied into a client's web root and run there, on whatever PHP the website has.
+        # Written for old PHP versions on purpose, so it is checked separately.
+        - src/Doctor/WebProbe/probe-template.php
