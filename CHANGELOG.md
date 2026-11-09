@@ -13,6 +13,11 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Cover page and public project page.** `public/index.php` is the project's cover. Served
+  locally (Herd), it shows live status: PHP version, whether `composer install` has run,
+  required extensions and WebP. `php public/index.php --static` prints the public page for
+  slimkiller.monatemedia.com from the same source, so the two cannot drift. Roadmap
+  progress, test count and host checks are read from the code, not typed in.
 - **`hammer`, the command-line tool.** `php hammer` lists the commands. It starts with a
   pre-flight guard: run with a PHP older than 8.4, it says so and prints the full path of
   a newer PHP it found on the server (shared hosts often default to an older PHP on the
@@ -45,6 +50,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- **README roadmap brought up to date.** The spikes and the host checker are ticked; the
+  remaining steps are listed in the order they will be built.
 - **`feature-branch-start.sh` suggests `feat:` commit messages** on feature branches, matching
   the commit prefixes in `AGENTS.md`.
 - **`BUILD_PHILOSOPHY.md` now covers both PHP courses.** Part 1 (Wiring) restores the full
