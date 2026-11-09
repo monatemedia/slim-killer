@@ -6,22 +6,43 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use SlimKiller\Auth\RecoveryCodes;
+use SlimKiller\Auth\UserRepository;
+use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\View;
+use SlimKiller\Http\Session\Session;
 
 /**
- * /cp/ before anyone can log in. It says only that the panel is being set up: the
- * host report is on the setup page, behind the link the doctor prints.
- *
- * Once the first user exists (the install branch), this becomes the login page.
+ * /cp/: the dashboard when signed in. Before anyone exists, it says only that the
+ * panel is being set up; after that, it sends visitors to the login page.
  */
 final class HomeAction
 {
     public function __construct(
         private readonly View $view,
+        private readonly UserRepository $users,
+        private readonly RecoveryCodes $recoveryCodes,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $session = Session::of($request);
+        $userId = $session->userId();
+        $user = $userId === null ? null : $this->users->byId($userId);
+
+        if ($user !== null) {
+            return $this->view->render($response, 'cp/dashboard.twig', [
+                'name' => $user->name,
+                'role' => $user->role->label(),
+                'codes_left' => $this->recoveryCodes->remaining($user->id),
+                'csrf' => $session->csrfToken(),
+            ]);
+        }
+
+        if ($this->users->any()) {
+            return Form::redirect($response, '/login');
+        }
+
         return $this->view->render($response, 'cp/waiting.twig', ['link_refused' => false]);
     }
 }

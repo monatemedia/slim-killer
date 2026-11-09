@@ -76,7 +76,7 @@ Why another one?
 
 This is the second attempt. The first one is kept at the tag `slim-killer-v1` and the branch `archive/v1`.
 
-> **Status:** early. `hammer` and the host checker (`hammer doctor`) work; the control panel is next.
+> **Status:** early. `hammer`, the host checker and the control panel's sign-in (with two-factor) work; editing content is next.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -122,7 +122,7 @@ Core, client-specific code and client content are kept apart, so a core update n
 <!-- GETTING STARTED -->
 ## Getting Started
 
-The command-line tool (`hammer`) and the host checker (`hammer doctor`) work today. The control panel is next.
+The command-line tool (`hammer`), the host checker and the control panel's sign-in work today. Editing content is next.
 
 ### Prerequisites
 
@@ -149,6 +149,11 @@ For a client's host, see [Host requirements](https://github.com/monatemedia/slim
    ```sh
    php hammer doctor
    ```
+4. Install: this writes `.env`, creates the database and your account, and prints a welcome link
+   ```sh
+   php hammer install --url=https://slim-killer.test --email=you@example.com --name="Your Name" --site-name="Slim Killer"
+   ```
+5. Open the welcome link, choose a password and set up two-factor with your phone.
 
 On a hosting account, follow [Installing on a new host](https://github.com/monatemedia/slim-killer/wiki/Installing-on-a-new-host) in the wiki: the code goes outside the web root, and the doctor also checks the website itself.
 
@@ -164,10 +169,19 @@ php hammer                     # list every command
 php hammer doctor              # does this host have what Slim Killer needs?
 php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html
                                # ...including the website's own PHP and web server
+php hammer install --url=... --email=... --name=...
+                               # first-time setup: .env, database, first user
+php hammer user:create --email=client@example.com --name="Client Name"
+                               # add someone (a site owner unless --role=admin), print their welcome link
+php hammer user:reset --email=client@example.com
+                               # lost phone or password: clear both, print a new welcome link
+php hammer migrate             # bring the database up to date
 php hammer cron:heartbeat      # what cron runs every minute (for now)
 ```
 
-Planned: `user:create`, `deploy:fetch`, `deploy:rollback`, `cp:update`, `backup:run` and `fleet:test`.
+Nobody types a password on the server: every account starts from a welcome link, and the person chooses their own password in the browser.
+
+Planned: `deploy:fetch`, `deploy:rollback`, `cp:update`, `backup:run` and `fleet:test`.
 
 And yes, `php hammer artisan` is a thing. Try it.
 
@@ -189,7 +203,7 @@ composer format    # fix code style
 - [x] Spikes S1 and S2: shared hosting can commit to GitHub, fetch and switch builds, and run cron
 - [x] Host checker: `hammer doctor`
 - [ ] Spikes S3 to S5: export Astro's Zod schemas; editor round trip; time from save to live
-- [ ] Control panel skeleton: Slim, Twig, SQLite migrations, login with two-factor, `install`, the setup page
+- [x] Control panel skeleton: Slim, Twig, SQLite migrations, login with two-factor, `install`, the setup page
 - [ ] One collection end to end on a pilot client site
 - [ ] All collections, including nested lists and single pages
 - [ ] Releases and recovery: panel self-update, rollbacks, backups with a test restore

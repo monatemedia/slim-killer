@@ -13,6 +13,30 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Sign-in for the control panel, with two-factor for everyone.** Email and password,
+  then a six-digit code from an authenticator app (or a single-use recovery code).
+  Two-factor is set up on first sign-in with a QR code drawn on the server; a code
+  cannot be used twice. Passwords use Argon2id (bcrypt where PHP lacks it) and need 12
+  characters or more. Five wrong passwords for an address (or twenty from one IP) means
+  a 15-minute wait. Sessions live in SQLite, end after two idle hours or twelve in
+  all, and get a new token at every sign-in. Every form carries a CSRF token.
+  Password fields have a show/hide button, and every form message comes from the panel
+  rather than the browser. Recovery codes can be downloaded as a text file (made in
+  the browser; the server keeps only hashes), and each page says how to use them. The
+  setup page points people to Google Authenticator and to scan from inside the app.
+- **Welcome links instead of passwords on the server.** `hammer install`, `user:create`
+  and `user:reset` print a link (valid 72 hours, once) where the person chooses their
+  own password and sets up two-factor. Shared hosts cannot hide typed passwords on the
+  command line, and Monate Media never needs to know a client's password.
+- **`hammer install`.** Writes `APP_URL` (and, with `--site-name`, `APP_NAME`: the site's
+  own name, shown in authenticator apps and on recovery codes) to `.env`, never
+  overwriting a value; creates
+  the SQLite database and the first user (an administrator), and prints their welcome link.
+- **`hammer user:create`, `user:reset` and `migrate`.** Add a site owner or an
+  administrator; reset someone who lost their phone or password (also signs them out
+  everywhere); bring the database up to date.
+- **SQLite database with migrations** in `database/migrations`, and an audit log of
+  sign-ins, failed sign-ins, password and two-factor changes, and resets.
 - **The control panel's first pages, at `/cp`.** Slim 4, Twig and PHP-DI, with a strict
   Content Security Policy (no inline styles or scripts, no CDN), no referrer, and no
   caching or indexing. `public/cp/index.php` is the front controller; like `hammer`, it

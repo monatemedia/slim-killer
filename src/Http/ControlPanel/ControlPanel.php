@@ -8,7 +8,14 @@ use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
+use SlimKiller\Http\ControlPanel\Actions\LoginAction;
+use SlimKiller\Http\ControlPanel\Actions\LogoutAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
+use SlimKiller\Http\ControlPanel\Actions\TwoFactorAction;
+use SlimKiller\Http\ControlPanel\Actions\TwoFactorSetupAction;
+use SlimKiller\Http\ControlPanel\Actions\WelcomeAction;
+use SlimKiller\Http\Session\CsrfMiddleware;
+use SlimKiller\Http\Session\SessionMiddleware;
 
 /**
  * Builds the control panel's Slim app from a ready container. The container itself
@@ -31,12 +38,20 @@ final class ControlPanel
 
         $app->redirect('', self::BASE_PATH . '/', 301);
         $app->get('/', HomeAction::class);
+        $app->map(['GET', 'POST'], '/login', LoginAction::class);
+        $app->map(['GET', 'POST'], '/two-factor', TwoFactorAction::class);
+        $app->map(['GET', 'POST'], '/two-factor/setup', TwoFactorSetupAction::class);
+        $app->map(['GET', 'POST'], '/welcome', WelcomeAction::class);
+        $app->post('/logout', LogoutAction::class);
         $app->get('/setup', SetupAction::class);
 
+        // Middleware runs in the reverse of the order it is added. On the way in:
+        // security headers, errors, routing, session, form parsing, the CSRF check.
+        $app->add(CsrfMiddleware::class);
+        $app->addBodyParsingMiddleware();
+        $app->add(SessionMiddleware::class);
         $app->addRoutingMiddleware();
         $app->addErrorMiddleware($showErrorDetails, $logErrors, $logErrors);
-
-        // Added last, so it runs first and wraps error pages too.
         $app->add(SecurityHeaders::class);
 
         return $app;

@@ -12,15 +12,15 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Headers on every control panel response.
  *
- * - A strict Content Security Policy: styles, images and (later) scripts come from
- *   the panel itself. No inline styles or scripts, no CDN.
+ * - A strict Content Security Policy: styles, images and scripts come from the
+ *   panel itself. No inline styles or scripts, no CDN.
  * - No referrer: the setup page's address carries its secret token, and it must not
  *   travel to GitHub or anywhere else when someone follows a link.
  * - Never cached, never indexed, never framed.
  */
 final class SecurityHeaders implements MiddlewareInterface
 {
-    private const string POLICY = "default-src 'none'; style-src 'self'; img-src 'self'; "
+    private const string POLICY = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; "
         . "form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

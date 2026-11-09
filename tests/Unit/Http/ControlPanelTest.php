@@ -92,6 +92,8 @@ it('sends its security headers on every response, errors included', function (st
     $response = getPage(controlPanel(new Paths(temporaryFolder())), 'https://client.test' . $path);
 
     expect($response->getHeaderLine('Content-Security-Policy'))->toContain("default-src 'none'")
+        ->and($response->getHeaderLine('Content-Security-Policy'))->toContain("script-src 'self'")
+        ->and($response->getHeaderLine('Content-Security-Policy'))->not->toContain('unsafe-inline')
         ->and($response->getHeaderLine('Referrer-Policy'))->toBe('no-referrer')
         ->and($response->getHeaderLine('Cache-Control'))->toBe('no-store');
 })->with(['/cp/', '/cp/setup', '/cp/no-such-page']);

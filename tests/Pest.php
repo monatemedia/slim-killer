@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use SlimKiller\Database\Database;
+use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\Environment\SnapshotEnvironment;
 use SlimKiller\Doctor\Requirements;
 
@@ -57,4 +59,13 @@ function temporaryFolder(): string
 function statuses(array $results): array
 {
     return array_map(static fn($result) => $result->status->value, $results);
+}
+
+/** A fresh in-memory database with every migration run. */
+function migratedDatabase(): PDO
+{
+    $pdo = Database::open(':memory:');
+    (new Migrator($pdo, dirname(__DIR__) . '/database/migrations'))->migrate();
+
+    return $pdo;
 }

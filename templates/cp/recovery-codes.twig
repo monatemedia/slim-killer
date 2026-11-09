@@ -1,0 +1,21 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}Recovery codes{% endblock %}
+
+{% block main %}
+<section class="card narrow">
+  <div class="card-pad">
+    <h1 class="form-title">Keep these recovery codes</h1>
+    <p class="form-lede">If you lose your phone, each of these codes lets you sign in once. This is the only time they are shown: download them, or keep them in a password manager.</p>
+    <ul class="codes">
+      {% for code in codes %}<li><code>{{ code }}</code></li>{% endfor %}
+    </ul>
+    <div class="code-actions">
+      <button type="button" class="btn btn-quiet" data-download-codes data-account="{{ account }}" data-site="{{ site }}" data-site-name="{{ site_name }}" hidden>Download</button>
+      <a class="btn" href="{{ base }}/">Continue</a>
+    </div>
+    <h2 class="small-title">How to use one</h2>
+    <p class="form-help">Sign in with your email address and password as usual. On the next step, where it asks for the six-digit code, type a recovery code instead. Each code works once.</p>
+  </div>
+</section>
+{% endblock %}

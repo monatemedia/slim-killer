@@ -14,6 +14,7 @@ use SlimKiller\Doctor\Status;
 use SlimKiller\Doctor\WebProbe\WebTarget;
 use SlimKiller\Setup\SetupLink;
 use SlimKiller\Setup\SetupLinkNotSaved;
+use SlimKiller\Support\AppConfig;
 
 final class DoctorCommand implements Command
 {
@@ -21,6 +22,7 @@ final class DoctorCommand implements Command
         private readonly Doctor $doctor,
         private readonly ReportStore $reports,
         private readonly SetupLink $setupLink,
+        private readonly AppConfig $config,
     ) {}
 
     public function name(): string
@@ -54,7 +56,7 @@ final class DoctorCommand implements Command
         if (! $this->reports->save($report)) {
             $output->line('The report could not be saved for the setup page. Is the storage folder writable?', 'red');
         }
-        $this->printSetupLink($url, $output);
+        $this->printSetupLink($url ?? ($this->config->url !== '' ? $this->config->url : null), $output);
 
         return $report->passed() ? 0 : 1;
     }

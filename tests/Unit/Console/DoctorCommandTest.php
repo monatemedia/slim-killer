@@ -11,6 +11,7 @@ use SlimKiller\Doctor\ReportStore;
 use SlimKiller\Doctor\WebProbe\WebProbe;
 use SlimKiller\Http\Response;
 use SlimKiller\Setup\SetupLink;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Paths;
 use Tests\Fakes\FakeHttpClient;
 use Tests\Fakes\FrozenClock;
@@ -23,6 +24,7 @@ function runDoctor(Paths $paths, array $argv): array
         new Doctor(environment(), new WebProbe(FakeHttpClient::always(new Response(500, ''))), [new PhpVersionCheck()], []),
         new ReportStore($paths, $clock),
         new SetupLink($paths, $clock),
+        new AppConfig(),
     );
 
     $stream = fopen('php://memory', 'w+');

@@ -1,0 +1,35 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}Set up two-factor{% endblock %}
+
+{% block main %}
+<section class="card narrow">
+  <div class="card-pad">
+    <h1 class="form-title">Protect your account</h1>
+    <p class="form-lede">Every sign-in needs a code from your phone as well as your password. Set it up once, now.</p>
+
+    <ol class="setup-steps">
+      <li>On your phone, open <strong>Google Authenticator</strong>. No app yet? It is free for
+        <a href="https://apps.apple.com/app/google-authenticator/id388497605">iPhone</a> and
+        <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">Android</a>.
+        Another authenticator app you already use works just as well.</li>
+      <li>In the app, tap <strong>+</strong>, choose <strong>Scan a QR code</strong>, and scan this:
+        <div class="qr">{{ qr|raw }}</div>
+        <p class="form-help">Scan from inside the app, not with the phone's camera: on an iPhone the camera offers to save the code in Passwords instead. (That works too, if you would rather use it.)</p>
+        <p class="form-help">Cannot scan? In the app choose <strong>Enter a setup key</strong> and type: <code class="secret">{{ secret }}</code></p>
+      </li>
+      <li>Type the six-digit code the app now shows:</li>
+    </ol>
+
+    {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" action="{{ base }}/two-factor/setup" class="form" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <div class="field">
+        <label for="code">Code</label>
+        <input id="code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" class="code-input">
+      </div>
+      <button type="submit" class="btn">Turn on two-factor</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

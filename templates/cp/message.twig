@@ -1,0 +1,13 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block main %}
+<section class="card notice">
+  <div class="card-pad">
+    <h1>{{ title }}.</h1>
+    <p>{{ message }}</p>
+    {% if link %}<p><a href="{{ base }}{{ link.path }}">{{ link.label }}</a></p>{% endif %}
+  </div>
+</section>
+{% endblock %}

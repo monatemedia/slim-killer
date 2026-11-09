@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use DI\ContainerBuilder;
+use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 
 /*
@@ -13,6 +14,9 @@ use Psr\Container\ContainerInterface;
  * can change a binding without touching core.
  */
 return (static function (): ContainerInterface {
+    // .env holds this site's settings (written by `hammer install`). Missing is fine.
+    Dotenv::createImmutable(dirname(__DIR__))->safeLoad();
+
     $builder = new ContainerBuilder();
     $builder->useAutowiring(true);
     $builder->addDefinitions(dirname(__DIR__) . '/config/container.php');
