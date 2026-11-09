@@ -105,3 +105,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 ### Removed
 
 - **The first attempt's code.** Kept at the tag `slim-killer-v1` and the branch `archive/v1`.
+
+### Fixed
+
+- **Tests on Windows no longer print warnings at the end.** The clean-up closes each
+  test's SQLite connection before deleting its temporary folder.
