@@ -21,13 +21,24 @@ declare(strict_types=1);
  * not a course. It keeps the shared bones on purpose: eyebrow, lede, status pills and
  * progress, the one question, the rules, what is proved, getting started.
  *
- * Self-contained: no Composer autoload, no CDN, no build step, no images to upload.
+ * Self-contained: no Composer autoload, no CDN, no build step. The one image file is
+ * the Monate Media logo, logo-wide.png, beside this file (copy it next to the static page).
  * It must render before `composer install` has ever run. Numbers that can change are
  * read from disk (the README roadmap, the test files), never written down here. The
  * numbers that cannot change are measurements from spikes S1 and S2, and say so.
  *
  * On a client's host the domain root serves the client's Astro site, never this page.
  */
+
+// On Herd (nginx), a path with no file behind it falls through to this script. Hand
+// the control panel's paths to its own front controller, as public/cp/.htaccess does
+// on Apache and LiteSpeed. On a client's host this file is never served.
+$requestPath = parse_url(is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '/', PHP_URL_PATH);
+if (PHP_SAPI !== 'cli' && is_string($requestPath) && str_starts_with($requestPath, '/cp/')) {
+    require __DIR__ . '/cp/index.php';
+
+    return;
+}
 
 $root = dirname(__DIR__);
 $static = PHP_SAPI === 'cli' && in_array('--static', $argv ?? [], true);
@@ -176,7 +187,6 @@ $modelling = [
   .topbar { background: var(--ink); color: #fff; }
   .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 0.8rem; flex-wrap: wrap; }
   .topbar img { height: 54px; width: auto; display: block; }
-  .topbar .brand { color: #fff; font-weight: 800; text-decoration: none; letter-spacing: -0.01em; }
   .series-nav { display: flex; gap: 0.4rem; flex-wrap: wrap; font-size: 0.8rem; }
   .series-nav a, .series-nav span { color: #fff; text-decoration: none; border: 2px solid #fff; border-radius: 999px; padding: 0.2rem 0.75rem; font-weight: 700; }
   .series-nav a:hover { background: #fff; color: var(--ink); }
@@ -283,12 +293,14 @@ $modelling = [
 
   /* Roadmap spine */
   ol.spine { list-style: none; margin: 0; padding: 0; position: relative; }
-  ol.spine::before { content: ""; position: absolute; left: 15px; top: 10px; bottom: 10px; width: 4px; background: var(--ink); border-radius: 2px; }
-  ol.spine li { position: relative; padding: 0.15rem 0 1.25rem 3.2rem; font-weight: 600; }
-  ol.spine li::before { content: ""; position: absolute; left: 3px; top: 0.25rem; width: 28px; height: 28px; border-radius: 50%; background: var(--panel); border: 4px solid var(--ink); }
+  /* One 32px circle per step, centred on a 4px line: line left = 16px - 2px. */
+  ol.spine::before { content: ""; position: absolute; left: 14px; top: 16px; bottom: 16px; width: 4px; background: var(--ink); border-radius: 2px; }
+  ol.spine li { position: relative; min-height: 32px; padding: 0.2rem 0 1.25rem 3.3rem; font-weight: 600; }
+  ol.spine li::before { content: ""; box-sizing: border-box; position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--panel); border: 4px solid var(--ink); }
   ol.spine li.done::before { background: var(--orange); }
   ol.spine li.done { color: var(--muted); }
-  ol.spine li.done::after { content: "✓"; position: absolute; left: 11px; top: 0.12rem; color: #fff; font-weight: 900; font-size: 0.85rem; }
+  /* The tick is drawn, not a font glyph, so it sits in the middle of the circle on every system. */
+  ol.spine li.done::after { content: ""; box-sizing: border-box; position: absolute; left: 11px; top: 6px; width: 10px; height: 17px; border: solid #fff; border-width: 0 4px 4px 0; transform: rotate(45deg); }
 
   /* Steps */
   ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; display: grid; gap: 1.2rem; }
@@ -312,6 +324,8 @@ $modelling = [
 
   footer { padding-block: 2.4rem 3.2rem; color: var(--muted); font-size: 0.86rem; }
   footer a { color: var(--ink); }
+  /* The logo is white on transparent; brightness(0) makes it ink for the light footer. */
+  .footer-logo img { height: 66px; width: auto; display: block; margin-bottom: 1rem; filter: brightness(0); opacity: 0.6; }
   footer .joke { margin-top: 0.8rem; font-weight: 700; color: var(--ink); }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
 </style>
@@ -320,11 +334,7 @@ $modelling = [
 
 <div class="topbar">
   <div class="wrap">
-    <?php if ($static): ?>
-      <a href="https://www.monatemedia.com/"><img src="logo-wide.png" alt="Monate Media"></a>
-    <?php else: ?>
-      <a class="brand" href="https://www.monatemedia.com/">Monate Media</a>
-    <?php endif; ?>
+    <a href="https://www.monatemedia.com/"><img src="logo-wide.png" alt="Monate Media"></a>
     <nav class="series-nav" aria-label="The series">
       <a href="<?= $oop ?>">1 · OOP Mastery</a>
       <a href="<?= $ddd ?>">2 · Domain Architecture</a>
@@ -576,6 +586,7 @@ cd slim-killer</pre></li>
 
 <footer>
   <div class="wrap">
+    <a class="footer-logo" href="https://www.monatemedia.com/"><img src="logo-wide.png" alt="Monate Media"></a>
     Built by Edward Baitsewe · Monate Media · Cape Town, South Africa<br>
     <a href="https://www.monatemedia.com/">monatemedia.com</a> ·
     <a href="https://github.com/monatemedia">GitHub</a> ·

@@ -10,6 +10,7 @@ use SlimKiller\Doctor\CheckResult;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\HostCheck;
 use SlimKiller\Doctor\Requirements;
+use SlimKiller\Support\Ago;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
 
@@ -54,25 +55,16 @@ final class CronCheck implements HostCheck
         if ($seconds > Requirements::CRON_STALE_AFTER_SECONDS) {
             return [CheckResult::warn(
                 'Cron has stopped, or does not run every minute',
-                'last ran ' . $this->ago($seconds) . ' ago',
+                'last ran ' . Ago::seconds($seconds) . ' ago',
                 'Check the cron job: ' . $line,
             )];
         }
 
-        return [CheckResult::pass('Cron runs every minute', 'last ran ' . $this->ago($seconds) . ' ago, PHP ' . $version)];
+        return [CheckResult::pass('Cron runs every minute', 'last ran ' . Ago::seconds($seconds) . ' ago, PHP ' . $version)];
     }
 
     private function cronLine(): string
     {
         return $this->commandLine->phpBinary() . ' ' . $this->paths->root('hammer') . ' cron:heartbeat';
-    }
-
-    private function ago(int $seconds): string
-    {
-        return match (true) {
-            $seconds < 120 => max(0, $seconds) . ' seconds',
-            $seconds < 7200 => intdiv($seconds, 60) . ' minutes',
-            default => intdiv($seconds, 3600) . ' hours',
-        };
     }
 }

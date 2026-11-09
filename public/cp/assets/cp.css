@@ -1,0 +1,418 @@
+/*
+ * Slim Killer control panel styles.
+ *
+ * Served from the panel itself: the Content Security Policy allows no inline styles
+ * and no CDN. The setup page's design started as docs/design/welcome-bolt.html.
+ */
+
+:root {
+  --orange: #F95428;
+  --red: #D12F19;
+  --blue: #2BA5F7;
+  --blue-deep: #2197D8;
+  --skin: #FFD3AE;
+  --charcoal: #4D4D4D;
+  --off-white: #F2F2F2;
+
+  --pass: #1B8E3F;
+  --warn: #B26A00;
+  --fail: #D12F19;
+  --info: #2197D8;
+
+  --bg: #F2F2F2;
+  --surface: #FFFFFF;
+  --text: #2A2A2A;
+  --text-muted: #6B6B6B;
+  --border: #E0E0E0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --radius: 14px;
+  --radius-sm: 9px;
+
+  --pill-pass-bg: #E4F4EA;
+  --pill-pass-fg: #1B8E3F;
+  --pill-warn-bg: #FBF0D6;
+  --pill-warn-fg: #9A5A00;
+  --pill-fail-bg: #FBE3DF;
+  --pill-fail-fg: #D12F19;
+  --pill-info-bg: #E0F0FB;
+  --pill-info-fg: #1A78B0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171C;
+    --surface: #1E2129;
+    --text: #ECECEC;
+    --text-muted: #9BA1AC;
+    --border: #2C303A;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+
+    --pass: #4CC76B;
+    --warn: #E0A53C;
+    --fail: #FF6B5A;
+    --info: #4FB5EC;
+
+    --pill-pass-bg: rgba(76,199,107,0.14);
+    --pill-pass-fg: #5BD67A;
+    --pill-warn-bg: rgba(224,165,60,0.14);
+    --pill-warn-fg: #E8B45A;
+    --pill-fail-bg: rgba(255,107,90,0.14);
+    --pill-fail-fg: #FF7A6B;
+    --pill-info-bg: rgba(79,181,236,0.14);
+    --pill-info-fg: #5FC2F2;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue-deep); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.shell {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+/* ---------- Header ---------- */
+header.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--skin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #FFFFFF;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ---------- Hero ---------- */
+.hero { margin-bottom: 36px; }
+
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+
+.hero p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card + .card { margin-top: 24px; }
+
+.card-pad { padding: 24px; }
+@media (max-width: 520px) { .card-pad { padding: 18px; } }
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 18px;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Summary bar ---------- */
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--off-white);
+}
+@media (prefers-color-scheme: dark) {
+  .summary { background: #23262F; }
+}
+
+.summary-counts {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.summary-counts strong { color: var(--text); font-weight: 700; }
+
+.state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+.state-tag.ready { background: var(--pill-pass-bg); color: var(--pill-pass-fg); }
+.state-tag.attention { background: var(--pill-fail-bg); color: var(--pill-fail-fg); }
+.state-tag svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ---------- Check groups ---------- */
+.group { padding: 0 24px; }
+.group + .group { border-top: 1px solid var(--border); }
+@media (max-width: 520px) { .group { padding: 0 18px; } }
+
+.group-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 20px 0 4px;
+}
+
+/* ---------- Rows ---------- */
+.row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  align-items: start;
+}
+.row:first-of-type { border-top: 0; }
+
+.pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-align: center;
+  width: fit-content;
+  margin-top: 2px;
+}
+.pill.pass { background: var(--pill-pass-bg); color: var(--pill-pass-fg); }
+.pill.warn { background: var(--pill-warn-bg); color: var(--pill-warn-fg); }
+.pill.fail { background: var(--pill-fail-bg); color: var(--pill-fail-fg); }
+.pill.info { background: var(--pill-info-bg); color: var(--pill-info-fg); }
+
+.row-title { font-weight: 600; font-size: 0.97rem; margin: 0; }
+.row-detail { color: var(--text-muted); font-size: 0.9rem; margin: 2px 0 0; }
+
+.row-hint {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  background: var(--off-white);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--warn);
+}
+.row-hint.fail-hint { border-left-color: var(--fail); }
+@media (prefers-color-scheme: dark) {
+  .row-hint { background: #23262F; }
+}
+
+.row-hint code, .row-detail code, .next-cmd {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.85em;
+}
+.cmd-block {
+  display: block;
+  margin: 6px 0 0;
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+@media (prefers-color-scheme: dark) {
+  .cmd-block { background: #15171C; }
+}
+
+.card-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 520px) { .card-actions { padding: 14px 18px; } }
+
+.link-btn {
+  font-weight: 600;
+  color: var(--blue-deep);
+}
+.link-btn:hover { text-decoration: underline; }
+
+/* ---------- Next steps ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 680px) {
+  .steps { grid-template-columns: 1fr; }
+}
+
+.step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.step h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.next-cmd {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+@media (prefers-color-scheme: dark) {
+  .next-cmd { background: #15171C; }
+}
+
+/* ---------- Links row ---------- */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 28px;
+  padding: 18px 4px 0;
+}
+.links a {
+  font-weight: 600;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.links svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+
+/* ---------- Footer ---------- */
+footer.page-footer {
+  margin-top: 44px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+.footer-joke { margin-top: 4px; font-style: italic; }
+
+/* ---------- Added for the control panel (classes instead of inline styles) ---------- */
+.logo img { width: 46px; height: 46px; display: block; }
+/* The name, stacked to the height of the logo: loud, like the clown. */
+.brand-name {
+  font-size: 2.15rem;
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+.brand-name span { display: block; }
+.brand-name .accent { color: var(--orange); }
+
+/* The Monate Media logo is white on transparent: black on the light theme, as is on dark. */
+.footer-logo img {
+  height: 58px;
+  width: auto;
+  display: block;
+  margin-bottom: 14px;
+  filter: brightness(0);
+  opacity: 0.55;
+}
+@media (prefers-color-scheme: dark) {
+  .footer-logo img { filter: none; opacity: 0.7; }
+}
+
+.checked-note {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.next { margin-top: 28px; }
+.next .card-title { margin-bottom: 16px; }
+.step p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+
+.page-footer p { margin: 0; }
+
+/* The waiting page: one quiet card. */
+.notice h1 {
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+.notice p { color: var(--text-muted); margin: 0 0 10px; max-width: 60ch; }
+.notice p:last-child { margin-bottom: 0; }
+.notice code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.9em;
+}

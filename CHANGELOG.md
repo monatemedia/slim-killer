@@ -13,6 +13,24 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **The control panel's first pages, at `/cp`.** Slim 4, Twig and PHP-DI, with a strict
+  Content Security Policy (no inline styles or scripts, no CDN), no referrer, and no
+  caching or indexing. `public/cp/index.php` is the front controller; like `hammer`, it
+  tells an old PHP what is wrong instead of failing with a blank page.
+  - `/cp/` says only that the panel is being set up. It becomes the login page once
+    the first user exists.
+  - `/cp/setup?token=...` is the setup page: the website's PHP checked live, plus the
+    doctor's last report for what only the command line can check (cron, the PHP for
+    cron, outgoing connections), with next steps.
+- **`hammer doctor` ends with a private link to the setup page.** Each run saves the
+  report for the setup page and issues a new link, which works for one hour and
+  replaces the last. Only a hash of the link is stored.
+- **Monate Media logo on the cover page.** In the top bar (live as well as static) and in
+  the footer, like the course pages. The README notes that the Monate Media name and logo
+  are not covered by the MIT License.
+- **Roadmap on the cover page lines up.** The line now runs through the middle of each
+  step's circle, and the tick is drawn larger and centred, rather than a font character
+  that sat differently on each system.
 - **Cover page and public project page.** `public/index.php` is the project's cover. Served
   locally (Herd), it shows live status: PHP version, whether `composer install` has run,
   required extensions and WebP. `php public/index.php --static` prints the public page for

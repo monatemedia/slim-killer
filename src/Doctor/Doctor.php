@@ -18,6 +18,9 @@ use SlimKiller\Doctor\WebProbe\WebTarget;
  */
 final class Doctor
 {
+    /** The title of the section that says the website was not checked. */
+    public const string WEBSITE_NOT_CHECKED = 'Website';
+
     /**
      * @param list<PhpCheck> $phpChecks
      * @param list<HostCheck> $hostChecks
@@ -37,7 +40,7 @@ final class Doctor
         ];
 
         if ($website === null) {
-            $sections[] = new Section('Website', [CheckResult::warn(
+            $sections[] = new Section(self::WEBSITE_NOT_CHECKED, [CheckResult::warn(
                 'Website not checked',
                 'run again with --url and --webroot to check the website\'s PHP and web server',
                 'Example: php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html',
@@ -52,6 +55,15 @@ final class Doctor
         }
 
         return new Report($sections);
+    }
+
+    /**
+     * The PHP checks alone, against one runtime. The control panel uses this for the
+     * website it is running on, which needs no probe file: it is already there.
+     */
+    public function examinePhp(Environment $environment): Section
+    {
+        return $this->phpSection($environment);
     }
 
     private function phpSection(Environment $environment): Section

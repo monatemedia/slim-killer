@@ -9,13 +9,18 @@ use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Report;
+use SlimKiller\Doctor\ReportStore;
 use SlimKiller\Doctor\Status;
 use SlimKiller\Doctor\WebProbe\WebTarget;
+use SlimKiller\Setup\SetupLink;
+use SlimKiller\Setup\SetupLinkNotSaved;
 
 final class DoctorCommand implements Command
 {
     public function __construct(
         private readonly Doctor $doctor,
+        private readonly ReportStore $reports,
+        private readonly SetupLink $setupLink,
     ) {}
 
     public function name(): string
@@ -45,6 +50,11 @@ final class DoctorCommand implements Command
         );
 
         $this->render($report, $output);
+
+        if (! $this->reports->save($report)) {
+            $output->line('The report could not be saved for the setup page. Is the storage folder writable?', 'red');
+        }
+        $this->printSetupLink($url, $output);
 
         return $report->passed() ? 0 : 1;
     }
@@ -82,6 +92,26 @@ final class DoctorCommand implements Command
         } else {
             $output->line('Not ready yet. ' . $summary . '. Fix the FAIL lines above and run the doctor again.', 'red');
         }
+        $output->line();
+    }
+
+    /**
+     * Every run hands out a fresh private link to the control panel's setup page, which
+     * shows this report in a browser. Running hammer on the server is the proof of access.
+     */
+    private function printSetupLink(?string $url, Output $output): void
+    {
+        try {
+            $path = SetupLink::pathFor($this->setupLink->issue());
+        } catch (SetupLinkNotSaved $e) {
+            $output->line('No setup page link: ' . $e->getMessage(), 'red');
+            $output->line();
+
+            return;
+        }
+
+        $output->line('Setup page (private, works for one hour):', 'bold');
+        $output->line($url !== null ? '  ' . rtrim($url, '/') . $path : '  ' . $path . '   (add it to your website\'s address)');
         $output->line();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use function DI\add;
 use function DI\autowire;
 use function DI\create;
+use function DI\factory;
 use function DI\get;
 
 use SlimKiller\Console\Application;
@@ -23,11 +24,14 @@ use SlimKiller\Doctor\Checks\StorageCheck;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\Environment\RuntimeEnvironment;
+use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
 use SlimKiller\Support\SystemClock;
+use Twig\Environment as Twig;
+use Twig\Loader\FilesystemLoader;
 
 /*
  * Core container definitions. A client site can extend or override any of these in
@@ -78,4 +82,18 @@ return [
     Doctor::class => autowire()
         ->constructorParameter('phpChecks', get('doctor.php_checks'))
         ->constructorParameter('hostChecks', get('doctor.host_checks')),
+
+    // --- Control panel -----------------------------------------------------------
+    // Templates ship with core. Compiled templates are cached in storage; auto_reload
+    // recompiles a template when its file changes, so editing one needs no cache clear.
+    Twig::class => factory(static function (Paths $paths): Twig {
+        $twig = new Twig(new FilesystemLoader(dirname(__DIR__) . '/templates'), [
+            'cache' => $paths->storage('cache/twig'),
+            'auto_reload' => true,
+            'strict_variables' => true,
+        ]);
+        $twig->addGlobal('base', ControlPanel::BASE_PATH);
+
+        return $twig;
+    }),
 ];
