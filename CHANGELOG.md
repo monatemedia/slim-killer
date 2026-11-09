@@ -13,6 +13,23 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Content in the control panel, read-only.** Signed-in people can open "Your content"
+  from the dashboard: the site's collections, each collection's pages, and each page's
+  form, filled with its real values. The forms are built from the collection schemas
+  Astro writes (`astro sync`): labels, help text and editors come from each field's
+  editor hint, or are chosen from the field's name and type when there is none. Saving
+  arrives next.
+- **The panel's working copy.** It reads content and schemas from `storage/site/`, or,
+  for local development, from the folders set by `CONTENT_DIR` and `SCHEMA_DIR` in
+  `.env`. Each page records its version (its Git blob hash), ready for detecting "someone
+  saved this page after you" when saving is built.
+- **Wider pages once signed in.** The dashboard and content pages use up to 1200 pixels
+  of a wide screen. The sign-in and setup pages keep their narrow layout.
+- **Fresh styles after an update.** The panel's stylesheet and script addresses end in
+  the file's change time (`cp.css?v=…`), so a browser does not keep using an old copy.
+- **Front matter that only changes what changed** (`SlimKiller\Content\FrontMatter`,
+  from spike S4): unchanged fields keep their exact text, byte-order mark and line
+  endings included. Symfony YAML is a new dependency.
 - **How we build, in the wiki.** One page per build rule (why it exists, where it shows
   in the code today, when not to apply it), a Glossary with one word for each idea and
   the words we avoid, and "Writing for clients", which applies the ASD-STE100 Simplified

@@ -1,0 +1,33 @@
+{% extends 'cp/layout.twig' %}
+
+{% block shell %} shell-wide{% endblock %}
+
+{% block title %}Content{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › Content</nav>
+
+<section class="hero">
+  <h1>Your content</h1>
+  <p>Choose what you want to change.</p>
+</section>
+
+{% if collections is empty %}
+  <section class="card notice">
+    <div class="card-pad">
+      <p>There is no content to edit yet.</p>
+    </div>
+  </section>
+{% else %}
+  <ul class="tiles">
+    {% for collection in collections %}
+      <li>
+        <a class="tile" href="{{ base }}/content/{{ collection.name }}">
+          <span class="tile-title">{{ collection.label }}</span>
+          <span class="tile-meta">{{ collection.count }} {{ collection.count == 1 ? 'page' : 'pages' }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

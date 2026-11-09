@@ -1,0 +1,24 @@
+{% extends 'cp/layout.twig' %}
+
+{% block shell %} shell-wide{% endblock %}
+
+{% block title %}{{ collection.label }}{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › <a href="{{ base }}/content">Content</a> › {{ collection.label }}</nav>
+
+<section class="hero">
+  <h1>{{ collection.label }}</h1>
+  <p>Choose a page to change.</p>
+</section>
+
+<section class="card">
+  <ul class="entry-list">
+    {% for entry in entries %}
+      <li><a href="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}">{{ entry.title }}</a></li>
+    {% else %}
+      <li class="entry-empty">There are no pages here yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

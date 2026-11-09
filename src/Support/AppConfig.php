@@ -16,6 +16,10 @@ final readonly class AppConfig
         public string $url = '',
         /** The site's own name, as its owner knows it ("Honey Badger Namibia"). */
         public string $name = self::DEFAULT_NAME,
+        /** Where the working copy of the client's content/ is; empty means the default in storage. */
+        public string $contentDir = '',
+        /** Where the collection schemas are; empty means the default in storage. */
+        public string $schemaDir = '',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -23,10 +27,14 @@ final readonly class AppConfig
     {
         $url = $environment['APP_URL'] ?? '';
         $name = $environment['APP_NAME'] ?? '';
+        $contentDir = $environment['CONTENT_DIR'] ?? '';
+        $schemaDir = $environment['SCHEMA_DIR'] ?? '';
 
         return new self(
             is_string($url) ? rtrim($url, '/') : '',
             is_string($name) && trim($name) !== '' ? trim($name) : self::DEFAULT_NAME,
+            is_string($contentDir) ? trim($contentDir) : '',
+            is_string($schemaDir) ? trim($schemaDir) : '',
         );
     }
 

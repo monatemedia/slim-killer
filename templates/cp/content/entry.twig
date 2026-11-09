@@ -1,0 +1,31 @@
+{% extends 'cp/layout.twig' %}
+{% import 'cp/content/_fields.twig' as forms %}
+
+{% block shell %} shell-wide{% endblock %}
+
+{% block title %}{{ entry.title }}{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › <a href="{{ base }}/content">Content</a> › <a href="{{ base }}/content/{{ collection.name }}">{{ collection.label }}</a> › {{ entry.title }}</nav>
+
+<section class="hero">
+  <h1>{{ entry.title }}</h1>
+</section>
+
+<p class="read-only-note">You can look at this page here. Saving changes arrives in the next version of the control panel.</p>
+
+<div class="card entry-form">
+  <div class="card-pad form">
+    {% for field in fields %}
+      {{ forms.field(field, values[field.name] ?? null, 'field-' ~ field.name) }}
+    {% endfor %}
+
+    {% if entry.body is not empty %}
+      <div class="field">
+        <label for="field-body">Text</label>
+        <textarea id="field-body" rows="16" readonly class="markdown-input">{{ entry.body }}</textarea>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
