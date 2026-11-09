@@ -33,7 +33,14 @@ function environment(array $overrides = [], string $label = 'Command line'): Sna
     return SnapshotEnvironment::fromProbe(array_replace($defaults, $overrides), $label);
 }
 
-/** A fresh, empty temporary folder, removed again at the end of the test run. */
+/**
+ * A fresh, empty temporary folder, removed again at the end of the test run.
+ *
+ * Windows will not delete a file that is still open, and a test's SQLite connection
+ * can outlive the test inside a container's reference cycles. So the clean-up first
+ * collects those cycles, which closes the connections, and if a file is still locked
+ * it is left for the system's temp clean-up rather than failing loudly.
+ */
 function temporaryFolder(): string
 {
     $folder = sys_get_temp_dir() . '/slim-killer-test-' . bin2hex(random_bytes(6));
@@ -42,14 +49,15 @@ function temporaryFolder(): string
         if (! is_dir($folder)) {
             return;
         }
+        gc_collect_cycles();
         $items = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,
         );
         foreach ($items as $item) {
-            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+            $item->isDir() ? @rmdir($item->getPathname()) : @unlink($item->getPathname());
         }
-        rmdir($folder);
+        @rmdir($folder);
     });
 
     return $folder;
