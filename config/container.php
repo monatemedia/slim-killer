@@ -8,9 +8,17 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 
+use Psr\Http\Message\ResponseFactoryInterface;
+use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
 use SlimKiller\Console\Commands\DoctorCommand;
+use SlimKiller\Console\Commands\InstallCommand;
+use SlimKiller\Console\Commands\MigrateCommand;
+use SlimKiller\Console\Commands\UserCreateCommand;
+use SlimKiller\Console\Commands\UserResetCommand;
+use SlimKiller\Database\Database;
+use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
 use SlimKiller\Doctor\Checks\CronCheck;
 use SlimKiller\Doctor\Checks\DisabledFunctionsCheck;
@@ -27,7 +35,9 @@ use SlimKiller\Doctor\Environment\RuntimeEnvironment;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
+use SlimKiller\Support\EnvFile;
 use SlimKiller\Support\Paths;
 use SlimKiller\Support\SystemClock;
 use Twig\Environment as Twig;
@@ -45,11 +55,22 @@ return [
     Clock::class => get(SystemClock::class),
     HttpClient::class => get(CurlHttpClient::class),
     Environment::class => get(RuntimeEnvironment::class),
+    AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
+    EnvFile::class => create()->constructor(dirname(__DIR__) . '/.env'),
+
+    // --- Database ----------------------------------------------------------------
+    // One SQLite file in storage, outside the web root. Opened only when needed.
+    PDO::class => factory(static fn(Paths $paths): PDO => Database::open($paths->storage(Database::FILE))),
+    Migrator::class => autowire()->constructorParameter('directory', dirname(__DIR__) . '/database/migrations'),
 
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
     'console.commands' => add([
+        get(InstallCommand::class),
         get(DoctorCommand::class),
+        get(MigrateCommand::class),
+        get(UserCreateCommand::class),
+        get(UserResetCommand::class),
         get(CronHeartbeatCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
@@ -84,15 +105,18 @@ return [
         ->constructorParameter('hostChecks', get('doctor.host_checks')),
 
     // --- Control panel -----------------------------------------------------------
+    ResponseFactoryInterface::class => get(ResponseFactory::class),
+
     // Templates ship with core. Compiled templates are cached in storage; auto_reload
     // recompiles a template when its file changes, so editing one needs no cache clear.
-    Twig::class => factory(static function (Paths $paths): Twig {
+    Twig::class => factory(static function (Paths $paths, AppConfig $config): Twig {
         $twig = new Twig(new FilesystemLoader(dirname(__DIR__) . '/templates'), [
             'cache' => $paths->storage('cache/twig'),
             'auto_reload' => true,
             'strict_variables' => true,
         ]);
         $twig->addGlobal('base', ControlPanel::BASE_PATH);
+        $twig->addGlobal('site_name', $config->name);
 
         return $twig;
     }),
