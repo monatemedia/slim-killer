@@ -40,7 +40,7 @@ final class TwoFactorSetupAction
         $user = $pending === null ? null : $this->users->byId($pending);
 
         if ($user === null || ! $user->hasPassword() || $user->hasTwoFactor()) {
-            return Form::redirect($response, '/login');
+            return Form::redirect($response, '/sign-in');
         }
 
         $secret = $session->string(SignIn::PENDING_SECRET);

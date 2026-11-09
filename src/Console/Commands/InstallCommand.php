@@ -7,7 +7,7 @@ namespace SlimKiller\Console\Commands;
 use SlimKiller\Auth\AuditLog;
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\InvalidEmailAddress;
-use SlimKiller\Auth\Invites;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Console\Command;
@@ -26,7 +26,7 @@ final class InstallCommand implements Command
         private readonly EnvFile $env,
         private readonly Migrator $migrator,
         private readonly UserRepository $users,
-        private readonly Invites $invites,
+        private readonly WelcomeLinks $welcomeLinks,
         private readonly AuditLog $audit,
     ) {}
 
@@ -85,11 +85,11 @@ final class InstallCommand implements Command
 
         $user = $this->users->create($email, $name, Role::Admin);
         $this->audit->record('user_created', $user->id);
-        $token = $this->invites->issue($user->id);
+        $token = $this->welcomeLinks->issue($user->id);
 
         $output->line();
         $output->line('Installed. Finish setting up your account in the browser (link works for 72 hours):', 'bold');
-        $output->line('  ' . $url . Invites::pathFor($token));
+        $output->line('  ' . $url . WelcomeLinks::pathFor($token));
         $output->line();
         $output->line('Then run php hammer doctor: it checks this server and gives the cron line to add.');
         $output->line();

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\InvalidEmailAddress;
-use SlimKiller\Auth\Invites;
-use SlimKiller\Auth\LoginThrottle;
+use SlimKiller\Auth\WelcomeLinks;
+use SlimKiller\Auth\SignInThrottle;
 use SlimKiller\Auth\PasswordPolicy;
 use SlimKiller\Auth\RecoveryCodes;
 use SlimKiller\Auth\Role;
@@ -40,18 +40,18 @@ it('keeps one welcome link per person, for 72 hours', function (): void {
     $pdo = migratedDatabase();
     $clock = new SteppingClock('2026-11-09 12:00');
     $user = (new UserRepository($pdo, $clock))->create(EmailAddress::from('client@example.com'), 'Client', Role::Owner);
-    $invites = new Invites($pdo, $clock);
+    $welcomeLinks = new WelcomeLinks($pdo, $clock);
 
-    $first = $invites->issue($user->id);
-    $second = $invites->issue($user->id);
+    $first = $welcomeLinks->issue($user->id);
+    $second = $welcomeLinks->issue($user->id);
 
-    expect($invites->userFor($first))->toBeNull()
-        ->and($invites->userFor($second))->toBe($user->id)
-        ->and(Invites::pathFor($second))->toBe('/cp/welcome?token=' . $second);
+    expect($welcomeLinks->userFor($first))->toBeNull()
+        ->and($welcomeLinks->userFor($second))->toBe($user->id)
+        ->and(WelcomeLinks::pathFor($second))->toBe('/cp/welcome?token=' . $second);
 
     $clock->advance(72 * 3600);
-    expect($invites->userFor($second))->toBeNull()
-        ->and($invites->isOpenFor($user->id))->toBeFalse();
+    expect($welcomeLinks->userFor($second))->toBeNull()
+        ->and($welcomeLinks->isOpenFor($user->id))->toBeFalse();
 });
 
 it('lets each recovery code be used once', function (): void {
@@ -72,7 +72,7 @@ it('lets each recovery code be used once', function (): void {
 
 it('makes a key wait after too many failures, and forgets them after the window', function (): void {
     $clock = new SteppingClock('2026-11-09 12:00');
-    $throttle = new LoginThrottle(migratedDatabase(), $clock);
+    $throttle = new SignInThrottle(migratedDatabase(), $clock);
 
     foreach (range(1, 4) as $_) {
         $throttle->fail('email:a@example.com');

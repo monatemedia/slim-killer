@@ -14,7 +14,7 @@ use SlimKiller\Support\Clock;
  *
  * One link per person at a time; a new one replaces the last. Only a hash is stored.
  */
-final class Invites
+final class WelcomeLinks
 {
     public const string PATH = '/cp/welcome';
 
@@ -29,7 +29,7 @@ final class Invites
     public function issue(int $userId): string
     {
         $token = bin2hex(random_bytes(20));
-        $this->pdo->prepare('INSERT OR REPLACE INTO user_invites (user_id, token_hash, expires_at) VALUES (?, ?, ?)')
+        $this->pdo->prepare('INSERT OR REPLACE INTO welcome_links (user_id, token_hash, expires_at) VALUES (?, ?, ?)')
             ->execute([$userId, hash('sha256', $token), $this->clock->now()->getTimestamp() + self::LIFETIME_SECONDS]);
 
         return $token;
@@ -47,7 +47,7 @@ final class Invites
             return null;
         }
 
-        $statement = $this->pdo->prepare('SELECT user_id FROM user_invites WHERE token_hash = ? AND expires_at > ?');
+        $statement = $this->pdo->prepare('SELECT user_id FROM welcome_links WHERE token_hash = ? AND expires_at > ?');
         $statement->execute([hash('sha256', $token), $this->clock->now()->getTimestamp()]);
         $userId = $statement->fetchColumn();
 
@@ -56,7 +56,7 @@ final class Invites
 
     public function isOpenFor(int $userId): bool
     {
-        $statement = $this->pdo->prepare('SELECT 1 FROM user_invites WHERE user_id = ? AND expires_at > ?');
+        $statement = $this->pdo->prepare('SELECT 1 FROM welcome_links WHERE user_id = ? AND expires_at > ?');
         $statement->execute([$userId, $this->clock->now()->getTimestamp()]);
 
         return $statement->fetchColumn() !== false;
@@ -64,6 +64,6 @@ final class Invites
 
     public function close(int $userId): void
     {
-        $this->pdo->prepare('DELETE FROM user_invites WHERE user_id = ?')->execute([$userId]);
+        $this->pdo->prepare('DELETE FROM welcome_links WHERE user_id = ?')->execute([$userId]);
     }
 }

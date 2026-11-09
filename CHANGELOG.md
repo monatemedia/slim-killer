@@ -98,6 +98,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- **Code names follow the glossary.** Welcome links are `WelcomeLinks` in code (was
+  `Invites`); signing in is at `/cp/sign-in` and signing out at `/cp/sign-out` (were
+  `/cp/login` and `/cp/logout`), with `SignInAction`, `SignOutAction` and
+  `SignInThrottle`. Audit log events are `sign_in`, `sign_in_failed` and `sign_out`.
+  Migration `0002` renames the `user_invites` and `login_attempts` tables to
+  `welcome_links` and `sign_in_attempts`; run `php hammer migrate` on an installed site.
 - **README roadmap brought up to date.** The spikes and the host checker are ticked; the
   remaining steps are listed in the order they will be built.
 - **`feature-branch-start.sh` suggests `feat:` commit messages** on feature branches, matching

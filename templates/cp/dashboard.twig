@@ -12,7 +12,7 @@
   <div class="card-pad">
     <h2 class="card-title">Your account</h2>
     <p class="form-help">Two-factor sign-in is on. You have {{ codes_left }} recovery {{ codes_left == 1 ? 'code' : 'codes' }} left.</p>
-    <form method="post" action="{{ base }}/logout" class="form-inline">
+    <form method="post" action="{{ base }}/sign-out" class="form-inline">
       <input type="hidden" name="_csrf" value="{{ csrf }}">
       <button type="submit" class="btn btn-quiet">Sign out</button>
     </form>

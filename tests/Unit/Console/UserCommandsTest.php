@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\Invites;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Console\Command;
@@ -36,7 +36,7 @@ function installCommand(PDO $pdo, string $envPath): InstallCommand
         new EnvFile($envPath),
         new Migrator($pdo, dirname(__DIR__, 3) . '/database/migrations'),
         new UserRepository($pdo, $clock),
-        new Invites($pdo, $clock),
+        new WelcomeLinks($pdo, $clock),
         new AuditLog($pdo, $clock),
     );
 }
@@ -83,7 +83,7 @@ it('explains what install needs when something is missing or wrong', function (a
 it('adds a site owner and prints their welcome link', function (): void {
     $pdo = migratedDatabase();
     $clock = new SteppingClock('2026-11-09');
-    $command = new UserCreateCommand(new UserRepository($pdo, $clock), new Invites($pdo, $clock), new AuditLog($pdo, $clock), new AppConfig('https://client.example'));
+    $command = new UserCreateCommand(new UserRepository($pdo, $clock), new WelcomeLinks($pdo, $clock), new AuditLog($pdo, $clock), new AppConfig('https://client.example'));
 
     [$code, $output] = runCommand($command, ['--email=client@example.com', '--name=Client Name']);
     [$again] = runCommand($command, ['--email=client@example.com', '--name=Client Name']);
@@ -104,7 +104,7 @@ it('resets someone: no password, no two-factor, signed out, and a new welcome li
     $pdo->prepare('INSERT INTO sessions (id, user_id, data, created_at, expires_at) VALUES (?, ?, ?, ?, ?)')->execute(['s', $user->id, '{}', 0, PHP_INT_MAX]);
 
     [$code, $output] = runCommand(
-        new UserResetCommand($users, new Invites($pdo, $clock), new AuditLog($pdo, $clock), new AppConfig('https://client.example')),
+        new UserResetCommand($users, new WelcomeLinks($pdo, $clock), new AuditLog($pdo, $clock), new AppConfig('https://client.example')),
         ['--email=client@example.com'],
     );
     $after = $users->byId($user->id);

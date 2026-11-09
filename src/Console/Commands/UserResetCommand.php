@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SlimKiller\Console\Commands;
 
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\Invites;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
@@ -20,7 +20,7 @@ final class UserResetCommand implements Command
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly Invites $invites,
+        private readonly WelcomeLinks $welcomeLinks,
         private readonly AuditLog $audit,
         private readonly AppConfig $config,
     ) {}
@@ -48,11 +48,11 @@ final class UserResetCommand implements Command
 
         $this->users->resetCredentials($user->id);
         $this->audit->record('user_reset', $user->id);
-        $token = $this->invites->issue($user->id);
+        $token = $this->welcomeLinks->issue($user->id);
 
         $output->line("Reset {$user->name} <{$user->email}>: signed out everywhere, password and two-factor cleared.", 'green');
         $output->line('Send them this welcome link (works for 72 hours):', 'bold');
-        $output->line('  ' . $this->config->link(Invites::pathFor($token)));
+        $output->line('  ' . $this->config->link(WelcomeLinks::pathFor($token)));
 
         return 0;
     }

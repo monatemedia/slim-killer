@@ -14,7 +14,7 @@ use SlimKiller\Http\Session\Session;
 
 /**
  * /cp/: the dashboard when signed in. Before anyone exists, it says only that the
- * panel is being set up; after that, it sends visitors to the login page.
+ * panel is being set up; after that, it sends visitors to the sign-in page.
  */
 final class HomeAction
 {
@@ -40,7 +40,7 @@ final class HomeAction
         }
 
         if ($this->users->any()) {
-            return Form::redirect($response, '/login');
+            return Form::redirect($response, '/sign-in');
         }
 
         return $this->view->render($response, 'cp/waiting.twig', ['link_refused' => false]);

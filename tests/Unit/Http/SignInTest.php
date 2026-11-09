@@ -6,7 +6,7 @@ use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use SlimKiller\Auth\AuditLog;
 use SlimKiller\Auth\EmailAddress;
-use SlimKiller\Auth\Invites;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\Totp;
 use SlimKiller\Auth\UserRepository;
@@ -41,7 +41,7 @@ function welcomeLink(ContainerInterface $container, string $email = 'edward@exam
 {
     $user = $container->get(UserRepository::class)->create(EmailAddress::from($email), 'Edward', Role::Admin);
 
-    return Invites::pathFor($container->get(Invites::class)->issue($user->id));
+    return WelcomeLinks::pathFor($container->get(WelcomeLinks::class)->issue($user->id));
 }
 
 /** Takes a new user from the welcome link to signed in. Returns the secret and recovery codes. */
@@ -94,7 +94,7 @@ it('takes a new user from the welcome link, through a password and two-factor, t
         ->and($browser->body())->toContain('Hello, Edward.')
         ->and($browser->body())->toContain('8 recovery codes left');
 
-    expect($container->get(AuditLog::class)->recentEvents())->toContain('two_factor_enabled')->toContain('login')->toContain('password_set');
+    expect($container->get(AuditLog::class)->recentEvents())->toContain('two_factor_enabled')->toContain('sign_in')->toContain('password_set');
 });
 
 it('signs in again with the password and a new code, and refuses a code that was already used', function (): void {
@@ -102,17 +102,17 @@ it('signs in again with the password and a new code, and refuses a code that was
     [$secret] = enrol($browser, $container, $clock);
     $usedCode = (new Totp($clock))->codeAt($secret, $clock->now()->getTimestamp());
 
-    expect($browser->post('/cp/logout', [])->getHeaderLine('Location'))->toBe('/cp/login')
+    expect($browser->post('/cp/sign-out', [])->getHeaderLine('Location'))->toBe('/cp/sign-in')
         ->and($browser->hasSession())->toBeFalse()
-        ->and($browser->get('/cp/')->getHeaderLine('Location'))->toBe('/cp/login');
+        ->and($browser->get('/cp/')->getHeaderLine('Location'))->toBe('/cp/sign-in');
 
-    $browser->get('/cp/login');
-    $wrong = $browser->post('/cp/login', ['email' => 'edward@example.com', 'password' => 'not the password at all']);
+    $browser->get('/cp/sign-in');
+    $wrong = $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => 'not the password at all']);
     expect($wrong->getStatusCode())->toBe(422)->and($browser->body())->toContain('do not match');
 
-    $right = $browser->post('/cp/login', ['email' => 'EDWARD@example.com', 'password' => PASSWORD]);
+    $right = $browser->post('/cp/sign-in', ['email' => 'EDWARD@example.com', 'password' => PASSWORD]);
     expect($right->getHeaderLine('Location'))->toBe('/cp/two-factor')
-        ->and($browser->get('/cp/')->getHeaderLine('Location'))->toBe('/cp/login');
+        ->and($browser->get('/cp/')->getHeaderLine('Location'))->toBe('/cp/sign-in');
 
     $browser->get('/cp/two-factor');
     expect($browser->post('/cp/two-factor', ['code' => $usedCode])->getStatusCode())->toBe(422);
@@ -128,9 +128,9 @@ it('accepts a recovery code instead of the phone, once', function (): void {
     [, $codes] = enrol($browser, $container, $clock);
 
     foreach ([303, 422] as $expected) {
-        $browser->post('/cp/logout', []);
-        $browser->get('/cp/login');
-        $browser->post('/cp/login', ['email' => 'edward@example.com', 'password' => PASSWORD]);
+        $browser->post('/cp/sign-out', []);
+        $browser->get('/cp/sign-in');
+        $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => PASSWORD]);
         $browser->get('/cp/two-factor');
 
         expect($browser->post('/cp/two-factor', ['code' => $codes[0]])->getStatusCode())->toBe($expected);
@@ -141,13 +141,13 @@ it('accepts a recovery code instead of the phone, once', function (): void {
 it('stops guessing: after five wrong passwords even the right one waits', function (): void {
     [$browser, $container, $clock] = installedPanel();
     enrol($browser, $container, $clock);
-    $browser->post('/cp/logout', []);
-    $browser->get('/cp/login');
+    $browser->post('/cp/sign-out', []);
+    $browser->get('/cp/sign-in');
 
     foreach (range(1, 5) as $_) {
-        $browser->post('/cp/login', ['email' => 'edward@example.com', 'password' => 'wrong wrong wrong']);
+        $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => 'wrong wrong wrong']);
     }
-    $blocked = $browser->post('/cp/login', ['email' => 'edward@example.com', 'password' => PASSWORD]);
+    $blocked = $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => PASSWORD]);
 
     expect($blocked->getStatusCode())->toBe(429)
         ->and($browser->body())->toContain('Try again in 15 minutes');
@@ -156,9 +156,9 @@ it('stops guessing: after five wrong passwords even the right one waits', functi
 it('refuses a form without its token', function (): void {
     [$browser, $container] = installedPanel();
     welcomeLink($container);
-    $browser->get('/cp/login');
+    $browser->get('/cp/sign-in');
 
-    $response = $browser->post('/cp/login', ['_csrf' => 'forged', 'email' => 'edward@example.com', 'password' => PASSWORD]);
+    $response = $browser->post('/cp/sign-in', ['_csrf' => 'forged', 'email' => 'edward@example.com', 'password' => PASSWORD]);
 
     expect($response->getStatusCode())->toBe(403)
         ->and($browser->body())->toContain('This form has expired');
@@ -178,7 +178,7 @@ it('keeps visitors who are not signed in out of the two-factor pages', function 
     [$browser, $container] = installedPanel();
     welcomeLink($container);
 
-    expect($browser->get($path)->getHeaderLine('Location'))->toBe('/cp/login');
+    expect($browser->get($path)->getHeaderLine('Location'))->toBe('/cp/sign-in');
 })->with(['/cp/two-factor', '/cp/two-factor/setup']);
 
 it('gives its own messages instead of the browser\'s, and lets people see what they typed', function (): void {
@@ -198,10 +198,10 @@ it('gives its own messages instead of the browser\'s, and lets people see what t
 it('asks for both fields on the sign-in page before checking anything', function (): void {
     [$browser, $container] = installedPanel();
     welcomeLink($container);
-    $browser->get('/cp/login');
+    $browser->get('/cp/sign-in');
 
     expect($browser->body())->toContain('data-reveal="password"');
-    expect($browser->post('/cp/login', ['email' => 'edward@example.com', 'password' => ''])->getStatusCode())->toBe(422)
+    expect($browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => ''])->getStatusCode())->toBe(422)
         ->and($browser->body())->toContain('Type your email address and your password');
 });
 

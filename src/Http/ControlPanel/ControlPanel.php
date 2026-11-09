@@ -8,8 +8,8 @@ use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
-use SlimKiller\Http\ControlPanel\Actions\LoginAction;
-use SlimKiller\Http\ControlPanel\Actions\LogoutAction;
+use SlimKiller\Http\ControlPanel\Actions\SignInAction;
+use SlimKiller\Http\ControlPanel\Actions\SignOutAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorSetupAction;
@@ -38,11 +38,11 @@ final class ControlPanel
 
         $app->redirect('', self::BASE_PATH . '/', 301);
         $app->get('/', HomeAction::class);
-        $app->map(['GET', 'POST'], '/login', LoginAction::class);
+        $app->map(['GET', 'POST'], '/sign-in', SignInAction::class);
         $app->map(['GET', 'POST'], '/two-factor', TwoFactorAction::class);
         $app->map(['GET', 'POST'], '/two-factor/setup', TwoFactorSetupAction::class);
         $app->map(['GET', 'POST'], '/welcome', WelcomeAction::class);
-        $app->post('/logout', LogoutAction::class);
+        $app->post('/sign-out', SignOutAction::class);
         $app->get('/setup', SetupAction::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:
