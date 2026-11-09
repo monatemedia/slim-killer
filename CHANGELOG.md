@@ -13,6 +13,24 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **`hammer`, the command-line tool.** `php hammer` lists the commands. It starts with a
+  pre-flight guard: run with a PHP older than 8.4, it says so and prints the full path of
+  a newer PHP it found on the server (shared hosts often default to an older PHP on the
+  command line than on the website).
+- **`hammer doctor`, the host checker.** Checks the command line's PHP, the server and,
+  with `--url` and `--webroot`, the website's own PHP and web server, and reports each
+  item as PASS, WARN (works, with an accepted alternative), FAIL (with how to fix it) or
+  INFO. It checks the PHP version, extensions, disabled functions, memory, time and upload
+  limits, WebP support, the PHP binaries installed, the storage folder, outgoing
+  connections to GitHub, `.htaccess` rewrites, blocked folder listings and cron. The
+  website check places a temporary, key-protected probe in the web root and always
+  removes it again.
+- **`hammer cron:heartbeat`.** The command to run from cron every minute; the doctor
+  confirms it ran, and with which PHP.
+- **Project skeleton.** Composer project with PHP-DI (container wired in one place,
+  `config/container.php`), Pest tests, PHPStan (level 8) and Pint. `composer check`
+  runs all three, and `feature-branch-stop.sh` now runs them before merging.
+
 - **README and MIT licence.** The project README, with the clown logo, and the MIT licence.
 - **Branch helper scripts.** `feature-branch-start.sh` and `feature-branch-stop.sh` create
   `feature/`, `fix/`, `chore/` and `docs/` branches from `main` and close them again: check
@@ -27,6 +45,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- **`feature-branch-start.sh` suggests `feat:` commit messages** on feature branches, matching
+  the commit prefixes in `AGENTS.md`.
 - **`BUILD_PHILOSOPHY.md` now covers both PHP courses.** Part 1 (Wiring) restores the full
   "type system is a security layer" rule; Part 2 (Modelling) adds six domain-architecture
   rules, gated by "ceremony must be paid for", with a table of where Slim Killer applies

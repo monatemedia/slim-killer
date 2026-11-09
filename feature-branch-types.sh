@@ -38,6 +38,15 @@ branch_merge_targets_for_type() {
     esac
 }
 
+# commit_prefix_for_type <type> - the conventional commit prefix for this type
+# (AGENTS.md lists them): a feature branch's commits start with "feat:".
+commit_prefix_for_type() {
+    case "$1" in
+        feature) echo "feat" ;;
+        *) echo "$1" ;;
+    esac
+}
+
 # is_valid_release_tag <name> - succeeds for vMAJOR.MINOR.PATCH.
 is_valid_release_tag() {
     [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]

@@ -1,0 +1,51 @@
+{
+    "name": "monatemedia/slim-killer",
+    "description": "A WordPress killer with personality: Astro sites edited through a small PHP control panel, on plain shared hosting.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Monate Media"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "php-di/php-di": "^7.1"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.24",
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "SlimKiller\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "analyse": "phpstan analyse --no-progress",
+        "format": "pint",
+        "check": [
+            "pint --test",
+            "phpstan analyse --no-progress",
+            "pest"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
