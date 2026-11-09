@@ -31,7 +31,7 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 $static = PHP_SAPI === 'cli' && in_array('--static', $argv ?? [], true);
-$e = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+$e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Requirements: shared with `hammer doctor`, so the page and the doctor agree.
@@ -49,7 +49,7 @@ if (PHP_VERSION_ID >= 80300 && is_file($root . '/src/Doctor/Requirements.php')) 
 
 $phpOk = version_compare(PHP_VERSION, $minPhp . '.0', '>=');
 $vendorOk = is_file($root . '/vendor/autoload.php');
-$missing = array_values(array_filter($requiredExtensions, static fn (string $x): bool => ! extension_loaded($x)));
+$missing = array_values(array_filter($requiredExtensions, static fn(string $x): bool => ! extension_loaded($x)));
 $webpOk = function_exists('imagewebp');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -64,12 +64,12 @@ if (preg_match('/^## Roadmap\s*$(.*?)^## /ms', $readme, $section) === 1) {
         $roadmap[] = ['done' => strtolower($item[1]) === 'x', 'text' => trim($item[2])];
     }
 }
-$done = count(array_filter($roadmap, static fn (array $r): bool => $r['done']));
+$done = count(array_filter($roadmap, static fn(array $r): bool => $r['done']));
 $total = count($roadmap);
 $pct = $total > 0 ? (int) round($done / $total * 100) : 0;
 
 /** Roadmap text may contain `code`; escape everything, then restore code spans. */
-$markup = static fn (string $s): string => (string) preg_replace('/`([^`]+)`/', '<code>$1</code>', $e($s));
+$markup = static fn(string $s): string => (string) preg_replace('/`([^`]+)`/', '<code>$1</code>', $e($s));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Live counts
