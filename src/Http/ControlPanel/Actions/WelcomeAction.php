@@ -7,11 +7,11 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\Invites;
 use SlimKiller\Auth\PasswordHasher;
 use SlimKiller\Auth\PasswordPolicy;
 use SlimKiller\Auth\User;
 use SlimKiller\Auth\UserRepository;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\SignIn;
 use SlimKiller\Http\ControlPanel\View;
@@ -31,7 +31,7 @@ final class WelcomeAction
     public function __construct(
         private readonly View $view,
         private readonly UserRepository $users,
-        private readonly Invites $invites,
+        private readonly WelcomeLinks $welcomeLinks,
         private readonly PasswordHasher $hasher,
         private readonly AuditLog $audit,
     ) {}
@@ -42,7 +42,7 @@ final class WelcomeAction
         $token = Form::query($request, 'token');
 
         if ($token !== '') {
-            $userId = $this->invites->userFor($token);
+            $userId = $this->welcomeLinks->userFor($token);
             if ($userId === null) {
                 return $this->expired($response);
             }
@@ -56,7 +56,7 @@ final class WelcomeAction
 
         $userId = $session->int(self::WELCOME);
         $user = $userId === null ? null : $this->users->byId($userId);
-        if ($user === null || ! $this->invites->isOpenFor($user->id)) {
+        if ($user === null || ! $this->welcomeLinks->isOpenFor($user->id)) {
             return $this->expired($response);
         }
 
@@ -71,7 +71,7 @@ final class WelcomeAction
         }
 
         $this->users->setPassword($user->id, $this->hasher->hash($password));
-        $this->invites->close($user->id);
+        $this->welcomeLinks->close($user->id);
         $this->audit->record('password_set', $user->id, Form::ip($request));
 
         $session->regenerate();

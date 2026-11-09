@@ -27,6 +27,6 @@ final class SignIn
         $session->regenerate();
         $session->remove(self::PENDING, self::PENDING_SECRET);
         $session->set(Session::USER, $user->id);
-        $this->audit->record('login', $user->id, $ip);
+        $this->audit->record('sign_in', $user->id, $ip);
     }
 }

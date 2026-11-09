@@ -7,8 +7,8 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\LoginThrottle;
 use SlimKiller\Auth\RecoveryCodes;
+use SlimKiller\Auth\SignInThrottle;
 use SlimKiller\Auth\Totp;
 use SlimKiller\Auth\User;
 use SlimKiller\Auth\UserRepository;
@@ -30,7 +30,7 @@ final class TwoFactorAction
         private readonly UserRepository $users,
         private readonly Totp $totp,
         private readonly RecoveryCodes $recoveryCodes,
-        private readonly LoginThrottle $throttle,
+        private readonly SignInThrottle $throttle,
         private readonly AuditLog $audit,
         private readonly SignIn $signIn,
     ) {}
@@ -42,7 +42,7 @@ final class TwoFactorAction
         $user = $pending === null ? null : $this->users->byId($pending);
 
         if ($user === null || $user->totpSecret === null) {
-            return Form::redirect($response, '/login');
+            return Form::redirect($response, '/sign-in');
         }
 
         if ($request->getMethod() !== 'POST') {

@@ -7,8 +7,8 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use SlimKiller\Auth\AuditLog;
-use SlimKiller\Auth\LoginThrottle;
 use SlimKiller\Auth\PasswordHasher;
+use SlimKiller\Auth\SignInThrottle;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\SignIn;
@@ -19,7 +19,7 @@ use SlimKiller\Http\Session\Session;
  * Step one of signing in: email address and password. Step two is always a code
  * from the authenticator app (TwoFactorAction), or setting one up (TwoFactorSetupAction).
  */
-final class LoginAction
+final class SignInAction
 {
     public const int MAX_PER_EMAIL = 5;
 
@@ -29,7 +29,7 @@ final class LoginAction
         private readonly View $view,
         private readonly UserRepository $users,
         private readonly PasswordHasher $hasher,
-        private readonly LoginThrottle $throttle,
+        private readonly SignInThrottle $throttle,
         private readonly AuditLog $audit,
     ) {}
 
@@ -67,7 +67,7 @@ final class LoginAction
 
         if ($user === null || $hash === null || ! $this->hasher->verify($password, $hash)) {
             $this->throttle->fail(...array_keys($keys));
-            $this->audit->record('login_failed', $user?->id, $ip);
+            $this->audit->record('sign_in_failed', $user?->id, $ip);
 
             return $this->form($response, $session, $email, 'That email address and password do not match.', 422);
         }
@@ -85,7 +85,7 @@ final class LoginAction
 
     private function form(ResponseInterface $response, Session $session, string $email, ?string $error, int $status = 200): ResponseInterface
     {
-        return $this->view->render($response, 'cp/login.twig', [
+        return $this->view->render($response, 'cp/sign-in.twig', [
             'email' => $email,
             'error' => $error,
             'csrf' => $session->csrfToken(),

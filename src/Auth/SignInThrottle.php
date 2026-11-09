@@ -11,7 +11,7 @@ use SlimKiller\Support\Clock;
  * Slows down guessing. Failed attempts are counted per key ("email:...", "ip:...",
  * "code:<user id>") over a rolling window; past the limit, that key waits.
  */
-final class LoginThrottle
+final class SignInThrottle
 {
     public const int WINDOW_SECONDS = 15 * 60;
 
@@ -30,7 +30,7 @@ final class LoginThrottle
         $wait = 0;
 
         foreach ($limits as $key => $max) {
-            $statement = $this->pdo->prepare('SELECT at FROM login_attempts WHERE key = ? AND at > ? ORDER BY at DESC LIMIT ' . (int) $max);
+            $statement = $this->pdo->prepare('SELECT at FROM sign_in_attempts WHERE key = ? AND at > ? ORDER BY at DESC LIMIT ' . (int) $max);
             $statement->execute([$key, $now - self::WINDOW_SECONDS]);
             $times = $statement->fetchAll(PDO::FETCH_COLUMN);
 
@@ -46,17 +46,17 @@ final class LoginThrottle
     public function fail(string ...$keys): void
     {
         $now = $this->clock->now()->getTimestamp();
-        $insert = $this->pdo->prepare('INSERT INTO login_attempts (key, at) VALUES (?, ?)');
+        $insert = $this->pdo->prepare('INSERT INTO sign_in_attempts (key, at) VALUES (?, ?)');
         foreach ($keys as $key) {
             $insert->execute([$key, $now]);
         }
 
-        $this->pdo->prepare('DELETE FROM login_attempts WHERE at < ?')->execute([$now - 86400]);
+        $this->pdo->prepare('DELETE FROM sign_in_attempts WHERE at < ?')->execute([$now - 86400]);
     }
 
     public function clear(string ...$keys): void
     {
-        $delete = $this->pdo->prepare('DELETE FROM login_attempts WHERE key = ?');
+        $delete = $this->pdo->prepare('DELETE FROM sign_in_attempts WHERE key = ?');
         foreach ($keys as $key) {
             $delete->execute([$key]);
         }

@@ -7,10 +7,10 @@ namespace SlimKiller\Console\Commands;
 use SlimKiller\Auth\AuditLog;
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\InvalidEmailAddress;
-use SlimKiller\Auth\Invites;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\UserAlreadyExists;
 use SlimKiller\Auth\UserRepository;
+use SlimKiller\Auth\WelcomeLinks;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
@@ -24,7 +24,7 @@ final class UserCreateCommand implements Command
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly Invites $invites,
+        private readonly WelcomeLinks $welcomeLinks,
         private readonly AuditLog $audit,
         private readonly AppConfig $config,
     ) {}
@@ -60,11 +60,11 @@ final class UserCreateCommand implements Command
         }
 
         $this->audit->record('user_created', $user->id);
-        $token = $this->invites->issue($user->id);
+        $token = $this->welcomeLinks->issue($user->id);
 
         $output->line("Added {$user->name} <{$user->email}> as {$user->role->label()}.", 'green');
         $output->line('Send them this welcome link (works for 72 hours):', 'bold');
-        $output->line('  ' . $this->config->link(Invites::pathFor($token)));
+        $output->line('  ' . $this->config->link(WelcomeLinks::pathFor($token)));
 
         return 0;
     }

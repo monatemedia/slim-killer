@@ -8,7 +8,7 @@ use PDO;
 use SlimKiller\Support\Clock;
 
 /**
- * What happened, to whom, from where: logins, failed logins, two-factor changes, resets.
+ * What happened, to whom, from where: sign-ins, failed sign-ins, two-factor changes, resets.
  */
 final class AuditLog
 {
