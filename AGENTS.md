@@ -19,9 +19,10 @@ Slim Killer is a small, opinionated replacement for WordPress. This repository i
 - Saving commits the content to the client site's Git repository, GitHub Actions builds
   the site, and the host fetches the finished build. The host only needs PHP.
 
-**Status:** early. The repository holds the project conventions and tooling; product
-code arrives next. When a section below describes something that does not exist yet,
-follow it as the plan, and do not invent code that the plan does not ask for.
+**Status:** early. `hammer`, the host checker (`hammer doctor`), installation and the
+control panel's sign-in with two-factor exist. Editing content is next. When a section
+below describes something that does not exist yet, follow it as the plan, and do not
+invent code that the plan does not ask for.
 
 ## The three layers
 
@@ -126,7 +127,20 @@ host must provide is defined once, in `SlimKiller\Doctor\Requirements`; the wiki
 - Never add a dependency without saying why, and prefer maintained, widely used packages
   with pinned versions.
 
+## Words
+
+Use the terms in the wiki's [Glossary](https://github.com/monatemedia/slim-killer/wiki/Glossary): one word for each idea, the same
+in code, documents and the control panel. Before you use a new term, add it to the
+glossary with its meaning, the client's word if clients see it, and the words to avoid.
+If you find two words for one idea, say so instead of picking one silently.
+
 ## Writing style
 
-Documentation, changelog entries and messages to clients use plain, short sentences.
-Explain a technical term the first time it appears. Prefer an example to an abstraction.
+Documentation and changelog entries use plain, short sentences. Explain a technical term
+the first time it appears, and prefer an example to an abstraction.
+
+Anything a client reads (control panel screens, buttons, messages, emails, client help)
+follows [Writing for clients](https://github.com/monatemedia/slim-killer/wiki/Writing-for-clients), based on the ASD-STE100
+Simplified Technical English writing rules: one instruction per sentence, at most 20
+words for an instruction and 25 for an explanation, active voice, no idioms, and every
+message says what happened and what to do next.
