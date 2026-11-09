@@ -51,6 +51,7 @@
     <li>
       <a href="#contributing">Contributing</a>
       <ul>
+        <li><a href="#how-we-build">How We Build</a></li>
         <li><a href="#branching-and-releases">Branching and Releases</a></li>
         <li><a href="#branch-helper-scripts">Branch Helper Scripts</a></li>
         <li><a href="#versioning">Versioning</a></li>
@@ -88,14 +89,14 @@ This is the second attempt. The first one is kept at the tag `slim-killer-v1` an
         ▼
  /cp  (PHP: Slim + PHP-DI, SQLite)  ──commit via GitHub API──▶  client repo (main)
         ▲                                                            │
-        │ fetch dist zip, verify, swap                               ▼
- host cron / signed doorbell  ◀──"build ready"──  GitHub Actions: astro build → dist branch
+        │ fetch dist zip, verify, switch                             ▼
+ signed webhook (cron as backup)  ◀──"build ready"──  GitHub Actions: astro build → dist branch
 ```
 
 1. The client edits a page at `/cp` on her own domain and taps Save.
 2. The control panel commits the change to her GitHub repository.
 3. GitHub Actions builds the Astro site.
-4. Her host fetches the finished build and swaps it in. The host always pulls; nothing is pushed into it.
+4. GitHub calls a signed webhook on her host, and the host fetches the finished build and switches to it. The host always pulls; nothing is pushed into it. In testing, a save was live in about 70 seconds.
 
 Core, client-specific code and client content are kept apart, so a core update never touches the client's words or photos:
 
@@ -218,7 +219,16 @@ See the [open issues](https://github.com/monatemedia/slim-killer/issues) for pro
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues). Before changing code, read [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md): six rules the codebase follows. If you work with an AI coding assistant, it will pick up its instructions from [`AGENTS.md`](AGENTS.md).
+Slim Killer is built and maintained by Monate Media. Suggestions and bug reports are welcome as [issues](https://github.com/monatemedia/slim-killer/issues). Before changing code, read [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md): the twelve rules the codebase follows (see "How We Build" below). If you work with an AI coding assistant, it will pick up its instructions from [`AGENTS.md`](AGENTS.md).
+
+### How We Build
+
+Slim Killer follows twelve rules in two parts, taken from two PHP courses by Monate Media. The short form is in [`BUILD_PHILOSOPHY.md`](BUILD_PHILOSOPHY.md); each rule has its own page in the [wiki](https://github.com/monatemedia/slim-killer/wiki/Build-philosophy), with where it shows in the code today and when not to apply it.
+
+- **Part one: wiring** (Rules 1 to 6), from [PHP 8.5 OOP Mastery](https://oop.monatemedia.com/): how components are connected. These always apply: configuration and the container live at the entry points, tests describe behaviour, types guard every boundary, small parts are composed rather than inherited.
+- **Part two: modelling** (Rules 7 to 12), from [Advanced Domain Architecture & Tactical DDD](https://ddd.monatemedia.com/): what the components should be. Rule 7, "ceremony must be paid for", decides where the rest apply: lightly for users and sign-in, fully for the publish pipeline and the shop, and not at all for editing content, which stays plain forms over files.
+
+Rule 11, "speak the client's words, exactly", shows outside the code too. The wiki keeps a [Glossary](https://github.com/monatemedia/slim-killer/wiki/Glossary) with one word for each idea, and everything a client reads follows [Writing for clients](https://github.com/monatemedia/slim-killer/wiki/Writing-for-clients), which uses the ASD-STE100 Simplified Technical English writing rules: one instruction per sentence, short sentences, one word for one meaning.
 
 ### Branching and Releases
 

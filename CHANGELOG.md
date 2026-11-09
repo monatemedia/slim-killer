@@ -13,6 +13,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **How we build, in the wiki.** One page per build rule (why it exists, where it shows
+  in the code today, when not to apply it), a Glossary with one word for each idea and
+  the words we avoid, and "Writing for clients", which applies the ASD-STE100 Simplified
+  Technical English writing rules to everything a client reads. `BUILD_PHILOSOPHY.md`
+  links each rule to its page; the README gains a "How We Build" section; `AGENTS.md`
+  asks assistants to use the glossary's terms and add new ones there first.
 - **Sign-in for the control panel, with two-factor for everyone.** Email and password,
   then a six-digit code from an authenticator app (or a single-use recovery code).
   Two-factor is set up on first sign-in with a QR code drawn on the server; a code

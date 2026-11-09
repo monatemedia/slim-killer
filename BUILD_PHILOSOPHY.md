@@ -11,6 +11,11 @@ Twelve rules in two parts, adapted from Edward's two PHP courses:
 When a design decision feels uncertain (a new service, controller, interface, container
 binding or domain object), check it against this list first.
 
+This file is the short form, and the version that counts. Each rule has a page in the
+[wiki](https://github.com/monatemedia/slim-killer/wiki/Build-philosophy) that goes deeper: why it exists, where it shows in the code
+today, and when not to apply it. Words used here are defined in the
+[Glossary](https://github.com/monatemedia/slim-killer/wiki/Glossary).
+
 Slim Killer has one extra reason to take these rules seriously: it is a **core** that many
 client sites depend on. A shortcut taken in core is a shortcut every client inherits.
 
@@ -29,6 +34,8 @@ public private(set) string $slug;
 # Part 1 — Wiring
 
 ## Rule 1 — Config and the Container Belong at the Entry Point
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-1-Config-at-the-entry-point).*
 
 PHP-DI wires the application together in one place: the container definitions, used by
 the control panel's front controller and by `hammer` (the composition root). Classes receive their
@@ -49,13 +56,15 @@ container into a service locator: the coupling is hidden instead of removed.
 
 ## Rule 2 — Test Behaviours, Not Layouts
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-2-Test-behaviours-not-layouts).*
+
 Tests assert what the system does, not how it is built. "Saving an article commits exactly
 one file with the new front matter" is a behaviour. "The save controller has a `$store`
 property" is a layout, and it breaks the moment the code is tidied.
 
 ```
 ✅  Save an entry against a fake ContentStore and assert the committed Markdown.
-✅  Send the doorbell endpoint a badly signed request and assert a 401 with nothing queued.
+✅  Send the build-ready webhook a badly signed request and assert a 404 with nothing fetched.
 ❌  Assert that a private method was called, or count constructor parameters.
 ❌  Snapshot a whole Twig page to check one field.
 ```
@@ -63,6 +72,8 @@ property" is a layout, and it breaks the moment the code is tidied.
 Fakes for every interface in Rule 1 are what make these tests fast and offline.
 
 ## Rule 3 — The Type System Is a Security Layer
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-3-Types-as-a-security-layer).*
 
 Types are an enforcement mechanism, not documentation. They stop the wrong kind of value at
 the boundary, before it becomes a bug or a security hole, and Slim Killer takes untrusted
@@ -77,6 +88,8 @@ input from `/cp` forms, uploads and webhooks.
 - Property hooks and asymmetric visibility (PHP 8.4) to validate data where it enters.
 
 ## Rule 4 — Favour Composition Over Inheritance
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-4-Composition-over-inheritance).*
 
 Before writing `extends`, ask whether a genuine "is-a" relationship exists or whether you
 just want to reuse code. The practical test: if you can replace `extends Parent` with a
@@ -93,6 +106,8 @@ behaviour by binding a different implementation, not by subclassing core.
 
 ## Rule 5 — Objects Either Hold State or Perform Work — Rarely Both
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-5-State-or-work-rarely-both).*
+
 Value objects and entities hold data and protect their own rules. Services (a committer, a
 fetcher, a backup job) do the work and stay stateless: all inputs arrive as arguments, all
 outputs are return values, nothing is remembered between calls.
@@ -105,6 +120,8 @@ outputs are return values, nothing is remembered between calls.
 ```
 
 ## Rule 6 — Read the Failing Test Before Reading the Code
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-6-Read-the-failing-test-first).*
 
 The failure message says what broke. Read the test's expectation first, then open the
 source only to understand why it was violated. The Pest suite in `tests/` is the brief,
@@ -130,6 +147,8 @@ Rule 5 (State vs behaviour)
 
 ## Rule 7 — Ceremony Must Be Paid For
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-7-Ceremony-must-be-paid-for).*
+
 This rule decides whether Rules 8 to 12 apply at all. Domain modelling (value objects,
 aggregates, domain events, exception trees) adds indirection that every reader pays for.
 It is worth it only where the business rules are genuinely complicated. The domain course
@@ -150,6 +169,8 @@ rules, or getting it wrong costs money or breaks a law.
 
 ## Rule 8 — The Dependency Rule Points Inward
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-8-The-dependency-rule-points-inward).*
+
 Where we do model (Rule 7), domain code depends on nothing outside itself: not Slim, not
 PDO, not the HTTP request, not the filesystem, not `$_SESSION`, and **not the clock**.
 `time()`, `date()`, `rand()`, `uniqid()` and `getenv()` are all the outside world.
@@ -165,6 +186,8 @@ imports anything infrastructural, the rule is broken.
 
 ## Rule 9 — Make Illegal States Unrepresentable
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-9-Illegal-states-unrepresentable).*
+
 A domain object cannot be constructed in an invalid state. Validation in the constructor is
 a guarantee; validation afterwards is a request. Public setters disappear from the domain
 layer: state changes through named operations that are free to refuse.
@@ -177,6 +200,8 @@ layer: state changes through named operations that are free to refuse.
 ```
 
 ## Rule 10 — The Aggregate Is a Consistency Boundary, and It Is Smaller Than You Think
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-10-Small-aggregates).*
 
 An aggregate is the set of objects that must be correct together, at the same instant, in
 one transaction. Ask: "if these two changed a second apart, would the business be harmed?"
@@ -191,15 +216,24 @@ If not, they are separate aggregates linked by ID.
 
 ## Rule 11 — Speak the Client's Words, Exactly
 
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-11-Speak-the-clients-words).*
+
 Code and the control panel use the words the client uses. Clients see **Save**,
 **Publish**, **Draft** and **Live**, never "commit", "build" or "deploy". When the code uses
 the business's words, the business can read it back to you and tell you where it is wrong.
+
+Every term has one meaning, written down in the
+[Glossary](https://github.com/monatemedia/slim-killer/wiki/Glossary). Text a client reads also follows
+[Writing for clients](https://github.com/monatemedia/slim-killer/wiki/Writing-for-clients), based on the ASD-STE100 Simplified
+Technical English writing rules.
 
 The same word can mean different things in different parts of the system: a "product" in
 the content editor is a page with photos; in the shop it is something with a price and
 stock. Each part keeps its own model rather than sharing one overloaded class.
 
 ## Rule 12 — A Failure the Business Can Predict Is Not Exceptional
+
+*In depth: [wiki page](https://github.com/monatemedia/slim-killer/wiki/Rule-12-Predictable-failures-are-typed).*
 
 Predictable rule-breaking and genuine breakdowns are different categories and never share a
 code path.
