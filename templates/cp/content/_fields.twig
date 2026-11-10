@@ -60,7 +60,13 @@
       {% set aria = described|trim ? ' aria-describedby="' ~ described|trim ~ '"' : '' %}
       {% set limit = field.maxLength ? ' maxlength="' ~ field.maxLength ~ '" data-count="' ~ id ~ '-count"' : '' %}
 
-      {% if editor == 'textarea' or editor == 'markdown' %}
+      {# A one-line box drops line breaks, so text that holds one (a title split over two
+         lines) gets a two-line box instead, and keeps it. #}
+      {% set multiline = editor == 'text' and text is not null and text is not iterable and text matches '/\\n/' %}
+
+      {% if multiline %}
+        <textarea id="{{ id }}" name="{{ name }}" rows="2" class="title-lines"{{ limit|raw }}{{ aria|raw }}>{{ text }}</textarea>
+      {% elseif editor == 'textarea' or editor == 'markdown' %}
         <textarea id="{{ id }}" name="{{ name }}" rows="{{ editor == 'markdown' ? 10 : 4 }}" class="{{ editor == 'markdown' ? 'markdown-input' : '' }}"{{ limit|raw }}{{ aria|raw }}>{{ text }}</textarea>
       {% elseif editor == 'select' %}
         <select id="{{ id }}" name="{{ name }}"{{ aria|raw }}>

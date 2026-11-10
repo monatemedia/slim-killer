@@ -106,8 +106,9 @@ final class FormReader
 
     private function text(Field $field, mixed $posted, string $path, bool $lines): ?string
     {
-        $text = is_scalar($posted) ? (string) $posted : '';
-        $text = $lines ? rtrim(str_replace("\r\n", "\n", $text)) : trim($text);
+        // Line endings from the browser are Windows ones; a title may hold a line break too.
+        $text = str_replace("\r\n", "\n", is_scalar($posted) ? (string) $posted : '');
+        $text = $lines ? rtrim($text) : trim($text);
         if ($text === '') {
             return $this->missing($field, $path);
         }

@@ -95,12 +95,27 @@ it('accepts a page that matches the schema', function (): void {
     $browser->get('/cp/content/articles/oryx');
 
     $response = $browser->post('/cp/content/articles/oryx', [
-        'f' => ['title' => 'The Oryx', 'description' => 'Namibia\'s national animal.', 'heroImage' => 'oryx.jpg'],
+        'f' => ['title' => 'The Gemsbok', 'description' => 'Namibia\'s national animal.', 'heroImage' => 'oryx.jpg'],
         'body' => 'Text',
     ]);
 
     expect($response->getStatusCode())->toBe(200)
-        ->and($browser->body())->toContain('Everything is filled in correctly');
+        ->and($browser->body())->toContain('Ready to save your changes');
+});
+
+it('says so when a posted page changes nothing', function (): void {
+    [$browser] = contentPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    $browser->post('/cp/content/articles/oryx', [
+        'f' => [
+            'title' => 'The Oryx', 'description' => "Namibia's national animal.", 'heroImage' => 'oryx.jpg',
+            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole'], ['src' => 'oryx-2.jpg', 'alt' => '']],
+        ],
+        'body' => "## In the desert\r\n\r\nThe oryx can go for _weeks_ without water.",
+    ]);
+
+    expect($browser->body())->toContain('Nothing has changed.');
 });
 
 it('refuses a posted page without the form\'s token', function (): void {
@@ -128,7 +143,7 @@ it('adds, moves and removes list items without saving, keeping what was typed', 
         ->toContain('data-focus')
         ->toContain('This change is in the form only.')
         ->toContain('>Discard changes</a>')
-        ->not->toContain('Everything is filled in correctly');
+        ->not->toContain('Ready to save');
 
     $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'up:gallery.1']);
     expect(strpos($browser->body(), 'value="Second"'))->toBeLessThan(strpos($browser->body(), 'value="First"'));

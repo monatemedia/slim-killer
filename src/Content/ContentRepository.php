@@ -76,15 +76,10 @@ final class ContentRepository
 
     public function entry(Collection $collection, string $slug): ?Entry
     {
-        if (preg_match(self::SLUG, $slug) !== 1 || str_starts_with($slug, '_')) {
+        $raw = $this->raw($collection, $slug);
+        if ($raw === null) {
             return null;
         }
-        $path = $this->location->contentDir . '/' . $collection->name . '/' . $slug . '.md';
-        if (! is_file($path)) {
-            return null;
-        }
-
-        $raw = (string) file_get_contents($path);
         $file = ContentFile::parse($raw);
         try {
             $data = FrontMatter::parse($file->yaml)->data();
@@ -100,5 +95,16 @@ final class ContentRepository
             $file->body(),
             GitBlob::hash($raw),
         );
+    }
+
+    /** The entry's file exactly as stored, or null when there is no such entry. */
+    public function raw(Collection $collection, string $slug): ?string
+    {
+        if (preg_match(self::SLUG, $slug) !== 1 || str_starts_with($slug, '_')) {
+            return null;
+        }
+        $path = $this->location->contentDir . '/' . $collection->name . '/' . $slug . '.md';
+
+        return is_file($path) ? (string) file_get_contents($path) : null;
     }
 }

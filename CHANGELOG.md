@@ -24,6 +24,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   and each item has "Move up", "Move down" and "Remove". The form is shown again with
   the change; nothing is saved until Save. A page's web address is shown under its
   heading.
+- **Saves change only what changed.** The panel writes a form back into its file field
+  by field: unchanged fields, the body, a byte-order mark and Windows line endings stay
+  exactly as they were, and fields the panel does not know are kept.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas

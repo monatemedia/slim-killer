@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpNotFoundException;
 use SlimKiller\Content\ContentRepository;
+use SlimKiller\Content\ContentWriter;
 use SlimKiller\Content\Form\FieldFactory;
 use SlimKiller\Content\Form\FormReader;
 use SlimKiller\Content\Form\ListChange;
@@ -28,6 +29,7 @@ final class EntryAction
         private readonly ContentRepository $content,
         private readonly FieldFactory $fields,
         private readonly FormReader $reader,
+        private readonly ContentWriter $writer,
     ) {}
 
     /** @param array<string, string> $args */
@@ -58,7 +60,11 @@ final class EntryAction
                 [$values, $focus] = $change->apply($values);
                 $notice = 'This change is in the form only. Press Save to keep it, or Discard changes.';
             } elseif ($submission->isValid()) {
-                $notice = 'Everything is filled in correctly. Saving it to your website arrives in the next step.';
+                $raw = (string) $this->content->raw($collection, $entry->slug);
+                $saved = $this->writer->write($raw, $fields, $submission->values, is_string($posted['body'] ?? null) ? $posted['body'] : null);
+                $notice = $saved === $raw
+                    ? 'Nothing has changed.'
+                    : 'Ready to save your changes. Saving them to your website arrives in the next step.';
             } else {
                 $errors = $submission->errors;
                 $status = 422;

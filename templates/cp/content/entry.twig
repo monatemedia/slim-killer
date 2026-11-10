@@ -39,7 +39,9 @@
     {% if entry.hasBody %}
       <div class="field">
         <div class="field-label"><label for="f-body">Text</label></div>
-        <textarea id="f-body" name="body" rows="16" class="markdown-input">{{ entry.body }}</textarea>
+        {# The line break after the tag is dropped by the browser, so a body that starts with a blank line keeps it. #}
+        <textarea id="f-body" name="body" rows="16" class="markdown-input">
+{{ entry.body }}</textarea>
       </div>
     {% endif %}
   </div>
