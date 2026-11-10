@@ -34,7 +34,7 @@ final class Browser
         return $this->send($this->request('GET', $path)->withQueryParams($query));
     }
 
-    /** @param array<string, string> $fields */
+    /** @param array<string, mixed> $fields */
     public function post(string $path, array $fields): ResponseInterface
     {
         $fields += ['_csrf' => $this->csrf()];

@@ -72,8 +72,20 @@ final class FieldFactory
 
         $hint = Editor::tryFrom(is_string($property['input'] ?? null) ? $property['input'] : '');
         $editor = $hint ?? $this->guess($name, is_string($type) ? $type : 'string', $options !== []);
+        $maxLength = $property['maxLength'] ?? null;
 
-        return new Field($name, $label, $editor, $required, $help, $default, $options, hinted: $hint !== null);
+        return new Field(
+            $name,
+            $label,
+            $editor,
+            $required,
+            $help,
+            $default,
+            $options,
+            hinted: $hint !== null,
+            maxLength: is_int($maxLength) ? $maxLength : null,
+            integer: $type === 'integer',
+        );
     }
 
     private function guess(string $name, string $type, bool $hasOptions): Editor

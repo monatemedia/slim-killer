@@ -48,7 +48,9 @@ it('shows a page\'s form, built from the schema and filled with its values', fun
         ->toContain('One or two sentences.')
         ->toContain('value="oryx-2.jpg"')
         ->toContain('The oryx can go for _weeks_ without water.')
-        ->toContain('Saving changes arrives in the next version')
+        ->toContain('name="f[gallery][1][src]"')
+        ->toContain('maxlength="20"')
+        ->toContain('Web address: <code>…/oryx/</code>')
         ->not->toContain('style=');
 });
 
@@ -64,4 +66,46 @@ it('adds each file\'s change time to its address, so browsers do not keep an old
 
     expect($browser->body())->toMatch('#href="/cp/assets/cp\\.css\\?v=\\d+"#')
         ->toMatch('#src="/cp/assets/cp\\.js\\?v=\\d+"#');
+});
+
+it('checks a posted page against the schema and shows each problem beside its field', function (): void {
+    [$browser] = contentPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    $response = $browser->post('/cp/content/articles/oryx', [
+        'f' => [
+            'title' => 'A title much longer than twenty characters',
+            'description' => '',
+            'heroImage' => 'oryx.jpg',
+        ],
+        'body' => 'Text',
+    ]);
+    $body = $browser->body();
+
+    expect($response->getStatusCode())->toBe(422)
+        ->and($body)->toContain('2 things need changing')
+        ->toContain('Page title can have up to 20 characters. This has 42.')
+        ->toContain('Description for search results is needed.')
+        ->toContain('href="#f-description"')
+        ->toContain('value="A title much longer than twenty characters"');
+});
+
+it('accepts a page that matches the schema', function (): void {
+    [$browser] = contentPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    $response = $browser->post('/cp/content/articles/oryx', [
+        'f' => ['title' => 'The Oryx', 'description' => 'Namibia\'s national animal.', 'heroImage' => 'oryx.jpg'],
+        'body' => 'Text',
+    ]);
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($browser->body())->toContain('Everything is filled in correctly');
+});
+
+it('refuses a posted page without the form\'s token', function (): void {
+    [$browser] = contentPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    expect($browser->post('/cp/content/articles/oryx', ['f' => [], '_csrf' => 'wrong'])->getStatusCode())->toBe(403);
 });

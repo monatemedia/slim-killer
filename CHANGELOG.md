@@ -13,6 +13,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Editing forms you can fill in.** A page's form can now be posted. The panel checks
+  it against the collection's schema (required fields, character limits, choices, whole
+  numbers) and shows each problem beside its field and in a list at the top, keeping
+  what was typed. Saving to GitHub follows in this branch.
+- **Help while filling in a form.** Fields with a limit show "12 of 37 characters" as
+  you type and stop at the limit; help text opens from a "?" beside the label; an
+  optional choice offers "Let the page decide".
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas
