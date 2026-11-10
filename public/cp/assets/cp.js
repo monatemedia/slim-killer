@@ -68,6 +68,14 @@
     update();
   });
 
+  // After "Add" or a move, put the cursor in that list item's first field.
+  var marker = document.querySelector('[data-focus]');
+  if (marker) {
+    var item = marker.closest('.list-item');
+    var first = item && item.querySelector('input:not([type=hidden]), textarea, select');
+    if (first) { first.focus(); item.scrollIntoView({ block: 'start' }); }
+  }
+
   // After a save with problems, move to the list of problems so it is read first.
   var problems = document.querySelector('.form-problems');
   if (problems) problems.focus();

@@ -666,3 +666,9 @@ footer.page-footer {
 .form-problems ul { margin: 0; padding-left: 20px; }
 .form-problems a { color: var(--text); text-decoration: underline; }
 
+.list-item-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.list-item-buttons { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.btn-small { padding: 4px 10px; font-size: 0.82rem; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.list-add { justify-self: start; }
+.default-submit { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; padding: 0; }

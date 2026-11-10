@@ -29,9 +29,11 @@
 <form method="post" action="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}" class="card entry-form" novalidate>
   <input type="hidden" name="_csrf" value="{{ csrf }}">
   <input type="hidden" name="version" value="{{ entry.version }}">
+  {# Enter in a text box presses the first submit button: make that one Save, not a list button. #}
+  <button type="submit" class="default-submit" tabindex="-1" aria-hidden="true">Save</button>
   <div class="card-pad form">
     {% for field in fields %}
-      {{ forms.field(field, values[field.name] ?? null, field.name, errors) }}
+      {{ forms.field(field, values[field.name] ?? null, field.name, errors, focus) }}
     {% endfor %}
 
     {% if entry.hasBody %}

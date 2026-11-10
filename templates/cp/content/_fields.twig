@@ -5,8 +5,9 @@
  #   path    the field's place in the form, dotted: "cta.heading", "sections.2.image.src".
  #           It names the input (f[cta][heading]), its id and its error.
  #   errors  problems from the last save, keyed by path.
+ #   focus   the path of a list item to put the cursor in (after "Add" or a move).
  #}
-{% macro field(field, value, path, errors) %}
+{% macro field(field, value, path, errors, focus = null) %}
   {% import _self as forms %}
   {% set editor = field.editor() %}
   {% set id = 'f-' ~ path|replace({'.': '-'}) %}
@@ -18,23 +19,35 @@
     <fieldset class="group-field">
       <legend>{{ field.label }}{{ forms.tip(field, id) }}</legend>
       {% for child in field.children %}
-        {{ forms.field(child, value[child.name] ?? null, path ~ '.' ~ child.name, errors) }}
+        {{ forms.field(child, value[child.name] ?? null, path ~ '.' ~ child.name, errors, focus) }}
       {% endfor %}
     </fieldset>
 
   {% elseif editor == 'list' %}
     <fieldset class="list-field">
       <legend>{{ field.label }} <span class="count">{{ value is iterable ? value|length : 0 }}</span>{{ forms.tip(field, id) }}</legend>
-      {% for item in value is iterable ? value : [] %}
-        <div class="list-item">
-          <p class="list-item-label">{{ loop.index }}</p>
+      {% set itemLabel = field.itemLabel ?: 'item' %}
+      {% set items = value is iterable ? value : [] %}
+      {% for item in items %}
+        {% set itemPath = path ~ '.' ~ loop.index0 %}
+        <div class="list-item" id="{{ id }}-{{ loop.index0 }}">
+          <div class="list-item-head">
+            <p class="list-item-label">{{ itemLabel|capitalize }} {{ loop.index }}</p>
+            <div class="list-item-buttons">
+              <button type="submit" name="list_action" value="up:{{ itemPath }}" class="btn btn-quiet btn-small"{{ loop.first ? ' disabled' : '' }}>Move up</button>
+              <button type="submit" name="list_action" value="down:{{ itemPath }}" class="btn btn-quiet btn-small"{{ loop.last ? ' disabled' : '' }}>Move down</button>
+              <button type="submit" name="list_action" value="remove:{{ itemPath }}" class="btn btn-quiet btn-small">Remove</button>
+            </div>
+          </div>
           {% for child in field.children %}
-            {{ forms.field(child, item[child.name] ?? null, path ~ '.' ~ loop.parent.loop.index0 ~ '.' ~ child.name, errors) }}
+            {{ forms.field(child, item[child.name] ?? null, itemPath ~ '.' ~ child.name, errors, focus) }}
           {% endfor %}
+          {% if itemPath == focus %}<span class="list-item-focus" data-focus></span>{% endif %}
         </div>
       {% else %}
         <p class="field-help">None yet.</p>
       {% endfor %}
+      <button type="submit" name="list_action" value="add:{{ path }}" class="btn btn-quiet list-add">Add {{ itemLabel|lower }}</button>
     </fieldset>
 
   {% else %}

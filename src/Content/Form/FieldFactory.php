@@ -57,7 +57,9 @@ final class FieldFactory
             return new Field($name, $label, Editor::Group, $required, $help, $default, children: $this->fields($property));
         }
         if ($type === 'array' && is_array($items) && ($items['type'] ?? null) === 'object') {
-            return new Field($name, $label, Editor::List, $required, $help, $default, children: $this->fields($items));
+            $itemLabel = is_string($items['title'] ?? null) ? $items['title'] : '';
+
+            return new Field($name, $label, Editor::List, $required, $help, $default, children: $this->fields($items), itemLabel: $itemLabel);
         }
         if ($type === 'array') {
             return new Field($name, $label, Editor::Tags, $required, $help, $default);

@@ -109,3 +109,28 @@ it('refuses a posted page without the form\'s token', function (): void {
 
     expect($browser->post('/cp/content/articles/oryx', ['f' => [], '_csrf' => 'wrong'])->getStatusCode())->toBe(403);
 });
+
+it('adds, moves and removes list items without saving, keeping what was typed', function (): void {
+    [$browser] = contentPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $form = [
+        'f' => [
+            'title' => 'Changed title', 'description' => 'Namibia\'s national animal.', 'heroImage' => 'oryx.jpg',
+            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'First'], ['src' => 'oryx-2.jpg', 'alt' => 'Second']],
+        ],
+        'body' => 'Text',
+    ];
+
+    $added = $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'add:gallery']);
+    expect($added->getStatusCode())->toBe(200)
+        ->and($browser->body())->toContain('name="f[gallery][2][src]"')
+        ->toContain('value="Changed title"')
+        ->toContain('data-focus')
+        ->not->toContain('Everything is filled in correctly');
+
+    $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'up:gallery.1']);
+    expect(strpos($browser->body(), 'value="Second"'))->toBeLessThan(strpos($browser->body(), 'value="First"'));
+
+    $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'remove:gallery.0']);
+    expect($browser->body())->not->toContain('value="First"')->toContain('value="Second"');
+});

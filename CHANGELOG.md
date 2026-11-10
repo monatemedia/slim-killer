@@ -20,6 +20,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 - **Help while filling in a form.** Fields with a limit show "12 of 37 characters" as
   you type and stop at the limit; help text opens from a "?" beside the label; an
   optional choice offers "Let the page decide".
+- **Lists you can change.** Every list in a form (sections, photos, people) has "Add",
+  and each item has "Move up", "Move down" and "Remove". The form is shown again with
+  the change; nothing is saved until Save. A page's web address is shown under its
+  heading.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas

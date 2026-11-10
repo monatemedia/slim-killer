@@ -9,7 +9,7 @@ namespace SlimKiller\Content\Form;
  * A group has children; a list has the fields of one item as children.
  *
  * $maxLength is the schema's limit on text (Zod .max()); $integer says a number must
- * be a whole number.
+ * be a whole number; $itemLabel names one item of a list ("Section").
  */
 final readonly class Field
 {
@@ -29,6 +29,7 @@ final readonly class Field
         public bool $hinted = false,
         public ?int $maxLength = null,
         public bool $integer = false,
+        public string $itemLabel = '',
     ) {}
 
     /** The editor's name, for templates. */

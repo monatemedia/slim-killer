@@ -10,13 +10,16 @@ use Slim\Exception\HttpNotFoundException;
 use SlimKiller\Content\ContentRepository;
 use SlimKiller\Content\Form\FieldFactory;
 use SlimKiller\Content\Form\FormReader;
+use SlimKiller\Content\Form\ListChange;
 use SlimKiller\Http\ControlPanel\View;
 use SlimKiller\Http\Session\Session;
 
 /**
  * /cp/content/{collection}/{slug}: one entry's form, built from the collection's schema
  * and filled with the entry's values. Posting it checks the values against the schema
- * and shows any problems beside their fields. Writing to GitHub comes next.
+ * and shows any problems beside their fields. The list buttons (add, remove, move)
+ * post the form too: the change is applied and the form shown again, unsaved.
+ * Writing to GitHub comes next.
  */
 final class EntryAction
 {
@@ -41,6 +44,7 @@ final class EntryAction
         $body = $entry->body;
         $errors = [];
         $notice = null;
+        $focus = null;
         $status = 200;
 
         if ($request->getMethod() === 'POST') {
@@ -49,10 +53,13 @@ final class EntryAction
             $submission = $this->reader->read($fields, $posted['f'] ?? []);
             $values = $submission->values;
             $body = is_string($posted['body'] ?? null) ? str_replace("\r\n", "\n", $posted['body']) : $body;
-            $errors = $submission->errors;
-            if ($submission->isValid()) {
+            $change = ListChange::from($posted['list_action'] ?? null);
+            if ($change !== null) {
+                [$values, $focus] = $change->apply($values);
+            } elseif ($submission->isValid()) {
                 $notice = 'Everything is filled in correctly. Saving it to your website arrives in the next step.';
             } else {
+                $errors = $submission->errors;
                 $status = 422;
             }
         }
@@ -70,6 +77,7 @@ final class EntryAction
             'values' => $values,
             'errors' => $errors,
             'notice' => $notice,
+            'focus' => $focus,
             'csrf' => Session::of($request)->csrfToken(),
         ], $status);
     }
