@@ -96,6 +96,11 @@ final class EntryAction
             sprintf('Save "%s" (%s/%s.md) in the control panel', $entry->title, $collection->name, $entry->slug),
             ['name' => $user->name, 'email' => $user->email],
         );
+        if ($result->isConflict() && $result->current !== null) {
+            // Someone saved first: keep the newer version in the working copy, so
+            // Discard changes shows it and the next save starts from it.
+            $this->content->write($collection, $entry->slug, $result->current);
+        }
         if (! $result->isSaved()) {
             return $this->page($response, $session, $collection, $entry, $form + ['problem' => $result->message], $result->isConflict() ? 409 : 502);
         }

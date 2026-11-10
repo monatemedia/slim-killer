@@ -51,6 +51,7 @@ it('refuses to save over a newer version of the same page', function (): void {
 
     expect($result->isConflict())->toBeTrue()
         ->and($result->message)->toContain('Someone saved this page after you opened it')
+        ->and($result->current)->toBe("---\ntitle: \"Saved by someone else\"\n---\n")
         ->and($github->head)->toBe($head);
 });
 

@@ -14,7 +14,8 @@ use SlimKiller\Http\Response;
  *
  * 1. Read the branch's head commit and its tree.
  * 2. Check the file's version there is the one the client opened. If not, someone else
- *    saved this page: a conflict, and nothing is written.
+ *    saved this page: a conflict, nothing is written, and the page as it now is comes
+ *    back, so the panel can show the newer version.
  * 3. Send the new file (a blob), build a tree on top of the head's, make a commit.
  * 4. Move the branch to the commit, fast-forward only. If another save moved the branch
  *    in between, start again from 1 (a save to a different file simply goes on top).
@@ -47,8 +48,9 @@ final class ContentCommitter
                 $head = $this->string($this->call('GET', '/git/ref/heads/' . $this->settings->branch), 'object', 'sha');
                 $tree = $this->string($this->call('GET', '/git/commits/' . $head), 'tree', 'sha');
 
-                if ($this->versionAt($head, $path) !== $openedVersion) {
-                    return SaveResult::conflict();
+                $current = $this->fileAt($head, $path);
+                if (($current['sha'] ?? null) !== $openedVersion) {
+                    return SaveResult::conflict($current['bytes'] ?? null);
                 }
 
                 $blob = $this->string($this->call('POST', '/git/blobs', [
@@ -82,8 +84,12 @@ final class ContentCommitter
         return SaveResult::failed('The website was being changed by someone else at the same moment. Press Save again.');
     }
 
-    /** The file's blob hash at a commit, or null when the file is not there. */
-    private function versionAt(string $commit, string $path): ?string
+    /**
+     * The file at a commit: its blob hash and its bytes, or null when it is not there.
+     *
+     * @return array{sha: string, bytes: string|null}|null
+     */
+    private function fileAt(string $commit, string $path): ?array
     {
         $response = $this->request('GET', '/contents/' . implode('/', array_map('rawurlencode', explode('/', $path))) . '?ref=' . $commit);
         if ($response->status === 404) {
@@ -92,9 +98,17 @@ final class ContentCommitter
         if (! $response->ok()) {
             throw new GitHubFailure($response);
         }
-        $sha = $response->json()['sha'] ?? null;
+        $json = $response->json() ?? [];
+        $sha = $json['sha'] ?? null;
+        if (! is_string($sha)) {
+            return null;
+        }
+        $content = $json['content'] ?? null;
+        $bytes = ($json['encoding'] ?? null) === 'base64' && is_string($content)
+            ? base64_decode(str_replace(["\n", "\r"], '', $content), true)
+            : false;
 
-        return is_string($sha) ? $sha : null;
+        return ['sha' => $sha, 'bytes' => $bytes === false ? null : $bytes];
     }
 
     /** @param array<string, mixed>|null $body */

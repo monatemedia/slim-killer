@@ -34,6 +34,7 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 - **Save in the control panel.** Save commits the changed page to the site's repository
   on GitHub, records the save in the audit log and shows "Saved."; if someone saved the
   page first, or GitHub cannot be reached, the form keeps what was typed and says why.
+  After a conflict the panel fetches the newer version, so Discard changes shows it.
   Set `GITHUB_REPOSITORY`, `GITHUB_BRANCH`, `GITHUB_TOKEN` and `GITHUB_CONTENT_FOLDER`
   in `.env`.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"

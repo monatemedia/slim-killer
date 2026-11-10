@@ -219,8 +219,8 @@ it('saves a changed page to GitHub and the working copy, then shows it saved', f
     expect($browser->body())->not->toContain('Saved.');
 });
 
-it('does not save over a newer version, and keeps what the client typed', function (): void {
-    [$browser, $github] = savingPanel();
+it('does not save over a newer version, keeps what the client typed, and fetches the newer version', function (): void {
+    [$browser, $github, $copy] = savingPanel();
     $browser->get('/cp/content/articles/oryx');
     $github->commitDirectly('content/articles/oryx.md', "---\ntitle: \"Someone else's title\"\n---\n");
     $head = $github->head;
@@ -230,7 +230,12 @@ it('does not save over a newer version, and keeps what the client typed', functi
     expect($response->getStatusCode())->toBe(409)
         ->and($browser->body())->toContain('Someone saved this page after you opened it')
         ->toContain('value="The Gemsbok"')
-        ->and($github->head)->toBe($head);
+        ->and($github->head)->toBe($head)
+        ->and((string) file_get_contents($copy . '/articles/oryx.md'))->toBe($github->file('content/articles/oryx.md'));
+
+    $browser->get('/cp/content/articles/oryx');
+    // The page escapes the apostrophe.
+    expect($browser->body())->toContain('value="Someone else&#039;s title"');
 });
 
 it('writes nothing to GitHub when nothing changed', function (): void {

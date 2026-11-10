@@ -16,6 +16,7 @@ final readonly class SaveResult
         public string $message,
         public ?string $commit = null,
         public ?string $version = null,
+        public ?string $current = null,
     ) {}
 
     /** @param string $version the file's new version (its Git blob hash) */
@@ -24,12 +25,14 @@ final readonly class SaveResult
         return new self('saved', 'Saved.', $commit, $version);
     }
 
-    public static function conflict(): self
+    /** @param string|null $current the page as it now is on GitHub, for the working copy */
+    public static function conflict(?string $current = null): self
     {
         return new self(
             'conflict',
             'Someone saved this page after you opened it. Your changes are still in the form: '
             . 'copy anything you want to keep, then press Discard changes to see the newer version.',
+            current: $current,
         );
     }
 

@@ -96,7 +96,12 @@ final class FakeGitHub implements HttpClient
     {
         $blob = $this->trees[$this->commits[$commit]['tree'] ?? ''][$path] ?? null;
 
-        return $blob === null ? new Response(404, '{"message":"Not Found"}') : $this->json(['sha' => $blob, 'path' => $path]);
+        if ($blob === null) {
+            return new Response(404, '{"message":"Not Found"}');
+        }
+
+        // GitHub wraps the base64 at 60 characters; the panel must cope with that.
+        return $this->json(['sha' => $blob, 'path' => $path, 'encoding' => 'base64', 'content' => chunk_split(base64_encode($this->blobs[$blob]), 60, "\n")]);
     }
 
     private function moveBranch(string $commit): Response
