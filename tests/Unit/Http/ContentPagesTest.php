@@ -126,6 +126,8 @@ it('adds, moves and removes list items without saving, keeping what was typed', 
         ->and($browser->body())->toContain('name="f[gallery][2][src]"')
         ->toContain('value="Changed title"')
         ->toContain('data-focus')
+        ->toContain('This change is in the form only.')
+        ->toContain('>Discard changes</a>')
         ->not->toContain('Everything is filled in correctly');
 
     $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'up:gallery.1']);

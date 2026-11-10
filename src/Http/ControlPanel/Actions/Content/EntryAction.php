@@ -56,6 +56,7 @@ final class EntryAction
             $change = ListChange::from($posted['list_action'] ?? null);
             if ($change !== null) {
                 [$values, $focus] = $change->apply($values);
+                $notice = 'This change is in the form only. Press Save to keep it, or Discard changes.';
             } elseif ($submission->isValid()) {
                 $notice = 'Everything is filled in correctly. Saving it to your website arrives in the next step.';
             } else {
