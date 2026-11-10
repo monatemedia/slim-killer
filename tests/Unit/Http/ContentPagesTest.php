@@ -32,7 +32,9 @@ function savingPanel(): array
     $files = [];
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($fixtures . '/content', FilesystemIterator::SKIP_DOTS)) as $file) {
         $relative = str_replace('\\', '/', substr($file->getPathname(), strlen($fixtures . '/content/')));
-        @mkdir(dirname($copy . '/' . $relative), recursive: true);
+        if (! is_dir(dirname($copy . '/' . $relative))) {
+            mkdir(dirname($copy . '/' . $relative), recursive: true);
+        }
         copy($file->getPathname(), $copy . '/' . $relative);
         $files['content/' . $relative] = (string) file_get_contents($file->getPathname());
     }
