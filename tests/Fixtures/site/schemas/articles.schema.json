@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "title": { "type": "string", "title": "Page title" },
+    "title": { "type": "string", "title": "Page title", "maxLength": 20 },
     "description": { "type": "string", "title": "Description for search results", "input": "textarea", "description": "One or two sentences." },
     "heroImage": { "type": "string" },
     "gallery": {

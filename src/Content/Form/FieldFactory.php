@@ -57,7 +57,9 @@ final class FieldFactory
             return new Field($name, $label, Editor::Group, $required, $help, $default, children: $this->fields($property));
         }
         if ($type === 'array' && is_array($items) && ($items['type'] ?? null) === 'object') {
-            return new Field($name, $label, Editor::List, $required, $help, $default, children: $this->fields($items));
+            $itemLabel = is_string($items['title'] ?? null) ? $items['title'] : '';
+
+            return new Field($name, $label, Editor::List, $required, $help, $default, children: $this->fields($items), itemLabel: $itemLabel);
         }
         if ($type === 'array') {
             return new Field($name, $label, Editor::Tags, $required, $help, $default);
@@ -72,8 +74,20 @@ final class FieldFactory
 
         $hint = Editor::tryFrom(is_string($property['input'] ?? null) ? $property['input'] : '');
         $editor = $hint ?? $this->guess($name, is_string($type) ? $type : 'string', $options !== []);
+        $maxLength = $property['maxLength'] ?? null;
 
-        return new Field($name, $label, $editor, $required, $help, $default, $options, hinted: $hint !== null);
+        return new Field(
+            $name,
+            $label,
+            $editor,
+            $required,
+            $help,
+            $default,
+            $options,
+            hinted: $hint !== null,
+            maxLength: is_int($maxLength) ? $maxLength : null,
+            integer: $type === 'integer',
+        );
     }
 
     private function guess(string $name, string $type, bool $hasOptions): Editor

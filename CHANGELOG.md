@@ -13,6 +13,30 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Editing forms you can fill in.** A page's form can now be posted. The panel checks
+  it against the collection's schema (required fields, character limits, choices, whole
+  numbers) and shows each problem beside its field and in a list at the top, keeping
+  what was typed. Saving to GitHub follows in this branch.
+- **Help while filling in a form.** Fields with a limit show "12 of 37 characters" as
+  you type and stop at the limit; help text opens from a "?" beside the label; an
+  optional choice offers "Let the page decide".
+- **Lists you can change.** Every list in a form (sections, photos, people) has "Add",
+  and each item has "Move up", "Move down" and "Remove". The form is shown again with
+  the change; nothing is saved until Save. A page's web address is shown under its
+  heading.
+- **Saves change only what changed.** The panel writes a form back into its file field
+  by field: unchanged fields, the body, a byte-order mark and Windows line endings stay
+  exactly as they were, and fields the panel does not know are kept.
+- **Saving to GitHub, safely.** A save is one commit on top of the branch, made through
+  GitHub's API (no git on the host), and the branch only moves forward. If someone saved
+  the same page after it was opened, nothing is written and the client is told; a save
+  of another page at the same moment is taken into account, not lost.
+- **Save in the control panel.** Save commits the changed page to the site's repository
+  on GitHub, records the save in the audit log and shows "Saved."; if someone saved the
+  page first, or GitHub cannot be reached, the form keeps what was typed and says why.
+  After a conflict the panel fetches the newer version, so Discard changes shows it.
+  Set `GITHUB_REPOSITORY`, `GITHUB_BRANCH`, `GITHUB_TOKEN` and `GITHUB_CONTENT_FOLDER`
+  in `.env`.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas

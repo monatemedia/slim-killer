@@ -33,6 +33,7 @@ use SlimKiller\Doctor\Checks\StorageCheck;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\Environment\RuntimeEnvironment;
+use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
@@ -69,6 +70,13 @@ return [
     // The working copy the panel reads from: in storage on a client's host, or wherever
     // CONTENT_DIR and SCHEMA_DIR point for local development.
     ContentLocation::class => factory(static fn(AppConfig $config, Paths $paths): ContentLocation => ContentLocation::from($config, $paths)),
+
+    GitHubSettings::class => factory(static fn(AppConfig $config): GitHubSettings => new GitHubSettings(
+        $config->githubRepository,
+        $config->githubBranch,
+        $config->githubToken,
+        $config->githubContentFolder,
+    )),
 
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).

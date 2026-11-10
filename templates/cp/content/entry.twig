@@ -11,21 +11,48 @@
 <section class="hero">
   <h1>{{ entry.title }}</h1>
 </section>
+<p class="entry-address">Web address: <code>…/{{ entry.slug }}/</code></p>
 
-<p class="read-only-note">You can look at this page here. Saving changes arrives in the next version of the control panel.</p>
+{% if problem %}
+  <div class="form-problems" role="alert" tabindex="-1">
+    <p><strong>Your changes are not saved yet.</strong></p>
+    <p>{{ problem }}</p>
+  </div>
+{% elseif errors is not empty %}
+  <div class="form-problems" role="alert" tabindex="-1">
+    <p><strong>{{ errors|length == 1 ? 'One thing needs' : errors|length ~ ' things need' }} changing before this page can be saved.</strong></p>
+    <ul>
+      {% for path, message in errors %}
+        <li><a href="#f-{{ path|replace({'.': '-'}) }}">{{ message }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% elseif notice %}
+  <p class="read-only-note" role="status">{{ notice }}</p>
+{% endif %}
 
-<div class="card entry-form">
+<form method="post" action="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}" class="card entry-form" novalidate autocomplete="off">
+  <input type="hidden" name="_csrf" value="{{ csrf }}">
+  <input type="hidden" name="version" value="{{ entry.version }}">
+  {# Enter in a text box presses the first submit button: make that one Save, not a list button. #}
+  <button type="submit" class="default-submit" tabindex="-1" aria-hidden="true">Save</button>
   <div class="card-pad form">
     {% for field in fields %}
-      {{ forms.field(field, values[field.name] ?? null, 'field-' ~ field.name) }}
+      {{ forms.field(field, values[field.name] ?? null, field.name, errors, focus) }}
     {% endfor %}
 
-    {% if entry.body is not empty %}
+    {% if entry.hasBody %}
       <div class="field">
-        <label for="field-body">Text</label>
-        <textarea id="field-body" rows="16" readonly class="markdown-input">{{ entry.body }}</textarea>
+        <div class="field-label"><label for="f-body">Text</label></div>
+        {# The line break after the tag is dropped by the browser, so a body that starts with a blank line keeps it. #}
+        <textarea id="f-body" name="body" rows="16" class="markdown-input">
+{{ entry.body }}</textarea>
       </div>
     {% endif %}
   </div>
-</div>
+  <div class="card-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-quiet" href="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}">Discard changes</a>
+  </div>
+</form>
 {% endblock %}

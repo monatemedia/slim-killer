@@ -52,4 +52,31 @@
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     });
   }
+
+  // Character counters: "12 of 37 characters" under every field with a limit,
+  // kept up to date as the client types.
+  document.querySelectorAll('[data-count]').forEach(function (input) {
+    var counter = document.getElementById(input.getAttribute('data-count'));
+    var limit = input.getAttribute('maxlength');
+    if (!counter || !limit) return;
+    var update = function () {
+      var used = Array.from(input.value).length;
+      counter.textContent = used + ' of ' + limit + ' characters';
+      counter.classList.toggle('is-full', used >= Number(limit));
+    };
+    input.addEventListener('input', update);
+    update();
+  });
+
+  // After "Add" or a move, put the cursor in that list item's first field.
+  var marker = document.querySelector('[data-focus]');
+  if (marker) {
+    var item = marker.closest('.list-item');
+    var first = item && item.querySelector('input:not([type=hidden]), textarea, select');
+    if (first) { first.focus(); item.scrollIntoView({ block: 'start' }); }
+  }
+
+  // After a save with problems, move to the list of problems so it is read first.
+  var problems = document.querySelector('.form-problems');
+  if (problems) problems.focus();
 })();

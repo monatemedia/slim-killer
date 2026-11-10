@@ -54,7 +54,7 @@ final class ControlPanel
         $app->group('/content', function (RouteCollectorProxy $content): void {
             $content->get('', CollectionsAction::class);
             $content->get('/{collection}', EntriesAction::class);
-            $content->get('/{collection}/{slug}', EntryAction::class);
+            $content->map(['GET', 'POST'], '/{collection}/{slug}', EntryAction::class);
         })->add(SignedIn::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:

@@ -32,4 +32,11 @@ final class FakeHttpClient implements HttpClient
 
         return ($this->answer)($url);
     }
+
+    public function send(string $method, string $url, array $headers = [], ?string $body = null, int $timeoutSeconds = 20): Response
+    {
+        $this->requested[] = $method . ' ' . $url;
+
+        return ($this->answer)($url);
+    }
 }

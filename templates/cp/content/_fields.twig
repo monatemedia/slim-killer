@@ -1,55 +1,109 @@
 {#
- # Editing fields, built from the collection's schema (Field objects). Read-only for
- # now: saving arrives in the next version of the control panel.
+ # Editing fields, built from the collection's schema (Field objects).
+ #
+ # field(field, value, path, errors):
+ #   path    the field's place in the form, dotted: "cta.heading", "sections.2.image.src".
+ #           It names the input (f[cta][heading]), its id and its error.
+ #   errors  problems from the last save, keyed by path.
+ #   focus   the path of a list item to put the cursor in (after "Add" or a move).
  #}
-{% macro field(field, value, id) %}
+{% macro field(field, value, path, errors, focus = null) %}
   {% import _self as forms %}
   {% set editor = field.editor() %}
+  {% set id = 'f-' ~ path|replace({'.': '-'}) %}
+  {% set name = 'f[' ~ path|split('.')|join('][') ~ ']' %}
+  {% set error = errors[path] ?? null %}
   {% set text = value is iterable ? value|json_encode : value %}
+
   {% if editor == 'group' %}
     <fieldset class="group-field">
-      <legend>{{ field.label }}</legend>
-      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
+      <legend>{{ field.label }}{{ forms.tip(field, id) }}</legend>
       {% for child in field.children %}
-        {{ forms.field(child, value[child.name] ?? null, id ~ '-' ~ child.name) }}
+        {{ forms.field(child, value[child.name] ?? null, path ~ '.' ~ child.name, errors, focus) }}
       {% endfor %}
     </fieldset>
+
   {% elseif editor == 'list' %}
     <fieldset class="list-field">
-      <legend>{{ field.label }} <span class="count">{{ value is iterable ? value|length : 0 }}</span></legend>
-      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
-      {% for item in value is iterable ? value : [] %}
-        <div class="list-item">
-          <p class="list-item-label">{{ loop.index }}</p>
+      <legend>{{ field.label }} <span class="count">{{ value is iterable ? value|length : 0 }}</span>{{ forms.tip(field, id) }}</legend>
+      {% set itemLabel = field.itemLabel ?: 'item' %}
+      {% set items = value is iterable ? value : [] %}
+      {% for item in items %}
+        {% set itemPath = path ~ '.' ~ loop.index0 %}
+        <div class="list-item" id="{{ id }}-{{ loop.index0 }}">
+          <div class="list-item-head">
+            <p class="list-item-label">{{ itemLabel|capitalize }} {{ loop.index }}</p>
+            <div class="list-item-buttons">
+              <button type="submit" name="list_action" value="up:{{ itemPath }}" class="btn btn-quiet btn-small"{{ loop.first ? ' disabled' : '' }}>Move up</button>
+              <button type="submit" name="list_action" value="down:{{ itemPath }}" class="btn btn-quiet btn-small"{{ loop.last ? ' disabled' : '' }}>Move down</button>
+              <button type="submit" name="list_action" value="remove:{{ itemPath }}" class="btn btn-quiet btn-small">Remove</button>
+            </div>
+          </div>
           {% for child in field.children %}
-            {{ forms.field(child, item[child.name] ?? null, id ~ '-' ~ loop.parent.loop.index ~ '-' ~ child.name) }}
+            {{ forms.field(child, item[child.name] ?? null, itemPath ~ '.' ~ child.name, errors, focus) }}
           {% endfor %}
+          {% if itemPath == focus %}<span class="list-item-focus" data-focus></span>{% endif %}
         </div>
       {% else %}
         <p class="field-help">None yet.</p>
       {% endfor %}
+      <button type="submit" name="list_action" value="add:{{ path }}" class="btn btn-quiet list-add">Add {{ itemLabel|lower }}</button>
     </fieldset>
+
   {% else %}
-    <div class="field">
-      <label for="{{ id }}">{{ field.label }}{% if not field.required %} <span class="optional">(optional)</span>{% endif %}</label>
-      {% if field.help %}<p class="field-help">{{ field.help }}</p>{% endif %}
-      {% if editor == 'textarea' or editor == 'markdown' %}
-        <textarea id="{{ id }}" rows="{{ editor == 'markdown' ? 10 : 4 }}" readonly class="{{ editor == 'markdown' ? 'markdown-input' : '' }}">{{ text }}</textarea>
+    <div class="field{{ error ? ' has-error' : '' }}">
+      <div class="field-label">
+        <label for="{{ id }}">{{ field.label }}{% if not field.required %} <span class="optional">(optional)</span>{% endif %}</label>
+        {{ forms.tip(field, id) }}
+      </div>
+      {% set described = (error ? id ~ '-error ' : '') ~ (field.maxLength ? id ~ '-count' : '') %}
+      {% set aria = described|trim ? ' aria-describedby="' ~ described|trim ~ '"' : '' %}
+      {% set limit = field.maxLength ? ' maxlength="' ~ field.maxLength ~ '" data-count="' ~ id ~ '-count"' : '' %}
+
+      {# A one-line box drops line breaks, so text that holds one (a title split over two
+         lines) gets a two-line box instead, and keeps it. #}
+      {% set multiline = editor == 'text' and text is not null and text is not iterable and text matches '/\\n/' %}
+
+      {% if multiline %}
+        <textarea id="{{ id }}" name="{{ name }}" rows="2" class="title-lines"{{ limit|raw }}{{ aria|raw }}>{{ text }}</textarea>
+      {% elseif editor == 'textarea' or editor == 'markdown' %}
+        <textarea id="{{ id }}" name="{{ name }}" rows="{{ editor == 'markdown' ? 10 : 4 }}" class="{{ editor == 'markdown' ? 'markdown-input' : '' }}"{{ limit|raw }}{{ aria|raw }}>{{ text }}</textarea>
       {% elseif editor == 'select' %}
-        <select id="{{ id }}" disabled>
+        <select id="{{ id }}" name="{{ name }}"{{ aria|raw }}>
+          {% if not field.required %}<option value="">Let the page decide</option>{% endif %}
           {% for option in field.options %}
-            <option{{ option == (value ?? field.default) ? ' selected' : '' }}>{{ option }}</option>
+            <option{{ option == value ? ' selected' : '' }}>{{ option }}</option>
           {% endfor %}
         </select>
       {% elseif editor == 'toggle' %}
-        <input id="{{ id }}" type="checkbox" disabled{{ value ? ' checked' : '' }}>
+        <input type="hidden" name="{{ name }}" value="0">
+        <input id="{{ id }}" name="{{ name }}" type="checkbox" value="1"{{ value ? ' checked' : '' }}{{ aria|raw }}>
       {% elseif editor == 'tags' %}
-        <input id="{{ id }}" type="text" readonly value="{{ value is iterable ? value|join(', ') : value }}">
-      {% elseif editor == 'image' %}
-        <input id="{{ id }}" type="text" readonly value="{{ text }}" class="image-input">
+        <input id="{{ id }}" name="{{ name }}" type="text" value="{{ value is iterable ? value|join(', ') : value }}"{{ aria|raw }}>
+        <p class="field-help">Separate them with commas.</p>
       {% else %}
-        <input id="{{ id }}" type="{{ editor == 'number' ? 'number' : 'text' }}" readonly value="{{ text }}">
+        <input id="{{ id }}" name="{{ name }}" type="{{ editor == 'number' ? 'number' : 'text' }}"{{ field.integer ? ' step="1"' : (editor == 'number' ? ' step="any"' : '') }} value="{{ text }}"{{ limit|raw }}{{ aria|raw }}>
+      {% endif %}
+
+      {% if error or field.maxLength %}
+        <div class="field-foot">
+          {% if error %}<p class="field-error" id="{{ id }}-error">{{ error }}</p>{% endif %}
+          {% if field.maxLength %}<p class="field-count" id="{{ id }}-count">{{ (text ?? '')|length }} of {{ field.maxLength }} characters</p>{% endif %}
+        </div>
       {% endif %}
     </div>
+  {% endif %}
+{% endmacro %}
+
+{#
+ # The help text behind a "?": open it to read why the field is there. Plain HTML
+ # (<details>), so it works without JavaScript.
+ #}
+{% macro tip(field, id) %}
+  {% if field.help %}
+    <details class="field-tip">
+      <summary aria-label="What is {{ field.label }}?">?</summary>
+      <p id="{{ id }}-help">{{ field.help }}</p>
+    </details>
   {% endif %}
 {% endmacro %}
