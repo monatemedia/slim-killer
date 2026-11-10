@@ -27,6 +27,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 - **Saves change only what changed.** The panel writes a form back into its file field
   by field: unchanged fields, the body, a byte-order mark and Windows line endings stay
   exactly as they were, and fields the panel does not know are kept.
+- **Saving to GitHub, safely.** A save is one commit on top of the branch, made through
+  GitHub's API (no git on the host), and the branch only moves forward. If someone saved
+  the same page after it was opened, nothing is written and the client is told; a save
+  of another page at the same moment is taken into account, not lost.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas
