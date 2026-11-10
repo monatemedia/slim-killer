@@ -13,7 +13,12 @@
 </section>
 <p class="entry-address">Web address: <code>…/{{ entry.slug }}/</code></p>
 
-{% if errors is not empty %}
+{% if problem %}
+  <div class="form-problems" role="alert" tabindex="-1">
+    <p><strong>Your changes are not saved yet.</strong></p>
+    <p>{{ problem }}</p>
+  </div>
+{% elseif errors is not empty %}
   <div class="form-problems" role="alert" tabindex="-1">
     <p><strong>{{ errors|length == 1 ? 'One thing needs' : errors|length ~ ' things need' }} changing before this page can be saved.</strong></p>
     <ul>

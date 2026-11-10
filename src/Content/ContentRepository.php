@@ -107,4 +107,19 @@ final class ContentRepository
 
         return is_file($path) ? (string) file_get_contents($path) : null;
     }
+
+    /**
+     * Writes a saved entry into the working copy, so the panel shows it at once. Written
+     * to a temporary file first and renamed into place, so a reader never sees half a file.
+     */
+    public function write(Collection $collection, string $slug, string $bytes): void
+    {
+        if ($this->raw($collection, $slug) === null) {
+            throw new \RuntimeException('There is no entry ' . $collection->name . '/' . $slug . ' to write.');
+        }
+        $path = $this->location->contentDir . '/' . $collection->name . '/' . $slug . '.md';
+        $temporary = $path . '.saving';
+        file_put_contents($temporary, $bytes);
+        rename($temporary, $path);
+    }
 }

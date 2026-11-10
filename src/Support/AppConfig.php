@@ -20,6 +20,14 @@ final readonly class AppConfig
         public string $contentDir = '',
         /** Where the collection schemas are; empty means the default in storage. */
         public string $schemaDir = '',
+        /** The client site's repository on GitHub, "owner/name"; empty until saving is set up. */
+        public string $githubRepository = '',
+        /** The branch saves go to. */
+        public string $githubBranch = 'main',
+        /** A fine-grained token with contents write on that one repository. */
+        public string $githubToken = '',
+        /** The folder in the repository that holds content/. */
+        public string $githubContentFolder = 'content',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -29,12 +37,19 @@ final readonly class AppConfig
         $name = $environment['APP_NAME'] ?? '';
         $contentDir = $environment['CONTENT_DIR'] ?? '';
         $schemaDir = $environment['SCHEMA_DIR'] ?? '';
+        $text = static fn(string $key, string $default = ''): string => is_string($environment[$key] ?? null) && trim($environment[$key]) !== ''
+            ? trim($environment[$key])
+            : $default;
 
         return new self(
             is_string($url) ? rtrim($url, '/') : '',
             is_string($name) && trim($name) !== '' ? trim($name) : self::DEFAULT_NAME,
             is_string($contentDir) ? trim($contentDir) : '',
             is_string($schemaDir) ? trim($schemaDir) : '',
+            $text('GITHUB_REPOSITORY'),
+            $text('GITHUB_BRANCH', 'main'),
+            $text('GITHUB_TOKEN'),
+            $text('GITHUB_CONTENT_FOLDER', 'content'),
         );
     }
 

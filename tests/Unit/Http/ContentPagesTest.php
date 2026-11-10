@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use SlimKiller\GitHub\GitHubSettings;
+use SlimKiller\Http\HttpClient;
 use SlimKiller\Support\AppConfig;
+use Tests\Fakes\FakeGitHub;
 
 /** A signed-in panel reading the fixture site. */
 function contentPanel(): array
@@ -14,6 +17,46 @@ function contentPanel(): array
     enrol($browser, $container, $clock);
 
     return [$browser, $container, $clock];
+}
+
+/**
+ * A signed-in panel on a scratch copy of the fixture site, saving to a fake GitHub that
+ * holds the same content files, so saves never touch the fixtures.
+ *
+ * @return array{0: Tests\Fakes\Browser, 1: FakeGitHub, 2: string}
+ */
+function savingPanel(): array
+{
+    $fixtures = dirname(__DIR__, 2) . '/Fixtures/site';
+    $copy = temporaryFolder();
+    $files = [];
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($fixtures . '/content', FilesystemIterator::SKIP_DOTS)) as $file) {
+        $relative = str_replace('\\', '/', substr($file->getPathname(), strlen($fixtures . '/content/')));
+        @mkdir(dirname($copy . '/' . $relative), recursive: true);
+        copy($file->getPathname(), $copy . '/' . $relative);
+        $files['content/' . $relative] = (string) file_get_contents($file->getPathname());
+    }
+    $github = new FakeGitHub($files);
+    [$browser, $container, $clock] = installedPanel([
+        AppConfig::class => new AppConfig(contentDir: $copy, schemaDir: $fixtures . '/schemas'),
+        HttpClient::class => $github,
+        GitHubSettings::class => new GitHubSettings('owner/site', 'main', 'secret'),
+    ]);
+    enrol($browser, $container, $clock);
+
+    return [$browser, $github, $copy];
+}
+
+/** The oryx form as the browser sends it, with $changes on top. */
+function oryxForm(array $changes = []): array
+{
+    return array_replace_recursive([
+        'f' => [
+            'title' => 'The Oryx', 'description' => "Namibia's national animal.", 'heroImage' => 'oryx.jpg',
+            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole'], ['src' => 'oryx-2.jpg', 'alt' => '']],
+        ],
+        'body' => "## In the desert\r\n\r\nThe oryx can go for _weeks_ without water.",
+    ], $changes);
 }
 
 it('keeps content pages for signed-in people', function (string $path): void {
@@ -90,7 +133,7 @@ it('checks a posted page against the schema and shows each problem beside its fi
         ->toContain('value="A title much longer than twenty characters"');
 });
 
-it('accepts a page that matches the schema', function (): void {
+it('says so when saving is not set up, and keeps the form', function (): void {
     [$browser] = contentPanel();
     $browser->get('/cp/content/articles/oryx');
 
@@ -99,8 +142,9 @@ it('accepts a page that matches the schema', function (): void {
         'body' => 'Text',
     ]);
 
-    expect($response->getStatusCode())->toBe(200)
-        ->and($browser->body())->toContain('Ready to save your changes');
+    expect($response->getStatusCode())->toBe(502)
+        ->and($browser->body())->toContain('Saving is not set up for this website yet')
+        ->toContain('value="The Gemsbok"');
 });
 
 it('says so when a posted page changes nothing', function (): void {
@@ -115,7 +159,7 @@ it('says so when a posted page changes nothing', function (): void {
         'body' => "## In the desert\r\n\r\nThe oryx can go for _weeks_ without water.",
     ]);
 
-    expect($browser->body())->toContain('Nothing has changed.');
+    expect($browser->body())->toContain('Nothing has changed');
 });
 
 it('refuses a posted page without the form\'s token', function (): void {
@@ -150,4 +194,62 @@ it('adds, moves and removes list items without saving, keeping what was typed', 
 
     $browser->post('/cp/content/articles/oryx', $form + ['list_action' => 'remove:gallery.0']);
     expect($browser->body())->not->toContain('value="First"')->toContain('value="Second"');
+});
+
+it('saves a changed page to GitHub and the working copy, then shows it saved', function (): void {
+    [$browser, $github, $copy] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $before = $github->head;
+
+    $response = $browser->post('/cp/content/articles/oryx', oryxForm(['f' => ['title' => 'The Gemsbok']]));
+
+    expect($response->getStatusCode())->toBe(303)
+        ->and($response->getHeaderLine('Location'))->toBe('/cp/content/articles/oryx')
+        ->and($github->head)->not->toBe($before)
+        ->and($github->file('content/articles/oryx.md'))->toContain('title: "The Gemsbok"')
+        ->and($github->commits[$github->head]['message'])->toContain('articles/oryx.md')
+        ->and((string) file_get_contents($copy . '/articles/oryx.md'))->toBe($github->file('content/articles/oryx.md'));
+
+    $browser->get('/cp/content/articles/oryx');
+    expect($browser->body())->toContain('Saved.')->toContain('value="The Gemsbok"');
+
+    $browser->get('/cp/content/articles/oryx');
+    expect($browser->body())->not->toContain('Saved.');
+});
+
+it('does not save over a newer version, and keeps what the client typed', function (): void {
+    [$browser, $github] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $github->commitDirectly('content/articles/oryx.md', "---\ntitle: \"Someone else's title\"\n---\n");
+    $head = $github->head;
+
+    $response = $browser->post('/cp/content/articles/oryx', oryxForm(['f' => ['title' => 'The Gemsbok']]));
+
+    expect($response->getStatusCode())->toBe(409)
+        ->and($browser->body())->toContain('Someone saved this page after you opened it')
+        ->toContain('value="The Gemsbok"')
+        ->and($github->head)->toBe($head);
+});
+
+it('writes nothing to GitHub when nothing changed', function (): void {
+    [$browser, $github] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $head = $github->head;
+
+    $browser->post('/cp/content/articles/oryx', oryxForm());
+
+    expect($browser->body())->toContain('Nothing has changed')->and($github->head)->toBe($head);
+});
+
+it('keeps the form and explains it when GitHub cannot be reached', function (): void {
+    [$browser, $github] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $github->failWith = 0;
+
+    $response = $browser->post('/cp/content/articles/oryx', oryxForm(['f' => ['title' => 'The Gemsbok']]));
+
+    expect($response->getStatusCode())->toBe(502)
+        ->and($browser->body())->toContain('Your changes are not saved yet')
+        ->toContain('could not reach GitHub')
+        ->toContain('value="The Gemsbok"');
 });

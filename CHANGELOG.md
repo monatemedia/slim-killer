@@ -31,6 +31,11 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   GitHub's API (no git on the host), and the branch only moves forward. If someone saved
   the same page after it was opened, nothing is written and the client is told; a save
   of another page at the same moment is taken into account, not lost.
+- **Save in the control panel.** Save commits the changed page to the site's repository
+  on GitHub, records the save in the audit log and shows "Saved."; if someone saved the
+  page first, or GitHub cannot be reached, the form keeps what was typed and says why.
+  Set `GITHUB_REPOSITORY`, `GITHUB_BRANCH`, `GITHUB_TOKEN` and `GITHUB_CONTENT_FOLDER`
+  in `.env`.
 - **Content in the control panel, read-only.** Signed-in people can open "Your content"
   from the dashboard: the site's collections, each collection's pages, and each page's
   form, filled with its real values. The forms are built from the collection schemas
