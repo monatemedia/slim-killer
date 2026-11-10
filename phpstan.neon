@@ -8,3 +8,5 @@ parameters:
         # Copied into a client's web root and run there, on whatever PHP the website has.
         # Written for old PHP versions on purpose, so it is checked separately.
         - src/Doctor/WebProbe/probe-template.php
+        # Runs before PHP's version is known, so it is written for old PHP too.
+        - bootstrap/guard.php

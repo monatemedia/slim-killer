@@ -16,6 +16,8 @@ final class Output
         'cyan' => "\033[36m",
         'grey' => "\033[90m",
         'bold' => "\033[1m",
+        // Monate Media orange (#f99314), for the logo.
+        'orange' => "\033[38;2;249;147;20m",
     ];
 
     private const string RESET = "\033[0m";

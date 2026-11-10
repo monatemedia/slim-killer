@@ -13,6 +13,11 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **hammer's logo and its opinion of `artisan`, back from the first Slim Killer.**
+  `php hammer` shows the logo above the commands. `php artisan <command>` gets one of
+  six remarks about the name, then runs the command with hammer anyway; `php hammer
+  artisan` gets one too. The PHP version check moved to `bootstrap/guard.php`, shared by
+  both.
 - **Editing forms you can fill in.** A page's form can now be posted. The panel checks
   it against the collection's schema (required fields, character limits, choices, whole
   numbers) and shows each problem beside its field and in a list at the top, keeping
