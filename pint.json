@@ -10,6 +10,8 @@
     },
     "notPath": [
         "src/Doctor/WebProbe/probe-template.php",
-        "hammer"
+        "hammer",
+        "artisan",
+        "bootstrap/guard.php"
     ]
 }

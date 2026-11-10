@@ -18,9 +18,16 @@ final class Application
     /** @var array<string, Command> */
     private array $commands = [];
 
-    /** @param list<Command> $commands */
-    public function __construct(array $commands)
+    /** @var \Closure(int): int Picks an insult by index, from 0 to the number given minus one. */
+    private \Closure $pick;
+
+    /**
+     * @param list<Command> $commands
+     * @param (\Closure(int): int)|null $pick for tests; random by default
+     */
+    public function __construct(array $commands, ?\Closure $pick = null)
     {
+        $this->pick = $pick ?? static fn(int $count): int => random_int(0, $count - 1);
         foreach ($commands as $command) {
             $this->commands[$command->name()] = $command;
         }
@@ -31,14 +38,22 @@ final class Application
     {
         $name = $input->command;
 
+        // `php artisan …` gets a word about the name, then runs the command anyway.
+        if ($input->script === 'artisan') {
+            $this->insult($output);
+            $output->line();
+        }
+
         if ($name === '' || $name === 'list' || $name === 'help') {
-            $this->renderList($output);
+            $this->renderList($output, banner: true);
 
             return 0;
         }
 
+        // `php hammer artisan`: the same habit, one word later.
         if ($name === 'artisan') {
-            $output->line("It's a hammer, not an artisan. Try `php hammer list`.", 'yellow');
+            $this->insult($output);
+            $output->line('Try `php hammer list`.');
 
             return 1;
         }
@@ -54,8 +69,19 @@ final class Application
         return $this->commands[$name]->run($input, $output);
     }
 
-    private function renderList(Output $output): void
+    private function insult(Output $output): void
     {
+        $output->line(Insults::ALL[($this->pick)(count(Insults::ALL))] ?? Insults::ALL[0], 'yellow');
+    }
+
+    private function renderList(Output $output, bool $banner = false): void
+    {
+        if ($banner) {
+            foreach (Banner::lines() as $line) {
+                $output->line($line, 'orange');
+            }
+            $output->line();
+        }
         $output->line(self::NAME . ' ' . $output->paint('hammer', 'cyan'), 'bold');
         $output->line();
         $output->line('Usage:', 'yellow');

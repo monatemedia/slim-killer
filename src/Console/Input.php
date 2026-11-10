@@ -8,6 +8,8 @@ namespace SlimKiller\Console;
  * The command line, split into a command name, arguments and --options.
  *
  *   hammer doctor --url=https://example.com --webroot ~/public_html -v
+ *
+ * `script` is the name it was started with: "hammer", or "artisan" for Laravel habits.
  */
 final readonly class Input
 {
@@ -19,6 +21,7 @@ final readonly class Input
         public string $command,
         public array $arguments = [],
         public array $options = [],
+        public string $script = 'hammer',
     ) {}
 
     /** @param list<string> $argv The raw $argv, script name first. */
@@ -53,7 +56,10 @@ final readonly class Input
             }
         }
 
-        return new self($command, $arguments, $options);
+        // basename() only knows "/" on Linux, so Windows paths are turned round first.
+        $script = pathinfo(basename(str_replace('\\', '/', $argv[0] ?? 'hammer')), PATHINFO_FILENAME);
+
+        return new self($command, $arguments, $options, $script === '' ? 'hammer' : $script);
     }
 
     public function option(string $name): ?string

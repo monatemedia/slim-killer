@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * For Laravel muscle memory. `php artisan <command>` gets a few words about the name of
+ * the tool, then runs the command with hammer anyway.
+ */
+
+require __DIR__ . '/bootstrap/guard.php';
+
+exit(require __DIR__ . '/bootstrap/hammer.php');
