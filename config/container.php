@@ -40,10 +40,12 @@ use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
 use SlimKiller\Publishing\Releases;
+use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\EnvFile;
 use SlimKiller\Support\Paths;
+use SlimKiller\Support\ShutdownAfterResponse;
 use SlimKiller\Support\SystemClock;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -83,6 +85,7 @@ return [
 
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
+    AfterResponse::class => get(ShutdownAfterResponse::class),
 
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).

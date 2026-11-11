@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
+use SlimKiller\Http\ControlPanel\Actions\BuildReadyAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\CollectionsAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntriesAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntryAction;
@@ -48,6 +49,9 @@ final class ControlPanel
         $app->map(['GET', 'POST'], '/welcome', WelcomeAction::class);
         $app->post('/sign-out', SignOutAction::class);
         $app->get('/setup', SetupAction::class);
+
+        // Called by the site's workflow when a build is ready. Signed, not signed in.
+        $app->post('/hooks/build-ready', BuildReadyAction::class);
 
         // Content: signed-in people only. Not a static function: Slim binds a group's
         // function to the container, and PHP cannot bind a static one.

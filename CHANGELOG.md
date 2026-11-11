@@ -13,6 +13,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **The webhook: "a build is ready".** `POST /cp/hooks/build-ready`, signed with
+  HMAC-SHA256 over a timestamp and the body (`WEBHOOK_SECRET`), answers at once and then
+  fetches the build. Calls without a valid signature, or older than five minutes, are
+  refused; with no secret set, the address does not exist.
 - **`hammer deploy:fetch` and `deploy:rollback`.** The host fetches the newest build from
   the client site's `dist` branch (streamed to disk, unpacked, checked), moves the panel's
   files out of it, and switches the website to it by replacing one `.htaccess` in

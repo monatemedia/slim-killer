@@ -30,6 +30,8 @@ final readonly class AppConfig
         public string $githubContentFolder = 'content',
         /** The folder the website is served from; releases go in its _site/. Empty until set. */
         public string $webRoot = '',
+        /** Shared with the site's workflow, to sign "a build is ready". Empty: the webhook is off. */
+        public string $webhookSecret = '',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -53,6 +55,7 @@ final readonly class AppConfig
             $text('GITHUB_TOKEN'),
             $text('GITHUB_CONTENT_FOLDER', 'content'),
             $text('WEB_ROOT'),
+            $text('WEBHOOK_SECRET'),
         );
     }
 
