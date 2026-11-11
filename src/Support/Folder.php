@@ -33,6 +33,9 @@ final class Folder
 
     public static function move(string $from, string $to): void
     {
+        if (! is_dir(dirname($to))) {
+            @mkdir(dirname($to), 0755, true);
+        }
         if (@rename($from, $to)) {
             return;
         }

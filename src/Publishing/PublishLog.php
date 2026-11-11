@@ -34,12 +34,12 @@ final class PublishLog
 
     public function markLive(string $commit, DateTimeImmutable $at): void
     {
-        $this->mark($commit, 'liveAt', $at);
+        $this->mark($commit, live: true, at: $at);
     }
 
     public function markFailed(string $commit, DateTimeImmutable $at): void
     {
-        $this->mark($commit, 'failedAt', $at);
+        $this->mark($commit, live: false, at: $at);
     }
 
     /**
@@ -59,12 +59,18 @@ final class PublishLog
         return $durations;
     }
 
-    private function mark(string $commit, string $field, DateTimeImmutable $at): void
+    private function mark(string $commit, bool $live, DateTimeImmutable $at): void
     {
         $saves = $this->saves();
         foreach ($saves as $index => $save) {
-            if ($save['commit'] === $commit && $save[$field] === null) {
-                $saves[$index][$field] = $at->getTimestamp();
+            if ($save['commit'] !== $commit) {
+                continue;
+            }
+            if ($live && $save['liveAt'] === null) {
+                $saves[$index]['liveAt'] = $at->getTimestamp();
+                $this->write($saves);
+            } elseif (! $live && $save['failedAt'] === null) {
+                $saves[$index]['failedAt'] = $at->getTimestamp();
                 $this->write($saves);
             }
         }
