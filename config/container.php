@@ -39,6 +39,8 @@ use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
+use SlimKiller\Publishing\Progress;
+use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Publishing\Releases;
 use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
@@ -86,6 +88,8 @@ return [
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
     AfterResponse::class => get(ShutdownAfterResponse::class),
+    PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
+    Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),
 
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).

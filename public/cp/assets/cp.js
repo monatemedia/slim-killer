@@ -79,4 +79,49 @@
   // After a save with problems, move to the list of problems so it is read first.
   var problems = document.querySelector('.form-problems');
   if (problems) problems.focus();
+  // Publishing progress: Saved → Building → Going live → Live. Asks the panel every
+  // few seconds until the newest save is live (or its build failed), then stops.
+  var publishing = document.querySelector('[data-publishing]');
+  if (publishing) {
+    var order = ['saved', 'building', 'going-live', 'live'];
+    var message = publishing.querySelector('.publishing-message');
+    var estimate = publishing.querySelector('.publishing-estimate');
+
+    var show = function (report) {
+      if (!report || report.stage === 'none') {
+        publishing.hidden = true;
+        return;
+      }
+      var failed = report.stage === 'failed';
+      var current = failed ? order.indexOf('building') : order.indexOf(report.stage);
+      publishing.querySelectorAll('[data-step]').forEach(function (step, index) {
+        step.className = index < current || report.stage === 'live' ? 'done'
+          : index === current ? (failed ? 'failed' : 'current') : '';
+        if (index === current && !report.done) {
+          step.setAttribute('aria-current', 'step');
+        } else {
+          step.removeAttribute('aria-current');
+        }
+      });
+      publishing.classList.toggle('publishing-failed', failed);
+      message.textContent = report.message;
+      estimate.textContent = report.estimate || '';
+      estimate.hidden = !report.estimate;
+      publishing.hidden = false;
+    };
+
+    var check = function () {
+      fetch(publishing.getAttribute('data-publishing'), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(function (response) { return response.ok ? response.json() : null; })
+        .then(function (report) {
+          show(report);
+          if (report && !report.done) {
+            setTimeout(check, 5000);
+          }
+        })
+        .catch(function () { setTimeout(check, 15000); });
+    };
+    check();
+  }
+
 })();

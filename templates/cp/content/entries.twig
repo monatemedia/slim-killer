@@ -4,6 +4,8 @@
 
 {% block title %}{{ collection.label }}{% endblock %}
 
+{% block publishing %}{% include 'cp/_publishing.twig' %}{% endblock %}
+
 {% block main %}
 <nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › <a href="{{ base }}/content">Content</a> › {{ collection.label }}</nav>
 

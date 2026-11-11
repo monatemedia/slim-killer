@@ -13,6 +13,11 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Publishing progress.** After a save, the dashboard and content pages show Saved →
+  Building → Going live → Live, updating by themselves, from GitHub's record of the build
+  and the host's live release. A failed build says the website is unchanged. Once a few
+  publishes have gone live, it adds the time left, from this site's own recent
+  publishes. The GitHub token needs "Actions: read" for the Building stage.
 - **The webhook: "a build is ready".** `POST /cp/hooks/build-ready`, signed with
   HMAC-SHA256 over a timestamp and the body (`WEBHOOK_SECRET`), answers at once and then
   fetches the build. Calls without a valid signature, or older than five minutes, are
@@ -154,6 +159,7 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- The dashboard no longer says saving is coming: it is here.
 - **Code names follow the glossary.** Welcome links are `WelcomeLinks` in code (was
   `Invites`); signing in is at `/cp/sign-in` and signing out at `/cp/sign-out` (were
   `/cp/login` and `/cp/logout`), with `SignInAction`, `SignOutAction` and
