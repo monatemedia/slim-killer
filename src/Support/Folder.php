@@ -54,7 +54,8 @@ final class Folder
         self::delete($old);
     }
 
-    private static function copy(string $from, string $to): void
+    /** Copies a folder's contents into another, creating it, overwriting files of the same name. */
+    public static function copy(string $from, string $to): void
     {
         if (! is_dir($to) && ! @mkdir($to, 0755, true)) {
             throw new RuntimeException("Could not create {$to}");

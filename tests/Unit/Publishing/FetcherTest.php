@@ -113,7 +113,8 @@ it('fetches the newest build, makes it live, and keeps the panel files out of th
     $htaccess = (string) file_get_contents($root . '/public_html/_site/.htaccess');
     expect($htaccess)->toContain("RewriteRule ^(.*)$ {$id}/\$1 [L]")
         ->toContain("ErrorDocument 404 /_site/{$id}/404.html")
-        ->toContain('Options -Indexes');
+        ->toContain('Options -Indexes')
+        ->toContain('RewriteCond %{THE_REQUEST} \\s/_site/ [NC]');
 });
 
 it('refreshes the working copy from the build, so the forms match the live site', function (): void {

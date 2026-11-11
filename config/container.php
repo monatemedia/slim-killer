@@ -19,6 +19,7 @@ use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
+use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
@@ -102,6 +103,7 @@ return [
         get(CronHeartbeatCommand::class),
         get(DeployFetchCommand::class),
         get(DeployRollbackCommand::class),
+        get(WebInstallCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 

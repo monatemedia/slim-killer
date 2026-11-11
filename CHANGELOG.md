@@ -13,6 +13,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **`hammer web:install`.** Sets up the website folder (`WEB_ROOT`): an `.htaccess` that
+  sends `/cp` to the control panel and everything else to the live release, a stub
+  `cp/index.php` that loads the panel from the project folder outside the web root, and
+  the panel's assets. Safe to run again after an update; an `.htaccess` it did not write
+  is kept as `.htaccess.before-slim-killer`. Old releases can no longer be opened by
+  their folder name (`/_site/<release>/`).
 - **Publishing progress.** After a save, the dashboard and content pages show Saved →
   Building → Going live → Live, updating by themselves, from GitHub's record of the build
   and the host's live release. A failed build says the website is unchanged. Once a few
