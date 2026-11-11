@@ -13,6 +13,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **`hammer deploy:fetch` and `deploy:rollback`.** The host fetches the newest build from
+  the client site's `dist` branch (streamed to disk, unpacked, checked), moves the panel's
+  files out of it, and switches the website to it by replacing one `.htaccess` in
+  `_site/`. It refreshes the panel's working copy from the same build, keeps three
+  releases, and leaves the website as it was if anything fails. A rollback stays live
+  until the next new build. Set `WEB_ROOT` in `.env`.
 - **hammer's logo and its opinion of `artisan`, back from the first Slim Killer.**
   `php hammer` shows the logo above the commands. `php artisan <command>` gets one of
   six remarks about the name, then runs the command with hammer anyway; `php hammer

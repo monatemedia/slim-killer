@@ -12,6 +12,8 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
+use SlimKiller\Console\Commands\DeployFetchCommand;
+use SlimKiller\Console\Commands\DeployRollbackCommand;
 use SlimKiller\Console\Commands\DoctorCommand;
 use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
@@ -37,6 +39,7 @@ use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
+use SlimKiller\Publishing\Releases;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\EnvFile;
@@ -78,6 +81,9 @@ return [
         $config->githubContentFolder,
     )),
 
+    // --- Publishing --------------------------------------------------------------
+    Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
+
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
     'console.commands' => add([
@@ -87,6 +93,8 @@ return [
         get(UserCreateCommand::class),
         get(UserResetCommand::class),
         get(CronHeartbeatCommand::class),
+        get(DeployFetchCommand::class),
+        get(DeployRollbackCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 

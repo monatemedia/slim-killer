@@ -39,4 +39,14 @@ final class FakeHttpClient implements HttpClient
 
         return ($this->answer)($url);
     }
+
+    /** Writes the answer's body to the file, as the real client streams it. */
+    public function download(string $url, array $headers, string $path, int $timeoutSeconds = 300): Response
+    {
+        $this->requested[] = 'DOWNLOAD ' . $url;
+        $response = ($this->answer)($url);
+        file_put_contents($path, $response->body);
+
+        return new Response($response->status, '', $response->error);
+    }
 }
