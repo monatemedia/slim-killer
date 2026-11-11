@@ -24,8 +24,8 @@ function progressHost(): array
     $root = temporaryFolder();
     mkdir($root . '/public_html');
     $clock = new SteppingClock('2026-11-11 10:00:00');
-    $github = (object) ['run' => null];
-    $http = new FakeHttpClient(static fn(string $url): Response => new Response(200, json_encode([
+    $github = (object) ['run' => null, 'status' => 200];
+    $http = new FakeHttpClient(static fn(string $url): Response => new Response($github->status, json_encode([
         'workflow_runs' => $github->run === null ? [] : [$github->run],
     ])));
     $log = new PublishLog($root . '/storage/publishing.json');
@@ -128,4 +128,15 @@ it('gives no estimate until there are three publishes to go on, then the typical
 
     $clock->advance(60);
     expect($progress->report()['estimate'])->toBe('Any moment now.');
+});
+
+it('does not claim to know the build when GitHub will not say', function (): void {
+    [$progress, $log, , $github, $clock] = progressHost();
+    $log->saved(SAVED, $clock->now());
+    $github->status = 403;
+
+    $report = $progress->report();
+
+    expect($report['stage'])->toBe('building')
+        ->and($report['message'])->toBe('Saved. Your website is being built.');
 });

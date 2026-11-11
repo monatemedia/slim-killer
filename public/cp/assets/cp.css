@@ -701,7 +701,7 @@ footer.page-footer {
 .publishing-steps li + li::before {
   content: "→";
   margin: 0 10px;
-  color: var(--border);
+  color: var(--text-muted);
 }
 .publishing-steps li::after { content: none; }
 .publishing-steps li.done { color: var(--pass); }

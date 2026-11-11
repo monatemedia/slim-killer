@@ -77,12 +77,17 @@ final class Progress
             return $this->stage('going-live', 'Putting the new version on your website.', $estimate);
         }
 
-        return $this->stage('building', $run === 'waiting'
-            ? 'Saved. Waiting for GitHub to start building your website.'
-            : 'Saved. GitHub is building your website.', $estimate);
+        return $this->stage('building', match ($run) {
+            'waiting' => 'Saved. Waiting for GitHub to start building your website.',
+            'building' => 'Saved. GitHub is building your website.',
+            default => 'Saved. Your website is being built.',
+        }, $estimate);
     }
 
-    /** "waiting", "building", "built" or "failed": GitHub's build for the commit. */
+    /**
+     * "waiting", "building", "built" or "failed": GitHub's build for the commit. "unknown"
+     * when GitHub would not say (no "Actions: read" on the token, or no answer).
+     */
     private function run(string $commit): string
     {
         $cached = is_file($this->cacheFile) ? json_decode((string) file_get_contents($this->cacheFile), true) : null;
@@ -105,6 +110,7 @@ final class Progress
         $latest = is_array($runs) && is_array($runs[0] ?? null) ? $runs[0] : null;
 
         $run = match (true) {
+            ! $response->ok() => 'unknown',
             $latest === null => 'waiting',
             ($latest['status'] ?? null) !== 'completed' => ($latest['status'] ?? null) === 'in_progress' ? 'building' : 'waiting',
             ($latest['conclusion'] ?? null) === 'success' => 'built',
