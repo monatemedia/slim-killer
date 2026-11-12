@@ -189,9 +189,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 ### Fixed
 
 - **The website's own 404 page.** `web:install` names `/404.html` as the error page in the
-  website folder's `.htaccess` (servers pick the error page by the address the visitor
-  asked for, so a parent folder's page or the host's generic one was shown), and every
-  switch copies the live release's `404.html` there as a real file, because LiteSpeed does
-  not send error pages through rewrite rules. A rollback brings back that release's page.
+  website folder's `.htaccess` as a backstop, but missing pages are now answered by
+  `cp/not-found.php`: the release's rules send any address it doesn't have there, and the
+  script returns the live release's 404 page with a 404 status. LiteSpeed did not reliably
+  honour `ErrorDocument` behind rewrites (the host's generic page came back for some
+  addresses and not others). Every switch copies the live `404.html` to the website
+  folder, so a rollback brings back that release's page; `web:install` re-applies the
+  live release's rules. It no longer suggests `deploy:fetch` when a release is live.
 - **Tests on Windows no longer print warnings at the end.** The clean-up closes each
   test's SQLite connection before deleting its temporary folder.

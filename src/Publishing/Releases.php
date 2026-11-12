@@ -23,6 +23,9 @@ final class Releases
 {
     public const string FOLDER = '_site';
 
+    /** Answers addresses the live release does not have (written by web:install). */
+    public const string NOT_FOUND = 'cp/not-found.php';
+
     public function __construct(
         /** The folder the website is served from; empty until WEB_ROOT is set. */
         private readonly string $webRoot,
@@ -152,11 +155,11 @@ final class Releases
     }
 
     /**
-     * Copies the release's 404 page to the web root. LiteSpeed serves an error page as a
-     * plain file and does not send it through the rewrite rules, so it must really be
-     * there. Replaced at every switch, so it always matches the live release.
+     * Copies the release's 404 page to the web root, where the not-found script (and the
+     * ErrorDocument backstop) read it. Replaced at every switch, so it always matches the
+     * live release.
      */
-    public function placeErrorPage(Release $release): void
+    private function placeErrorPage(Release $release): void
     {
         $page = $this->folder($release->id) . '/404.html';
         $target = $this->webRoot . '/404.html';
@@ -215,6 +218,13 @@ final class Releases
             '# A page asked for without its trailing slash: add it, as the site\'s links do.',
             "RewriteCond {$folder}/\$1 -d",
             'RewriteRule ^(.*[^/])$ /$1/ [R=301,L]',
+            '',
+            '# An address the live release does not have: its 404 page, with a 404 status. Sent',
+            '# to a script rather than left to ErrorDocument, which LiteSpeed does not reliably',
+            '# honour behind rewrites.',
+            "RewriteCond {$folder}/\$1 !-f",
+            "RewriteCond {$folder}/\$1/index.html !-f",
+            'RewriteRule ^(.*)$ /' . self::NOT_FOUND . ' [L]',
             '',
             '# Everything else comes from the live release.',
             "RewriteRule ^(.*)$ {$id}/\$1 [L]",

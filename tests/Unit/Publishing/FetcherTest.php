@@ -113,6 +113,8 @@ it('fetches the newest build, makes it live, and keeps the panel files out of th
     $htaccess = (string) file_get_contents($root . '/public_html/_site/.htaccess');
     expect($htaccess)->toContain("RewriteRule ^(.*)$ {$id}/\$1 [L]")
         ->toContain("ErrorDocument 404 /_site/{$id}/404.html")
+        ->toContain('RewriteRule ^(.*)$ /cp/not-found.php [L]')
+        ->toContain('/' . $id . '/$1/index.html !-f')
         ->toContain('Options -Indexes')
         ->toContain('RewriteCond %{THE_REQUEST} \\s/_site/ [NC]');
 });

@@ -79,5 +79,19 @@ it('puts the live release\'s 404 page back when run again', function (): void {
     $done = $webRoot->install();
 
     expect(file_get_contents($web . '/404.html'))->toBe('This Trail Doesn\'t Exist')
-        ->and(end($done))->toBe('Placed the live release\'s 404 page.');
+        ->and(end($done))->toBe('Brought the live release\'s rules and 404 page up to date.')
+        ->and($webRoot->hasLiveRelease())->toBeTrue();
+});
+
+it('answers missing pages with the live 404 page, or a plain one before the first fetch', function (): void {
+    [$webRoot, , $web] = webRootSetup();
+    $webRoot->install();
+    $script = $web . '/cp/not-found.php';
+    $run = static fn(): string => (string) shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($script));
+
+    expect($webRoot->hasLiveRelease())->toBeFalse()
+        ->and($run())->toContain('<h1>Page not found</h1>');
+
+    file_put_contents($web . '/404.html', 'This Trail Doesn\'t Exist');
+    expect($run())->toBe('This Trail Doesn\'t Exist');
 });

@@ -38,7 +38,9 @@ final class WebInstallCommand implements Command
 
             return 1;
         }
-        $output->line('Next: php hammer deploy:fetch, to put the website itself in place.', 'grey');
+        if (! $this->webRoot->hasLiveRelease()) {
+            $output->line('Next: php hammer deploy:fetch, to put the website itself in place.', 'grey');
+        }
 
         return 0;
     }

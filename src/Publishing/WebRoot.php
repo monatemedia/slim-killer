@@ -15,6 +15,7 @@ use SlimKiller\Support\Paths;
  *   WEB_ROOT/.htaccess       /cp to the control panel, everything else to the live release
  *   WEB_ROOT/cp/index.php    a two-line stub that loads the panel from the project folder
  *   WEB_ROOT/cp/assets/      the panel's CSS, JS and images, copied from the project
+ *   WEB_ROOT/cp/not-found.php  answers missing addresses with the 404 page and status
  *   WEB_ROOT/_site/          the releases (written by deploy:fetch)
  *   WEB_ROOT/404.html        a copy of the live release's 404 page (see Releases)
  *
@@ -69,10 +70,13 @@ final class WebRoot
         Folder::copy($this->paths->root('public/cp/assets'), $root . '/cp/assets');
         $done[] = "Copied the control panel's assets to cp/assets.";
 
+        $this->write($root . '/' . Releases::NOT_FOUND, $this->notFound());
+        $done[] = 'Wrote ' . Releases::NOT_FOUND . ', which answers missing pages with the site\'s 404 page.';
+
         $live = $this->releases->live();
         if ($live !== null) {
-            $this->releases->placeErrorPage($live);
-            $done[] = 'Placed the live release\'s 404 page.';
+            $this->releases->switchTo($live);
+            $done[] = 'Brought the live release\'s rules and 404 page up to date.';
         }
 
         return $done;
@@ -86,9 +90,8 @@ final class WebRoot
             'DirectoryIndex index.html index.php',
             'RewriteEngine On',
             '',
-            '# The site\'s own 404 page: a copy of the live release\'s, replaced at every switch.',
-            '# Named here because a server picks the error page by the address the visitor asked',
-            '# for; a real file because LiteSpeed does not route error pages through rewrites.',
+            '# A backstop only: missing pages are answered by cp/not-found.php (see _site/.htaccess).',
+            '# 404.html is a copy of the live release\'s 404 page, replaced at every switch.',
             'ErrorDocument 404 /404.html',
             '',
             '# Certificate renewals (Let\'s Encrypt) must reach their files.',
@@ -103,6 +106,31 @@ final class WebRoot
             '# Everything else comes from the live release (see _site/.htaccess).',
             'RewriteCond %{REQUEST_URI} !^/' . Releases::FOLDER . '/',
             'RewriteRule ^(.*)$ ' . Releases::FOLDER . '/$1 [L]',
+            '',
+        ]);
+    }
+
+    /** Whether a release is live, so the website itself is already in place. */
+    public function hasLiveRelease(): bool
+    {
+        return $this->releases->live() !== null;
+    }
+
+    private function notFound(): string
+    {
+        return implode("\n", [
+            '<?php',
+            '',
+            '// ' . self::MARKER . '. The live release\'s 404 page, with a 404 status.',
+            'http_response_code(404);',
+            "header('Content-Type: text/html; charset=utf-8');",
+            "header('Cache-Control: no-store');",
+            "\$page = dirname(__DIR__) . '/404.html';",
+            'if (is_file($page)) {',
+            '    readfile($page);',
+            '} else {',
+            "    echo '<!DOCTYPE html><title>Page not found</title><h1>Page not found</h1>';",
+            '}',
             '',
         ]);
     }
