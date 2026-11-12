@@ -30,7 +30,8 @@ it('routes /cp to the panel and everything else to the live release', function (
         ->toContain('RewriteRule ^cp(/.*)?$ cp/index.php [L]')
         ->toContain('RewriteRule ^(.*)$ _site/$1 [L]')
         ->toContain('RewriteRule ^\.well-known/ - [L]')
-        ->toContain('Options -Indexes');
+        ->toContain('Options -Indexes')
+        ->toContain('ErrorDocument 404 /404.html');
 });
 
 it('loads the panel from the project folder, outside the web root', function (): void {

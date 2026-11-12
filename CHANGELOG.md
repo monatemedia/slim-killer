@@ -188,5 +188,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Fixed
 
+- **The website's own 404 page.** `web:install` names `/404.html` as the error page in the
+  website folder's `.htaccess`. Before, a parent folder's error page (or the host's generic
+  one) was shown, because servers pick the error page by the address the visitor asked for.
 - **Tests on Windows no longer print warnings at the end.** The clean-up closes each
   test's SQLite connection before deleting its temporary folder.
