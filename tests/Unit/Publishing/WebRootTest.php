@@ -6,7 +6,7 @@ use SlimKiller\Publishing\Releases;
 use SlimKiller\Publishing\WebRoot;
 use SlimKiller\Support\Paths;
 
-/** @return array{0: WebRoot, 1: string, 2: string} the web root setup, the project and the web root */
+/** @return array{0: WebRoot, 1: string, 2: string, 3: Releases} the setup, the project, the web root and its releases */
 function webRootSetup(string $webRoot = 'public_html'): array
 {
     $project = temporaryFolder();
@@ -17,7 +17,9 @@ function webRootSetup(string $webRoot = 'public_html'): array
     $web = $webRoot === '' ? '' : temporaryFolder();
     $paths = new Paths($project);
 
-    return [new WebRoot(new Releases($web, $paths->storage('releases.json')), $paths), $project, $web];
+    $releases = new Releases($web, $paths->storage('releases.json'));
+
+    return [new WebRoot($releases, $paths), $project, $web, $releases];
 }
 
 it('routes /cp to the panel and everything else to the live release', function (): void {
@@ -62,4 +64,20 @@ it('says what is missing when WEB_ROOT is not set', function (): void {
     [$webRoot] = webRootSetup('');
 
     expect(fn() => $webRoot->install())->toThrow(RuntimeException::class, 'WEB_ROOT in .env is empty');
+});
+
+it('puts the live release\'s 404 page back when run again', function (): void {
+    [$webRoot, , $web, $releases] = webRootSetup();
+    $folder = temporaryFolder();
+    file_put_contents($folder . '/index.html', 'Home');
+    file_put_contents($folder . '/404.html', 'This Trail Doesn\'t Exist');
+    $release = new SlimKiller\Publishing\Release('abc123def456', str_repeat('a', 40), str_repeat('b', 40), '', '');
+    $releases->add($release, $folder);
+    $releases->switchTo($release);
+    unlink($web . '/404.html');
+
+    $done = $webRoot->install();
+
+    expect(file_get_contents($web . '/404.html'))->toBe('This Trail Doesn\'t Exist')
+        ->and(end($done))->toBe('Placed the live release\'s 404 page.');
 });

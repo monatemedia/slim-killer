@@ -144,10 +144,27 @@ final class Releases
             throw new RuntimeException("The release folder {$this->folder($release->id)} is missing.");
         }
         $this->writeAtomically($this->folder('.htaccess'), $this->htaccess($release));
+        $this->placeErrorPage($release);
 
         $log = $this->log();
         $log['live'] = $release->id;
         $this->writeLog($log);
+    }
+
+    /**
+     * Copies the release's 404 page to the web root. LiteSpeed serves an error page as a
+     * plain file and does not send it through the rewrite rules, so it must really be
+     * there. Replaced at every switch, so it always matches the live release.
+     */
+    public function placeErrorPage(Release $release): void
+    {
+        $page = $this->folder($release->id) . '/404.html';
+        $target = $this->webRoot . '/404.html';
+        if (is_file($page)) {
+            $this->writeAtomically($target, (string) file_get_contents($page));
+        } elseif (is_file($target)) {
+            @unlink($target);
+        }
     }
 
     /**

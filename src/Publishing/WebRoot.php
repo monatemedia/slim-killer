@@ -16,6 +16,7 @@ use SlimKiller\Support\Paths;
  *   WEB_ROOT/cp/index.php    a two-line stub that loads the panel from the project folder
  *   WEB_ROOT/cp/assets/      the panel's CSS, JS and images, copied from the project
  *   WEB_ROOT/_site/          the releases (written by deploy:fetch)
+ *   WEB_ROOT/404.html        a copy of the live release's 404 page (see Releases)
  *
  * Safe to run again: it rewrites its own files and copies the assets afresh (do that
  * after updating Slim Killer). An .htaccess it did not write is kept as a backup.
@@ -68,6 +69,12 @@ final class WebRoot
         Folder::copy($this->paths->root('public/cp/assets'), $root . '/cp/assets');
         $done[] = "Copied the control panel's assets to cp/assets.";
 
+        $live = $this->releases->live();
+        if ($live !== null) {
+            $this->releases->placeErrorPage($live);
+            $done[] = 'Placed the live release\'s 404 page.';
+        }
+
         return $done;
     }
 
@@ -79,9 +86,9 @@ final class WebRoot
             'DirectoryIndex index.html index.php',
             'RewriteEngine On',
             '',
-            '# The site\'s own 404 page. A server picks the error page from the folder the visitor',
-            '# asked for, so it must be named here; /404.html follows the route below into the',
-            '# live release, so it survives every switch.',
+            '# The site\'s own 404 page: a copy of the live release\'s, replaced at every switch.',
+            '# Named here because a server picks the error page by the address the visitor asked',
+            '# for; a real file because LiteSpeed does not route error pages through rewrites.',
             'ErrorDocument 404 /404.html',
             '',
             '# Certificate renewals (Let\'s Encrypt) must reach their files.',

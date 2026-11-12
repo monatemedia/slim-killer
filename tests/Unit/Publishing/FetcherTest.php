@@ -33,7 +33,7 @@ function siteBuild(string $commit, string $title = 'Home'): array
 {
     return [
         'index.html' => "<h1>{$title}</h1>",
-        '404.html' => 'Not found',
+        '404.html' => "Not found: {$title}",
         'destinations/namibia/index.html' => 'Namibia',
         '_slim-killer/build.json' => json_encode(['commit' => $commit, 'run' => 1, 'builtAt' => '2026-11-11T00:00:00Z']),
         '_slim-killer/schemas/articles.schema.json' => '{"title":"' . $title . '"}',
@@ -266,4 +266,18 @@ it('explains what is missing before publishing is set up', function (): void {
     );
 
     expect($fetcher->fetch()->message)->toContain('WEB_ROOT in .env is empty');
+});
+
+it('puts the live release\'s 404 page in the web root, and keeps it in step with switches', function (): void {
+    [$fetcher, , $github, $root] = publishingHost();
+    newBuild($github, str_repeat('a', 40), 'First');
+    $fetcher->fetch();
+    expect(file_get_contents($root . '/public_html/404.html'))->toBe('Not found: First');
+
+    newBuild($github, str_repeat('b', 40), 'Second');
+    $fetcher->fetch();
+    expect(file_get_contents($root . '/public_html/404.html'))->toBe('Not found: Second');
+
+    $fetcher->rollback();
+    expect(file_get_contents($root . '/public_html/404.html'))->toBe('Not found: First');
 });

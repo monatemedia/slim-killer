@@ -189,7 +189,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 ### Fixed
 
 - **The website's own 404 page.** `web:install` names `/404.html` as the error page in the
-  website folder's `.htaccess`. Before, a parent folder's error page (or the host's generic
-  one) was shown, because servers pick the error page by the address the visitor asked for.
+  website folder's `.htaccess` (servers pick the error page by the address the visitor
+  asked for, so a parent folder's page or the host's generic one was shown), and every
+  switch copies the live release's `404.html` there as a real file, because LiteSpeed does
+  not send error pages through rewrite rules. A rollback brings back that release's page.
 - **Tests on Windows no longer print warnings at the end.** The clean-up closes each
   test's SQLite connection before deleting its temporary folder.
