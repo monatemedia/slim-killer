@@ -631,7 +631,10 @@ footer.page-footer {
 .entry-address a code { color: inherit; }
 .field.has-error input, .field.has-error textarea, .field.has-error select { border-color: var(--danger, #e5484d); }
 
-.field-tip { display: inline-block; position: relative; }
+/* The tip opens under its label across the whole field (or group), not hanging off the
+   "?", so it never runs past the edge of a small screen. */
+.field, .group-field, .list-field { position: relative; }
+.field-tip { display: inline-block; position: static; }
 .field-tip summary {
   list-style: none;
   cursor: pointer;
@@ -651,9 +654,8 @@ footer.page-footer {
   position: absolute;
   z-index: 5;
   left: 0;
-  top: 28px;
-  width: min(360px, 80vw);
-  margin: 0;
+  right: 0;
+  margin: 6px 0 0;
   padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
