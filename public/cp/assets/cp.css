@@ -600,6 +600,9 @@ footer.page-footer {
   border-radius: var(--radius-sm);
   padding: 14px 16px 16px;
   margin: 0;
+  /* A fieldset is never narrower than its widest content unless told otherwise; on a
+     small phone that pushed the whole form off the right edge. */
+  min-width: 0;
   display: grid;
   gap: 14px;
 }
@@ -737,8 +740,9 @@ footer.page-footer {
 .photo-empty { display: grid; place-items: center; color: var(--text-muted); background: var(--bg); border-style: dashed; }
 .photo-file { margin: 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; overflow-wrap: anywhere; }
 .photo-file:empty { display: none; }
-.photo-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; max-width: 560px; width: 100%; margin: 0 auto; }
-.photo-buttons .btn { justify-content: center; text-align: center; }
+.photo-buttons { display: flex; flex-wrap: wrap; gap: 10px; max-width: 560px; width: 100%; margin: 0 auto; }
+/* The same size and weight for the <label> and the <button>, whatever form styles say. */
+.photo-buttons .btn { flex: 1 1 140px; min-width: 0; font-size: 1rem; font-weight: 700; line-height: 1.3; -webkit-appearance: none; appearance: none; }
 .photo-buttons .btn[hidden] { display: none; }
 .photo-upload { cursor: pointer; }
 .photo-upload:focus-within { outline: 3px solid var(--blue); outline-offset: 2px; }
