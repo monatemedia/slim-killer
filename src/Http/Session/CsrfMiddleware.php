@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\ControlPanel\View;
 
 /**
@@ -27,6 +28,10 @@ final class CsrfMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (in_array($request->getMethod(), ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return $handler->handle($request);
+        }
+        // Hooks are called by other systems, not forms. They check a signature instead.
+        if (str_starts_with($request->getUri()->getPath(), ControlPanel::BASE_PATH . '/hooks/')) {
             return $handler->handle($request);
         }
 

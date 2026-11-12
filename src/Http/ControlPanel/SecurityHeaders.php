@@ -20,7 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 final class SecurityHeaders implements MiddlewareInterface
 {
-    private const string POLICY = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; "
+    private const string POLICY = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; "
         . "form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

@@ -41,4 +41,39 @@ final class CurlHttpClient implements HttpClient
 
         return new Response($status, is_string($response) ? $response : '', $error);
     }
+
+    public function download(string $url, array $headers, string $path, int $timeoutSeconds = 300): Response
+    {
+        $lines = ['User-Agent: slim-killer'];
+        foreach ($headers as $name => $value) {
+            $lines[] = $name . ': ' . $value;
+        }
+        $file = @fopen($path, 'wb');
+        if ($file === false) {
+            return new Response(0, '', "could not write {$path}");
+        }
+        $handle = curl_init($url);
+        if ($handle === false) {
+            fclose($file);
+
+            return new Response(0, '', 'curl could not start');
+        }
+        // GitHub answers a zip download with a redirect to a short-lived address. curl
+        // does not send the Authorization header on to another host, which is right.
+        curl_setopt_array($handle, [
+            CURLOPT_FILE => $file,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => $timeoutSeconds,
+            CURLOPT_HTTPHEADER => $lines,
+            CURLOPT_FAILONERROR => false,
+        ]);
+        curl_exec($handle);
+        $status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($handle);
+        fclose($file);
+
+        return new Response($status, '', $error);
+    }
 }

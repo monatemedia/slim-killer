@@ -20,6 +20,8 @@ use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\SignedIn;
 use SlimKiller\Http\ControlPanel\View;
 use SlimKiller\Http\Session\Session;
+use SlimKiller\Publishing\PublishLog;
+use SlimKiller\Support\Clock;
 
 /**
  * /cp/content/{collection}/{slug}: one entry's form, built from the collection's schema.
@@ -42,6 +44,8 @@ final class EntryAction
         private readonly ContentWriter $writer,
         private readonly ContentCommitter $committer,
         private readonly AuditLog $audit,
+        private readonly PublishLog $publishLog,
+        private readonly Clock $clock,
     ) {}
 
     /** @param array<string, string> $args */
@@ -107,6 +111,9 @@ final class EntryAction
 
         $this->content->write($collection, $entry->slug, $saved);
         $this->audit->record('save', $user->id, Form::ip($request));
+        if ($result->commit !== null) {
+            $this->publishLog->saved($result->commit, $this->clock->now());
+        }
         $session->set(self::NOTICE, 'Saved. Your website shows the change once it has been published.');
 
         return Form::redirect($response, '/content/' . $collection->name . '/' . $entry->slug);

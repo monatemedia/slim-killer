@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\StreamFactory;
 use SlimKiller\Http\Session\SessionMiddleware;
 
 /**
@@ -40,6 +41,21 @@ final class Browser
         $fields += ['_csrf' => $this->csrf()];
 
         return $this->send($this->request('POST', $path)->withParsedBody($fields));
+    }
+
+    /**
+     * A POST from another system rather than a form: a raw body and its own headers.
+     *
+     * @param array<string, string> $headers
+     */
+    public function postRaw(string $path, string $body, array $headers): ResponseInterface
+    {
+        $request = $this->request('POST', $path)->withBody((new StreamFactory())->createStream($body));
+        foreach ($headers as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+
+        return $this->send($request);
     }
 
     public function body(): string

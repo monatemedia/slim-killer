@@ -12,11 +12,14 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
+use SlimKiller\Console\Commands\DeployFetchCommand;
+use SlimKiller\Console\Commands\DeployRollbackCommand;
 use SlimKiller\Console\Commands\DoctorCommand;
 use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
+use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
@@ -37,10 +40,15 @@ use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
+use SlimKiller\Publishing\Progress;
+use SlimKiller\Publishing\PublishLog;
+use SlimKiller\Publishing\Releases;
+use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\EnvFile;
 use SlimKiller\Support\Paths;
+use SlimKiller\Support\ShutdownAfterResponse;
 use SlimKiller\Support\SystemClock;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -78,6 +86,12 @@ return [
         $config->githubContentFolder,
     )),
 
+    // --- Publishing --------------------------------------------------------------
+    Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
+    AfterResponse::class => get(ShutdownAfterResponse::class),
+    PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
+    Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),
+
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
     'console.commands' => add([
@@ -87,6 +101,9 @@ return [
         get(UserCreateCommand::class),
         get(UserResetCommand::class),
         get(CronHeartbeatCommand::class),
+        get(DeployFetchCommand::class),
+        get(DeployRollbackCommand::class),
+        get(WebInstallCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 

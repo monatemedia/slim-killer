@@ -8,10 +8,12 @@ use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
+use SlimKiller\Http\ControlPanel\Actions\BuildReadyAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\CollectionsAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntriesAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntryAction;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
+use SlimKiller\Http\ControlPanel\Actions\PublishingAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
 use SlimKiller\Http\ControlPanel\Actions\SignInAction;
 use SlimKiller\Http\ControlPanel\Actions\SignOutAction;
@@ -49,6 +51,9 @@ final class ControlPanel
         $app->post('/sign-out', SignOutAction::class);
         $app->get('/setup', SetupAction::class);
 
+        // Called by the site's workflow when a build is ready. Signed, not signed in.
+        $app->post('/hooks/build-ready', BuildReadyAction::class);
+
         // Content: signed-in people only. Not a static function: Slim binds a group's
         // function to the container, and PHP cannot bind a static one.
         $app->group('/content', function (RouteCollectorProxy $content): void {
@@ -56,6 +61,7 @@ final class ControlPanel
             $content->get('/{collection}', EntriesAction::class);
             $content->map(['GET', 'POST'], '/{collection}/{slug}', EntryAction::class);
         })->add(SignedIn::class);
+        $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:
         // security headers, errors, routing, session, form parsing, the CSRF check.

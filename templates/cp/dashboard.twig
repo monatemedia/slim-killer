@@ -4,6 +4,8 @@
 
 {% block title %}Control panel{% endblock %}
 
+{% block publishing %}{% include 'cp/_publishing.twig' %}{% endblock %}
+
 {% block main %}
 <section class="hero">
   <h1>Hello, {{ name }}.</h1>
@@ -12,7 +14,7 @@
 
 <a class="tile tile-wide" href="{{ base }}/content">
   <span class="tile-title">Your content</span>
-  <span class="tile-meta">Look at the pages of your website. Saving changes arrives in the next version.</span>
+  <span class="tile-meta">Change the words on the pages of your website.</span>
 </a>
 
 <section class="card">

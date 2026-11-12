@@ -13,6 +13,27 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **`hammer web:install`.** Sets up the website folder (`WEB_ROOT`): an `.htaccess` that
+  sends `/cp` to the control panel and everything else to the live release, a stub
+  `cp/index.php` that loads the panel from the project folder outside the web root, and
+  the panel's assets. Safe to run again after an update; an `.htaccess` it did not write
+  is kept as `.htaccess.before-slim-killer`. Old releases can no longer be opened by
+  their folder name (`/_site/<release>/`).
+- **Publishing progress.** After a save, the dashboard and content pages show Saved →
+  Building → Going live → Live, updating by themselves, from GitHub's record of the build
+  and the host's live release. A failed build says the website is unchanged. Once a few
+  publishes have gone live, it adds the time left, from this site's own recent
+  publishes. The GitHub token needs "Actions: read" for the Building stage.
+- **The webhook: "a build is ready".** `POST /cp/hooks/build-ready`, signed with
+  HMAC-SHA256 over a timestamp and the body (`WEBHOOK_SECRET`), answers at once and then
+  fetches the build. Calls without a valid signature, or older than five minutes, are
+  refused; with no secret set, the address does not exist.
+- **`hammer deploy:fetch` and `deploy:rollback`.** The host fetches the newest build from
+  the client site's `dist` branch (streamed to disk, unpacked, checked), moves the panel's
+  files out of it, and switches the website to it by replacing one `.htaccess` in
+  `_site/`. It refreshes the panel's working copy from the same build, keeps three
+  releases, and leaves the website as it was if anything fails. A rollback stays live
+  until the next new build. Set `WEB_ROOT` in `.env`.
 - **hammer's logo and its opinion of `artisan`, back from the first Slim Killer.**
   `php hammer` shows the logo above the commands. `php artisan <command>` gets one of
   six remarks about the name, then runs the command with hammer anyway; `php hammer
@@ -144,6 +165,7 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- The dashboard no longer says saving is coming: it is here.
 - **Code names follow the glossary.** Welcome links are `WelcomeLinks` in code (was
   `Invites`); signing in is at `/cp/sign-in` and signing out at `/cp/sign-out` (were
   `/cp/login` and `/cp/logout`), with `SignInAction`, `SignOutAction` and
@@ -166,5 +188,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Fixed
 
+- **The website's own 404 page.** `web:install` names `/404.html` as the error page in the
+  website folder's `.htaccess` as a backstop, but missing pages are now answered by
+  `cp/not-found.php`: the release's rules send any address it doesn't have there, and the
+  script returns the live release's 404 page with a 404 status. LiteSpeed did not reliably
+  honour `ErrorDocument` behind rewrites (the host's generic page came back for some
+  addresses and not others). Every switch copies the live `404.html` to the website
+  folder, so a rollback brings back that release's page; `web:install` re-applies the
+  live release's rules. It no longer suggests `deploy:fetch` when a release is live.
 - **Tests on Windows no longer print warnings at the end.** The clean-up closes each
   test's SQLite connection before deleting its temporary folder.

@@ -63,6 +63,11 @@ final class FakeGitHub implements HttpClient
         return $this->send('GET', $url, $headers);
     }
 
+    public function download(string $url, array $headers, string $path, int $timeoutSeconds = 300): Response
+    {
+        return new Response(404, '');
+    }
+
     public function send(string $method, string $url, array $headers = [], ?string $body = null, int $timeoutSeconds = 20): Response
     {
         $this->requests[] = $method . ' ' . $url;
