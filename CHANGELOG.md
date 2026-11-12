@@ -13,6 +13,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **The doctor checks for photo uploads.** `exif` is now a required extension (it turns
+  phone photos the right way up), and GD must be able to write a JPEG, tested by writing
+  one. WebP reading is reported as information; the WebP-writing and AVIF lines are gone,
+  since uploads are saved as JPEG.
+- **README recommends Laravel Herd** for local development, in place of a LAMP stack.
+
 - **The page's real web address.** A content page shows where it is on the website, as a
   link that opens it (for example `/destinations/namibia/`). The addresses come from the
   site's build (`_slim-killer/addresses.json`, worked out from the site's

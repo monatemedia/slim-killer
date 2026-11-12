@@ -23,6 +23,7 @@ final class Requirements
         'pdo_sqlite' => 'the control panel database',
         'zip' => 'unpacks site and control panel releases',
         'gd' => 'resizes and re-encodes uploaded photos',
+        'exif' => 'turns photos from a phone the right way up',
         'mbstring' => 'handles text in any language',
         'fileinfo' => 'checks what an uploaded file really is',
     ];

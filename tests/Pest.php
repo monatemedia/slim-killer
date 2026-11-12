@@ -39,8 +39,8 @@ function environment(array $overrides = [], string $label = 'Command line'): Sna
             'post_max_size' => '128M',
         ],
         'disabled_functions' => [],
-        'webp_write' => true,
-        'avif' => false,
+        'jpeg_write' => true,
+        'webp_read' => false,
     ];
 
     return SnapshotEnvironment::fromProbe(array_replace($defaults, $overrides), $label);

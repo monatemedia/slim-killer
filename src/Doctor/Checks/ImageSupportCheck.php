@@ -18,17 +18,17 @@ final class ImageSupportCheck implements PhpCheck
 
         $results = [];
 
-        if ($environment->canWriteWebp()) {
-            $results[] = CheckResult::pass('Photos can be saved as WebP');
+        if ($environment->canWriteJpeg()) {
+            $results[] = CheckResult::pass('Uploaded photos can be saved as JPEG');
         } else {
-            $results[] = CheckResult::warn(
-                'GD cannot write WebP',
-                'uploaded photos will be saved as JPEG instead (larger files)',
+            $results[] = CheckResult::fail(
+                'GD cannot write JPEG',
+                'uploaded photos are re-encoded as JPEG; ask the host for GD with JPEG support',
             );
         }
 
-        if ($environment->supportsAvif()) {
-            $results[] = CheckResult::info('AVIF images are supported too');
+        if ($environment->readsWebp()) {
+            $results[] = CheckResult::info('WebP photos can be uploaded too');
         }
 
         return $results;

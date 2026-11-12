@@ -28,13 +28,13 @@ foreach (explode(',', (string) ini_get('disable_functions')) as $name) {
     }
 }
 
-$webp = false;
-if (function_exists('imagecreatetruecolor') && function_exists('imagewebp')) {
+$jpeg = false;
+if (function_exists('imagecreatetruecolor') && function_exists('imagejpeg')) {
     $image = imagecreatetruecolor(64, 64);
     ob_start();
-    $ok = imagewebp($image, null, 75);
+    $ok = imagejpeg($image, null, 85);
     $bytes = ob_get_clean();
-    $webp = $ok && $bytes !== '';
+    $jpeg = $ok && $bytes !== '';
 }
 
 $gd = function_exists('gd_info') ? gd_info() : array();
@@ -53,6 +53,6 @@ echo json_encode(array(
         'post_max_size' => (string) ini_get('post_max_size'),
     ),
     'disabled_functions' => $disabled,
-    'webp_write' => $webp,
-    'avif' => ! empty($gd['AVIF Support']),
+    'jpeg_write' => $jpeg,
+    'webp_read' => function_exists('imagecreatefromwebp') && ! empty($gd['WebP Support']),
 ));
