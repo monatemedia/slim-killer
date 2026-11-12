@@ -127,7 +127,9 @@ The command-line tool (`hammer`), the host checker and the control panel's sign-
 
 ### Prerequisites
 
-For development (Windows with Laravel Herd, using Git Bash):
+For development we recommend [Laravel Herd](https://herd.laravel.com/) (Windows and macOS): one install gives you PHP 8.4 with the extensions Slim Killer needs, Composer, and a local `.test` address for each project, in place of a hand-built LAMP stack (XAMPP, WAMP, MAMP and the like). Slim Killer needs no MySQL, only SQLite, so Herd's free version is enough. On Linux, use your distribution's PHP 8.4 packages. Either way, `php hammer doctor` confirms the machine has everything.
+
+What you need (Windows with Herd, using Git Bash, is how Slim Killer itself is built):
 
 * PHP 8.4 and Composer
 * Node.js 24 LTS and npm (for building the Astro sites, later)

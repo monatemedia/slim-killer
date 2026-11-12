@@ -6,6 +6,7 @@ namespace SlimKiller\Http\ControlPanel\Actions\Content;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use Slim\Exception\HttpNotFoundException;
 use SlimKiller\Auth\AuditLog;
 use SlimKiller\Content\Collection;
@@ -21,9 +22,14 @@ use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\SignedIn;
 use SlimKiller\Http\ControlPanel\View;
 use SlimKiller\Http\Session\Session;
+use SlimKiller\Photos\PhotoLibrary;
+use SlimKiller\Photos\PhotoProblem;
+use SlimKiller\Photos\PhotoProcessor;
+use SlimKiller\Photos\StagedPhotos;
 use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
+use SlimKiller\Support\Paths;
 
 /**
  * /cp/content/{collection}/{slug}: one entry's form, built from the collection's schema.
@@ -33,6 +39,10 @@ use SlimKiller\Support\Clock;
  * GitHub with the version the client opened, so a newer save by someone else is never
  * overwritten. After a save the browser is sent back to the page (so a reload does not
  * save twice) and the working copy holds the new file.
+ *
+ * A photo chosen in an image field (upload[<path>]) is checked and re-encoded on any
+ * post, kept on the host under a clean name, and put in the field; it goes to GitHub with
+ * the page, in the same commit, when the person presses Save.
  */
 final class EntryAction
 {
@@ -50,6 +60,10 @@ final class EntryAction
         private readonly Clock $clock,
         private readonly PageAddresses $addresses,
         private readonly AppConfig $config,
+        private readonly PhotoProcessor $photos,
+        private readonly StagedPhotos $staged,
+        private readonly PhotoLibrary $library,
+        private readonly Paths $paths,
     ) {}
 
     /** @param array<string, string> $args */
@@ -61,48 +75,57 @@ final class EntryAction
             throw new HttpNotFoundException($request);
         }
         $session = Session::of($request);
+        $person = SignedIn::user($request);
+        $user = $person->id;
 
         if ($request->getMethod() !== 'POST') {
             $notice = $session->string(self::NOTICE);
             $session->remove(self::NOTICE);
 
-            return $this->page($response, $session, $collection, $entry, ['notice' => $notice]);
+            return $this->page($response, $session, $user, $collection, $entry, ['notice' => $notice]);
         }
 
         $posted = $request->getParsedBody();
         $posted = is_array($posted) ? $posted : [];
+        $uploadErrors = $this->stageUploads($request, $user, $posted, $entry->title);
         $fields = $this->fields->fields($collection->schema);
         $submission = $this->reader->read($fields, $posted['f'] ?? []);
         $body = is_string($posted['body'] ?? null) ? $posted['body'] : null;
         $version = is_string($posted['version'] ?? null) ? $posted['version'] : $entry->version;
         $form = ['values' => $submission->values, 'body' => $body ?? $entry->body, 'version' => $version];
 
+        if ($uploadErrors !== []) {
+            return $this->page($response, $session, $user, $collection, $entry, $form + ['errors' => $uploadErrors + $submission->errors], 422);
+        }
+
         $change = ListChange::from($posted['list_action'] ?? null);
         if ($change !== null) {
             [$form['values'], $focus] = $change->apply($submission->values);
 
-            return $this->page($response, $session, $collection, $entry, $form + [
+            return $this->page($response, $session, $user, $collection, $entry, $form + [
                 'focus' => $focus,
                 'notice' => 'This change is in the form only. Press Save to keep it, or Discard changes.',
             ]);
         }
         if (! $submission->isValid()) {
-            return $this->page($response, $session, $collection, $entry, $form + ['errors' => $submission->errors], 422);
+            return $this->page($response, $session, $user, $collection, $entry, $form + ['errors' => $submission->errors], 422);
         }
 
         $raw = (string) $this->content->raw($collection, $entry->slug);
         $saved = $this->writer->write($raw, $fields, $submission->values, $body);
         if ($saved === $raw) {
-            return $this->page($response, $session, $collection, $entry, $form + ['notice' => 'Nothing has changed, so there was nothing to save.']);
+            return $this->page($response, $session, $user, $collection, $entry, $form + ['notice' => 'Nothing has changed, so there was nothing to save.']);
         }
 
-        $user = SignedIn::user($request);
+        $photos = $this->stagedIn($user, $submission->values);
         $result = $this->committer->save(
             $collection->name . '/' . $entry->slug . '.md',
             $saved,
             $version,
-            sprintf('Save "%s" (%s/%s.md) in the control panel', $entry->title, $collection->name, $entry->slug),
-            ['name' => $user->name, 'email' => $user->email],
+            sprintf('Save "%s" (%s/%s.md) in the control panel', $entry->title, $collection->name, $entry->slug)
+                . ($photos === [] ? '' : ', with ' . (count($photos) === 1 ? 'a new photo' : count($photos) . ' new photos')),
+            ['name' => $person->name, 'email' => $person->email],
+            $photos,
         );
         if ($result->isConflict() && $result->current !== null) {
             // Someone saved first: keep the newer version in the working copy, so
@@ -110,11 +133,14 @@ final class EntryAction
             $this->content->write($collection, $entry->slug, $result->current);
         }
         if (! $result->isSaved()) {
-            return $this->page($response, $session, $collection, $entry, $form + ['problem' => $result->message], $result->isConflict() ? 409 : 502);
+            return $this->page($response, $session, $user, $collection, $entry, $form + ['problem' => $result->message], $result->isConflict() ? 409 : 502);
         }
 
         $this->content->write($collection, $entry->slug, $saved);
-        $this->audit->record('save', $user->id, Form::ip($request));
+        foreach (array_keys($photos) as $path) {
+            $this->staged->saved($user, basename($path));
+        }
+        $this->audit->record('save', $user, Form::ip($request));
         if ($result->commit !== null) {
             $this->publishLog->saved($result->commit, $this->clock->now());
         }
@@ -123,10 +149,114 @@ final class EntryAction
         return Form::redirect($response, '/content/' . $collection->name . '/' . $entry->slug);
     }
 
+    /**
+     * Checks and keeps every photo chosen in the form, and puts its file name in its field.
+     *
+     * @param array<mixed> $posted
+     * @return array<string, string> problems, by the field's path
+     */
+    private function stageUploads(ServerRequestInterface $request, int $user, array &$posted, string $pageTitle): array
+    {
+        $uploads = $request->getUploadedFiles()['upload'] ?? [];
+        $errors = [];
+        foreach (is_array($uploads) ? $uploads : [] as $path => $upload) {
+            if (! is_string($path) || preg_match('/^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*$/', $path) !== 1
+                || ! $upload instanceof UploadedFileInterface || $upload->getError() === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            $temporary = $this->paths->storage('tmp/upload-' . bin2hex(random_bytes(8)));
+            try {
+                if ($upload->getError() !== UPLOAD_ERR_OK) {
+                    throw new PhotoProblem(in_array($upload->getError(), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+                        ? 'That photo is too big to upload. Use a copy of at most 20 MB.'
+                        : 'The photo did not arrive. Choose it again.');
+                }
+                if (! is_dir(dirname($temporary))) {
+                    @mkdir(dirname($temporary), 0755, true);
+                }
+                $upload->moveTo($temporary);
+                $file = $this->staged->stage(
+                    $user,
+                    $this->photos->process($temporary),
+                    (string) $upload->getClientFilename(),
+                    self::describedAs($posted['f'] ?? [], $path) ?? $pageTitle,
+                );
+                $posted['f'] = self::setAt(is_array($posted['f'] ?? null) ? $posted['f'] : [], explode('.', $path), $file);
+            } catch (PhotoProblem $problem) {
+                $errors[$path] = $problem->getMessage();
+            } finally {
+                if (is_file($temporary)) {
+                    @unlink($temporary);
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * The first words of a photo's description, from the image's "alt" beside its "src"
+     * ("gallery.0.src" → "gallery.0.alt"), for naming the file; null when there is none.
+     * A leading "A", "An" or "The" is dropped: "A lion at a waterhole" → "lion at a waterhole".
+     */
+    private static function describedAs(mixed $posted, string $path): ?string
+    {
+        if (! str_ends_with($path, '.src')) {
+            return null;
+        }
+        $value = $posted;
+        foreach (explode('.', substr($path, 0, -4) . '.alt') as $key) {
+            $value = is_array($value) ? ($value[$key] ?? null) : null;
+        }
+        $words = is_string($value) ? preg_split('/\s+/', trim($value), -1, PREG_SPLIT_NO_EMPTY) : [];
+        $words = is_array($words) ? $words : [];
+        if ($words !== [] && in_array(strtolower($words[0]), ['a', 'an', 'the'], true)) {
+            array_shift($words);
+        }
+
+        return $words === [] ? null : implode(' ', array_slice($words, 0, 8));
+    }
+
+    /**
+     * The staged photos a page's values use, ready to commit with it.
+     *
+     * @param array<mixed> $values
+     * @return array<string, string> path inside content/ => bytes
+     */
+    private function stagedIn(int $user, array $values): array
+    {
+        $photos = [];
+        array_walk_recursive($values, function (mixed $value) use ($user, &$photos): void {
+            if (is_string($value) && $this->staged->has($user, $value)) {
+                $photos['images/' . $value] = (string) $this->staged->bytes($user, $value);
+            }
+        });
+
+        return $photos;
+    }
+
+    /**
+     * @param array<mixed> $data
+     * @param list<string> $keys
+     * @return array<mixed>
+     */
+    private static function setAt(array $data, array $keys, string $value): array
+    {
+        $key = array_shift($keys);
+        if ($key === null) {
+            return $data;
+        }
+        $data[$key] = $keys === [] ? $value : self::setAt(is_array($data[$key] ?? null) ? $data[$key] : [], $keys, $value);
+
+        return $data;
+    }
+
     /** @param array<string, mixed> $form */
-    private function page(ResponseInterface $response, Session $session, Collection $collection, Entry $entry, array $form, int $status = 200): ResponseInterface
+    private function page(ResponseInterface $response, Session $session, int $user, Collection $collection, Entry $entry, array $form, int $status = 200): ResponseInterface
     {
         $address = $this->addresses->of($collection->name, $entry->slug);
+        // Photos staged by this person first, so a new upload is easy to find again.
+        $photos = $this->staged->all($user) + $this->library->all();
 
         return $this->view->render($response, 'cp/content/entry.twig', [
             'collection' => ['name' => $collection->name, 'label' => $collection->label],
@@ -146,6 +276,7 @@ final class EntryAction
             'problem' => $form['problem'] ?? null,
             'focus' => $form['focus'] ?? null,
             'csrf' => $session->csrfToken(),
+            'photos' => $photos,
         ], $status);
     }
 }

@@ -13,6 +13,32 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Photo upload.** An image field shows its photo with its file name underneath, and two
+  buttons: **Upload a new photo** (JPEG, PNG or WebP, up to 20 MB) and **Choose a photo**
+  for the site's existing photos. The file name is not a box to type in: a new photo is
+  named after the file it came from ("Lions at dusk.jpg" → `lions-at-dusk.jpg`). When that
+  name says nothing (an iPhone's random name, `IMG_2041`, `PXL_…`, WhatsApp's), it is named
+  from the first words of the photo's description ("A lion at a waterhole" →
+  `lion-at-a-waterhole.jpg`), or else after the page (`discover-botswana.jpg`). Changing
+  the photo clears its description (keeping the old one as a faint "Was: …" to retype) and
+  highlights the box, saying why it matters: a description belongs to one photo. An upload is
+  checked (its bytes and its content must agree it is a photo, at most 40 megapixels),
+  turned the right way up, made at most 2400 px on the long edge and re-encoded as a JPEG
+  at quality 85 (a transparent PNG stays PNG), which drops EXIF, GPS included, and
+  anything hidden in the file. It is kept on the host, outside the web root, under a clean
+  name, and goes to GitHub with the page in the same commit when Save is pressed; list
+  buttons in between keep it, and unsaved photos are forgotten after a day.
+- **Photo previews.** The site's build carries a small preview of every photo
+  (`_slim-killer/previews/`, kept beside the working copy); a photo uploaded through the
+  panel shows its own preview until the next build. Signed-in people get them at
+  `/cp/photos/<name>`.
+
+- **The doctor checks for photo uploads.** `exif` is now a required extension (it turns
+  phone photos the right way up), and GD must be able to write a JPEG, tested by writing
+  one. WebP reading is reported as information; the WebP-writing and AVIF lines are gone,
+  since uploads are saved as JPEG.
+- **README recommends Laravel Herd** for local development, in place of a LAMP stack.
+
 - **The page's real web address.** A content page shows where it is on the website, as a
   link that opens it (for example `/destinations/namibia/`). The addresses come from the
   site's build (`_slim-killer/addresses.json`, worked out from the site's

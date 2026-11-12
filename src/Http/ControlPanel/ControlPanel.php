@@ -12,6 +12,7 @@ use SlimKiller\Http\ControlPanel\Actions\BuildReadyAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\CollectionsAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntriesAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntryAction;
+use SlimKiller\Http\ControlPanel\Actions\Content\PhotoPreviewAction;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
 use SlimKiller\Http\ControlPanel\Actions\PublishingAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
@@ -62,6 +63,7 @@ final class ControlPanel
             $content->map(['GET', 'POST'], '/{collection}/{slug}', EntryAction::class);
         })->add(SignedIn::class);
         $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
+        $app->get('/photos/{name}', PhotoPreviewAction::class)->add(SignedIn::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:
         // security headers, errors, routing, session, form parsing, the CSRF check.

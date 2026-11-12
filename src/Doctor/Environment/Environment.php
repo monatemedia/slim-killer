@@ -29,8 +29,9 @@ interface Environment
     /** @return list<string> */
     public function disabledFunctions(): array;
 
-    /** Can GD actually write a WebP image (not just claim to support it)? */
-    public function canWriteWebp(): bool;
+    /** Can GD actually write a JPEG (not just claim to support it)? Uploads are saved as JPEG. */
+    public function canWriteJpeg(): bool;
 
-    public function supportsAvif(): bool;
+    /** Can GD read WebP, so clients can upload WebP photos too? */
+    public function readsWebp(): bool;
 }

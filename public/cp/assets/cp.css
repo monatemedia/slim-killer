@@ -600,6 +600,9 @@ footer.page-footer {
   border-radius: var(--radius-sm);
   padding: 14px 16px 16px;
   margin: 0;
+  /* A fieldset is never narrower than its widest content unless told otherwise; on a
+     small phone that pushed the whole form off the right edge. */
+  min-width: 0;
   display: grid;
   gap: 14px;
 }
@@ -628,7 +631,10 @@ footer.page-footer {
 .entry-address a code { color: inherit; }
 .field.has-error input, .field.has-error textarea, .field.has-error select { border-color: var(--danger, #e5484d); }
 
-.field-tip { display: inline-block; position: relative; }
+/* The tip opens under its label across the whole field (or group), not hanging off the
+   "?", so it never runs past the edge of a small screen. */
+.field, .group-field, .list-field { position: relative; }
+.field-tip { display: inline-block; position: static; }
 .field-tip summary {
   list-style: none;
   cursor: pointer;
@@ -648,9 +654,8 @@ footer.page-footer {
   position: absolute;
   z-index: 5;
   left: 0;
-  top: 28px;
-  width: min(360px, 80vw);
-  margin: 0;
+  right: 0;
+  margin: 6px 0 0;
   padding: 10px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -727,3 +732,31 @@ footer.page-footer {
 @media (prefers-reduced-motion: reduce) {
   .publishing-steps li.current::after { animation: none; }
 }
+
+/* Photo fields and the photo chooser */
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.photo-field { display: grid; gap: 10px; }
+.photo-preview, .photo-empty { display: block; width: 100%; max-width: 560px; aspect-ratio: 3 / 2; margin: 0 auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.photo-preview { object-fit: cover; background: var(--border); }
+.photo-preview[hidden], .photo-empty[hidden] { display: none; }
+.photo-empty { display: grid; place-items: center; color: var(--text-muted); background: var(--bg); border-style: dashed; }
+.photo-file { margin: 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+.photo-file:empty { display: none; }
+.photo-buttons { display: flex; flex-wrap: wrap; gap: 10px; max-width: 560px; width: 100%; margin: 0 auto; }
+/* The same size and weight for the <label> and the <button>, whatever form styles say. */
+.photo-buttons .btn { flex: 1 1 140px; min-width: 0; font-size: 1rem; font-weight: 700; line-height: 1.3; -webkit-appearance: none; appearance: none; }
+.photo-buttons .btn[hidden] { display: none; }
+.photo-upload { cursor: pointer; }
+.photo-upload:focus-within { outline: 3px solid var(--blue); outline-offset: 2px; }
+.photo-picker { width: min(960px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+.photo-picker::backdrop { background: rgb(0 0 0 / 0.5); }
+.photo-picker-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); }
+.photo-picker-head h2 { margin: 0; font-size: 1.2em; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding: 16px 20px 20px; }
+.photo-option { display: grid; gap: 6px; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: none; color: var(--text-muted); font: inherit; font-size: 0.8em; text-align: left; cursor: pointer; }
+.photo-option:hover, .photo-option:focus-visible { border-color: var(--text-muted); }
+.photo-option img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; }
+.photo-option span { overflow-wrap: anywhere; }
+.needs-description input { border-color: var(--orange); }
+.field-nudge { margin: 0; color: var(--orange); font-size: 0.88rem; font-weight: 600; }
+.field:not(.needs-description) .field-nudge { display: none; }

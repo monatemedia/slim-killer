@@ -35,12 +35,15 @@ final class Browser
         return $this->send($this->request('GET', $path)->withQueryParams($query));
     }
 
-    /** @param array<string, mixed> $fields */
-    public function post(string $path, array $fields): ResponseInterface
+    /**
+     * @param array<string, mixed> $fields
+     * @param array<string, mixed> $files uploaded files, as PSR-7 has them: ['upload' => ['heroImage' => UploadedFile]]
+     */
+    public function post(string $path, array $fields, array $files = []): ResponseInterface
     {
         $fields += ['_csrf' => $this->csrf()];
 
-        return $this->send($this->request('POST', $path)->withParsedBody($fields));
+        return $this->send($this->request('POST', $path)->withParsedBody($fields)->withUploadedFiles($files));
     }
 
     /**

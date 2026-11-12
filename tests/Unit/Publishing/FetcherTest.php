@@ -324,3 +324,16 @@ it('keeps the build\'s page addresses beside the working copy, and drops them wh
     $fetcher->fetch();
     expect($root . '/storage/site/addresses.json')->not->toBeFile();
 });
+
+it('keeps the build\'s photo previews beside the working copy', function (): void {
+    [$fetcher, , $github, $root] = publishingHost();
+    newBuild($github, str_repeat('a', 40), 'First', siteBuild(str_repeat('a', 40), 'First') + [
+        '_slim-killer/previews.json' => '{"oryx.jpg": {"preview": "0123456789abcdef.webp", "width": 10, "height": 10}}',
+        '_slim-killer/previews/0123456789abcdef.webp' => 'webp bytes',
+    ]);
+    $fetcher->fetch();
+
+    expect(file_get_contents($root . '/storage/site/previews/0123456789abcdef.webp'))->toBe('webp bytes')
+        ->and($root . '/storage/site/previews.json')->toBeFile()
+        ->and($root . '/public_html/_site/' . substr($github->dist, 0, 12) . '/_slim-killer')->not->toBeDirectory();
+});

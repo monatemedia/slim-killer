@@ -124,4 +124,86 @@
     check();
   }
 
+  // Photo fields. Picking a file shows it at once (it is checked and kept when the form
+  // is posted); "Choose a photo" opens the page's photo chooser and puts the chosen
+  // file's name in the field. Without JavaScript the field still takes a file or a name.
+  var picker = document.getElementById('photo-picker');
+  var choosingFor = null;
+  document.querySelectorAll('[data-photo-field]').forEach(function (field) {
+    var parts = {
+      field: field,
+      preview: field.querySelector('[data-photo-preview]'),
+      empty: field.querySelector('[data-photo-empty]'),
+      file: field.querySelector('[data-photo-file]'),
+      name: field.querySelector('[data-photo-name]'),
+      upload: field.querySelector('[data-photo-upload]'),
+    };
+    var choose = field.querySelector('[data-photo-choose]');
+
+    parts.upload.addEventListener('change', function () {
+      var chosen = parts.upload.files && parts.upload.files[0];
+      if (chosen) {
+        showPhoto(parts, URL.createObjectURL(chosen), 'New photo, added when you press Save');
+        askForDescription(field);
+      }
+    });
+
+    if (picker && typeof picker.showModal === 'function') {
+      choose.hidden = false;
+      choose.addEventListener('click', function () {
+        choosingFor = parts;
+        picker.showModal();
+      });
+    }
+  });
+
+  // The photo changed, so its description belongs to the old one: clear it (keeping it
+  // as a faint "Was: ..." to retype if it still fits), point at the box and say why it
+  // matters. The description also names the file when the phone's own name says nothing.
+  function askForDescription(field) {
+    var group = field.closest('fieldset');
+    var alt = group && group.querySelector('input[name$="[alt]"]');
+    if (!alt) {
+      return;
+    }
+    if (alt.value.trim() !== '') {
+      alt.placeholder = 'Was: ' + alt.value.trim();
+      alt.value = '';
+      alt.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    var box = alt.closest('.field');
+    box.classList.add('needs-description');
+    if (!box.querySelector('.field-nudge')) {
+      var nudge = document.createElement('p');
+      nudge.className = 'field-nudge';
+      nudge.textContent = 'Describe this photo: it is read out to people who cannot see it, and it names the file.';
+      alt.insertAdjacentElement('afterend', nudge);
+    }
+    alt.addEventListener('input', function () {
+      box.classList.toggle('needs-description', alt.value.trim() === '');
+    });
+  }
+
+  function showPhoto(parts, src, caption) {
+    parts.preview.src = src;
+    parts.preview.hidden = false;
+    parts.empty.hidden = true;
+    parts.file.textContent = caption;
+  }
+
+  if (picker) {
+    picker.querySelectorAll('[data-file]').forEach(function (option) {
+      option.addEventListener('click', function () {
+        if (choosingFor) {
+          choosingFor.name.value = option.getAttribute('data-file');
+          choosingFor.upload.value = '';
+          showPhoto(choosingFor, option.getAttribute('data-preview'), option.getAttribute('data-file'));
+          askForDescription(choosingFor.field);
+          choosingFor.name.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        picker.close();
+      });
+    });
+  }
+
 })();

@@ -23,8 +23,8 @@ final readonly class SnapshotEnvironment implements Environment
         private array $extensions = [],
         private array $ini = [],
         private array $disabledFunctions = [],
-        private bool $canWriteWebp = false,
-        private bool $supportsAvif = false,
+        private bool $canWriteJpeg = false,
+        private bool $readsWebp = false,
     ) {}
 
     /**
@@ -54,8 +54,8 @@ final readonly class SnapshotEnvironment implements Environment
             extensions: array_map('strtolower', $strings($data['extensions'] ?? [])),
             ini: $ini,
             disabledFunctions: $strings($data['disabled_functions'] ?? []),
-            canWriteWebp: ($data['webp_write'] ?? false) === true,
-            supportsAvif: ($data['avif'] ?? false) === true,
+            canWriteJpeg: ($data['jpeg_write'] ?? false) === true,
+            readsWebp: ($data['webp_read'] ?? false) === true,
         );
     }
 
@@ -99,13 +99,13 @@ final readonly class SnapshotEnvironment implements Environment
         return $this->disabledFunctions;
     }
 
-    public function canWriteWebp(): bool
+    public function canWriteJpeg(): bool
     {
-        return $this->canWriteWebp;
+        return $this->canWriteJpeg;
     }
 
-    public function supportsAvif(): bool
+    public function readsWebp(): bool
     {
-        return $this->supportsAvif;
+        return $this->readsWebp;
     }
 }

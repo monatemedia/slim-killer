@@ -53,9 +53,9 @@ final class RuntimeEnvironment implements Environment
         return array_values(array_filter(array_map('trim', explode(',', $raw)), static fn(string $f): bool => $f !== ''));
     }
 
-    public function canWriteWebp(): bool
+    public function canWriteJpeg(): bool
     {
-        if (! function_exists('imagewebp') || ! function_exists('imagecreatetruecolor')) {
+        if (! function_exists('imagejpeg') || ! function_exists('imagecreatetruecolor')) {
             return false;
         }
 
@@ -65,14 +65,14 @@ final class RuntimeEnvironment implements Environment
         }
 
         ob_start();
-        $written = imagewebp($image, null, 75);
+        $written = imagejpeg($image, null, 85);
         $bytes = (string) ob_get_clean();
 
         return $written && $bytes !== '';
     }
 
-    public function supportsAvif(): bool
+    public function readsWebp(): bool
     {
-        return function_exists('gd_info') && ! empty(gd_info()['AVIF Support']);
+        return function_exists('imagecreatefromwebp') && function_exists('gd_info') && ! empty(gd_info()['WebP Support']);
     }
 }

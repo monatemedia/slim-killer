@@ -7,7 +7,7 @@
  #   errors  problems from the last save, keyed by path.
  #   focus   the path of a list item to put the cursor in (after "Add" or a move).
  #}
-{% macro field(field, value, path, errors, focus = null) %}
+{% macro field(field, value, path, errors, focus = null, photos = {}) %}
   {% import _self as forms %}
   {% set editor = field.editor() %}
   {% set id = 'f-' ~ path|replace({'.': '-'}) %}
@@ -19,7 +19,7 @@
     <fieldset class="group-field">
       <legend>{{ field.label }}{{ forms.tip(field, id) }}</legend>
       {% for child in field.children %}
-        {{ forms.field(child, value[child.name] ?? null, path ~ '.' ~ child.name, errors, focus) }}
+        {{ forms.field(child, value[child.name] ?? null, path ~ '.' ~ child.name, errors, focus, photos) }}
       {% endfor %}
     </fieldset>
 
@@ -40,7 +40,7 @@
             </div>
           </div>
           {% for child in field.children %}
-            {{ forms.field(child, item[child.name] ?? null, itemPath ~ '.' ~ child.name, errors, focus) }}
+            {{ forms.field(child, item[child.name] ?? null, itemPath ~ '.' ~ child.name, errors, focus, photos) }}
           {% endfor %}
           {% if itemPath == focus %}<span class="list-item-focus" data-focus></span>{% endif %}
         </div>
@@ -78,6 +78,23 @@
       {% elseif editor == 'toggle' %}
         <input type="hidden" name="{{ name }}" value="0">
         <input id="{{ id }}" name="{{ name }}" type="checkbox" value="1"{{ value ? ' checked' : '' }}{{ aria|raw }}>
+      {% elseif editor == 'image' %}
+        {# The file name is the site's business, not the client's: it is kept in a hidden
+           field and shown small under the photo. A new photo's name comes from its file. #}
+        {% set preview = text is not iterable and text and photos[text] is defined ? base ~ '/photos/' ~ photos[text] : '' %}
+        <div class="photo-field" data-photo-field>
+          <img class="photo-preview" src="{{ preview }}" alt=""{{ preview ? '' : ' hidden' }} data-photo-preview>
+          <p class="photo-empty"{{ preview ? ' hidden' : '' }} data-photo-empty>{{ text ? 'No preview for this file yet' : 'No photo yet' }}</p>
+          <p class="photo-file" data-photo-file>{{ text }}</p>
+          <input type="hidden" name="{{ name }}" value="{{ text }}" data-photo-name>
+          <div class="photo-buttons">
+            <label class="btn btn-quiet photo-upload">Upload a new photo
+              <input id="{{ id }}" type="file" name="upload[{{ path }}]" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-photo-upload{{ aria|raw }}>
+            </label>
+            <button type="button" class="btn btn-quiet" data-photo-choose hidden>Choose a photo</button>
+          </div>
+        </div>
+        <p class="field-help">A JPEG, PNG or WebP of up to 20 MB. A new photo is added to the website when you press Save.</p>
       {% elseif editor == 'tags' %}
         <input id="{{ id }}" name="{{ name }}" type="text" value="{{ value is iterable ? value|join(', ') : value }}"{{ aria|raw }}>
         <p class="field-help">Separate them with commas.</p>

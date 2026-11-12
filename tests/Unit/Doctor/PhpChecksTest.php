@@ -102,12 +102,12 @@ it('warns about a short time limit', function (): void {
 
 // --- Images ------------------------------------------------------------------------
 
-it('warns, with the JPEG fallback, when WebP cannot be written', function (): void {
-    [$result] = (new ImageSupportCheck())->check(environment(['webp_write' => false]));
+it('fails when GD cannot write JPEG, since uploads are saved as JPEG', function (): void {
+    [$result] = (new ImageSupportCheck())->check(environment(['jpeg_write' => false]));
 
-    expect($result->status->value)->toBe('warn')->and($result->detail)->toContain('JPEG');
+    expect($result->status->value)->toBe('fail')->and($result->detail)->toContain('JPEG');
 });
 
-it('mentions AVIF when it is there', function (): void {
-    expect(statuses((new ImageSupportCheck())->check(environment(['avif' => true]))))->toBe(['pass', 'info']);
+it('mentions WebP uploads when GD can read WebP', function (): void {
+    expect(statuses((new ImageSupportCheck())->check(environment(['webp_read' => true]))))->toBe(['pass', 'info']);
 });

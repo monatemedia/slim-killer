@@ -263,3 +263,76 @@ it('keeps the form and explains it when GitHub cannot be reached', function (): 
         ->toContain('could not reach GitHub')
         ->toContain('value="The Gemsbok"');
 });
+
+it('takes a photo into an image field, and saves it with the page in one commit', function (): void {
+    [$browser, $github, $copy] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    expect($browser->body())->toContain('enctype="multipart/form-data"')
+        ->toContain('name="upload[heroImage]"')
+        ->toContain('name="upload[gallery.1.src]"');
+    $before = $github->head;
+
+    // Choosing a photo and pressing a list button keeps the photo, without saving.
+    $browser->post('/cp/content/articles/oryx', oryxForm(['list_action' => 'add:gallery']), [
+        'upload' => ['heroImage' => uploaded(jpegPhoto(3000, 2000), 'Oryx at Sossusvlei.jpg')],
+    ]);
+    expect($github->head)->toBe($before)
+        ->and($browser->body())->toContain('value="oryx-at-sossusvlei.jpg"')
+        ->toContain('/cp/photos/' . substr(sha1('oryx-at-sossusvlei.jpg'), 0, 16) . '.jpg');
+
+    $response = $browser->post('/cp/content/articles/oryx', oryxForm(['f' => ['heroImage' => 'oryx-at-sossusvlei.jpg']]));
+
+    $photo = $github->file('content/images/oryx-at-sossusvlei.jpg');
+    expect($response->getStatusCode())->toBe(303)
+        ->and($github->commits[$github->head]['parents'])->toBe([$before])
+        ->and($github->commits[$github->head]['message'])->toContain('with a new photo')
+        ->and($github->file('content/articles/oryx.md'))->toContain('heroImage: "oryx-at-sossusvlei.jpg"')
+        ->and($photo)->not->toBeNull()
+        ->and(getimagesizefromstring((string) $photo)[0])->toBe(2400);
+
+    // The preview now comes from the library, before any build has made one.
+    $preview = $browser->get('/cp/photos/' . substr(sha1('oryx-at-sossusvlei.jpg'), 0, 16) . '.jpg');
+    expect($preview->getStatusCode())->toBe(200)
+        ->and($preview->getHeaderLine('Content-Type'))->toBe('image/jpeg');
+});
+
+it('explains a file that is not a photo, beside its field, and keeps the rest of the form', function (): void {
+    [$browser, $github] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+    $before = $github->head;
+
+    $response = $browser->post('/cp/content/articles/oryx', oryxForm(['f' => ['title' => 'The Gemsbok']]), [
+        'upload' => ['gallery.0.src' => uploaded(photoFile('<?php echo 1;', 'jpg'), 'shell.jpg')],
+    ]);
+
+    expect($response->getStatusCode())->toBe(422)
+        ->and($browser->body())->toContain('not a photo the website can use')
+        ->toContain('value="The Gemsbok"')
+        ->and($github->head)->toBe($before);
+});
+
+it('hands out photo previews only to signed-in people, and only real ones', function (): void {
+    [$browser, $container] = installedPanel();
+    welcomeLink($container);
+    expect($browser->get('/cp/photos/0123456789abcdef.jpg')->getHeaderLine('Location'))->toBe('/cp/sign-in');
+
+    [$browser] = contentPanel();
+    expect($browser->get('/cp/photos/0123456789abcdef.jpg')->getStatusCode())->toBe(404)
+        ->and($browser->get('/cp/photos/..%2F..%2F.env')->getStatusCode())->toBe(404);
+});
+
+it('names a photo from its description when the phone\'s name says nothing, or after the page', function (): void {
+    [$browser] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    $browser->post('/cp/content/articles/oryx', oryxForm([
+        'list_action' => 'add:gallery',
+        'f' => ['gallery' => [['alt' => 'A lion resting at a waterhole in Etosha National Park at dusk']]],
+    ]), ['upload' => [
+        'gallery.0.src' => uploaded(jpegPhoto(300, 200), 'IMG_2041.JPG'),
+        'heroImage' => uploaded(jpegPhoto(300, 200), '454a5227-b6e9-4a0d-98df-df22b9ff0ee0.jpg'),
+    ]]);
+
+    expect($browser->body())->toContain('value="lion-resting-at-a-waterhole-in-etosha-national.jpg"')
+        ->toContain('value="the-oryx.jpg"');
+});
