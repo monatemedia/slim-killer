@@ -7,12 +7,6 @@ declare(strict_types=1);
  * of an iPhone 7 (375 × 667), the phone the panel is tried on.
  */
 
-/** A page of the panel, signed in, on a touch phone the size of an iPhone 7. */
-function onIPhone7(string $path): mixed
-{
-    return visit(signedIn($path))->on()->mobile()->resize(375, 667);
-}
-
 /**
  * Every visible field, box, button and photo that reaches past the edge of the screen.
  * The card clips what does not fit (overflow: hidden), so a form that is too wide looks
@@ -51,8 +45,9 @@ it('shows a picked photo at once, and asks for a new description', function (): 
 
 it('chooses one of the site\'s photos from the chooser', function (): void {
     onIPhone7('/cp/content/articles/oryx')
+        ->assertVisible('.photo-field:has(#f-heroImage) [data-photo-choose]')
         ->click('.photo-field:has(#f-heroImage) [data-photo-choose]')
-        ->assertVisible('#photo-picker')
+        ->assertVisible('#photo-picker [data-file="deadvlei.jpg"]')
         ->click('#photo-picker [data-file="deadvlei.jpg"]')
         ->assertScript("document.getElementById('photo-picker').open", false)
         ->assertValue('[name="f[heroImage]"]', 'deadvlei.jpg')
@@ -62,6 +57,7 @@ it('chooses one of the site\'s photos from the chooser', function (): void {
 
 it('keeps a field\'s tip on the screen when it opens', function (): void {
     onIPhone7('/cp/content/articles/oryx')
+        ->assertVisible('[aria-label="What is Description for search results?"]')
         ->click('[aria-label="What is Description for search results?"]')
         ->assertVisible('.field-tip[open] p')
         ->assertScript(

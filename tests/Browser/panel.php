@@ -13,6 +13,10 @@ use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Paths;
 
 /*
+ * Rule for these tests: assert an element is there before clicking or typing into it.
+ * A failed assertion is reported cleanly; an action that times out waiting for a missing
+ * element leaves Pest's browser plugin (4.3, on Windows) stuck for the rest of the run.
+ *
  * The control panel for the browser tests: the real app, on a copy of the fixture site,
  * served by PHP's built-in server (tests/Browser/server.php) for the length of the run.
  * Saving is not set up (no GitHub), so nothing leaves the machine.
@@ -115,6 +119,38 @@ function pickFile(mixed $page, string $selector, string $path, string $type = 'i
         json_encode($selector),
         json_encode(basename($path)),
         json_encode($type),
+    ));
+
+    return $page;
+}
+
+/** A page of the panel, signed in, on a touch phone the size of an iPhone 7. */
+function onIPhone7(string $path): mixed
+{
+    return visit(signedIn($path))->on()->mobile()->resize(375, 667);
+}
+
+/** Taps (clicks) an element at a spot given in percent of its width and height. */
+function tapAt(mixed $page, string $selector, float $x, float $y): mixed
+{
+    $page->script(sprintf(
+        "(() => { const element = document.querySelector(%s); const box = element.getBoundingClientRect();
+            element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: box.left + box.width * %F / 100, clientY: box.top + box.height * %F / 100 })); })()",
+        json_encode($selector),
+        $x,
+        $y,
+    ));
+
+    return $page;
+}
+
+/** Presses a key on an element, as a keyboard does. */
+function pressKeyOn(mixed $page, string $selector, string $key): mixed
+{
+    $page->script(sprintf(
+        "document.querySelector(%s).dispatchEvent(new KeyboardEvent('keydown', { key: %s, bubbles: true }))",
+        json_encode($selector),
+        json_encode($key),
     ));
 
     return $page;

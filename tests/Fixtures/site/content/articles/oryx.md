@@ -6,6 +6,7 @@ heroImage: "oryx.jpg"
 gallery:
   - src: "oryx-1.jpg"
     alt: "An oryx at a waterhole"
+    focus: "center 30%"
   - src: "oryx-2.jpg"
     alt: ""
 ---

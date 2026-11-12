@@ -139,6 +139,7 @@
       upload: field.querySelector('[data-photo-upload]'),
     };
     var choose = field.querySelector('[data-photo-choose]');
+    parts.focus = focusPicker(field, parts.preview);
 
     parts.upload.addEventListener('change', function () {
       var chosen = parts.upload.files && parts.upload.files[0];
@@ -161,7 +162,7 @@
   // as a faint "Was: ..." to retype if it still fits), point at the box and say why it
   // matters. The description also names the file when the phone's own name says nothing.
   function askForDescription(field) {
-    var group = field.closest('fieldset');
+    var group = imageBox(field);
     var alt = group && group.querySelector('input[name$="[alt]"]');
     if (!alt) {
       return;
@@ -189,6 +190,123 @@
     parts.preview.hidden = false;
     parts.empty.hidden = true;
     parts.file.textContent = caption;
+    if (parts.focus) {
+      // A new photo: the old focus point was for the old one.
+      parts.focus.show(src);
+      parts.focus.reset();
+    }
+  }
+
+  // The box an image's own fields share: its list item, or its group. Not the whole list,
+  // or a change to one gallery photo would touch another's description.
+  function imageBox(field) {
+    return field.closest('.list-item, fieldset');
+  }
+
+  // Focus point. The "focus" box beside a photo ("center 30%") becomes the photo with a
+  // dot: tap (or use the arrow keys) where it must stay in view when the website crops
+  // it, and two small crops show the result. The value is "x% y%", which the site uses
+  // as the photo's object-position. Without JavaScript the box stays a box.
+  function focusPicker(field, preview) {
+    var box = imageBox(field);
+    var input = box && box.querySelector('input[name$="[focus]"]');
+    if (!input) {
+      return null;
+    }
+    var holder = input.closest('.field');
+    var picker = document.createElement('div');
+    picker.className = 'focus-picker';
+    picker.innerHTML =
+      '<div class="focus-frame" data-focus-frame tabindex="0" role="group" aria-label="Focus point: tap the part of the photo to keep in view, or use the arrow keys">' +
+        '<img alt=""><span class="focus-dot" data-focus-dot></span>' +
+      '</div>' +
+      '<div class="focus-crops">' +
+        '<figure><img class="focus-crop-wide" alt="" data-focus-crop><figcaption>Wide</figcaption></figure>' +
+        '<figure><img class="focus-crop-square" alt="" data-focus-crop><figcaption>Square</figcaption></figure>' +
+      '</div>' +
+      '<button type="button" class="btn btn-quiet" data-focus-reset>Back to the middle</button>' +
+      '<p class="field-help">Tap the part of the photo that must stay in view when the website crops it.</p>';
+    input.type = 'hidden';
+    input.insertAdjacentElement('afterend', picker);
+
+    var frame = picker.querySelector('[data-focus-frame]');
+    var dot = picker.querySelector('[data-focus-dot]');
+    var images = [frame.querySelector('img')].concat(Array.prototype.slice.call(picker.querySelectorAll('[data-focus-crop]')));
+    var point = readFocus(input.value);
+
+    function draw() {
+      dot.style.left = point.x + '%';
+      dot.style.top = point.y + '%';
+      picker.querySelectorAll('[data-focus-crop]').forEach(function (crop) {
+        crop.style.objectPosition = point.x + '% ' + point.y + '%';
+      });
+    }
+    function moveTo(x, y) {
+      point = { x: Math.round(Math.min(100, Math.max(0, x))), y: Math.round(Math.min(100, Math.max(0, y))) };
+      input.value = point.x + '% ' + point.y + '%';
+      draw();
+    }
+
+    frame.addEventListener('click', function (event) {
+      var area = frame.getBoundingClientRect();
+      moveTo((event.clientX - area.left) / area.width * 100, (event.clientY - area.top) / area.height * 100);
+    });
+    frame.addEventListener('keydown', function (event) {
+      var step = { ArrowLeft: [-5, 0], ArrowRight: [5, 0], ArrowUp: [0, -5], ArrowDown: [0, 5] }[event.key];
+      if (step) {
+        event.preventDefault();
+        moveTo(point.x + step[0], point.y + step[1]);
+      }
+    });
+    picker.querySelector('[data-focus-reset]').addEventListener('click', function () {
+      api.reset();
+    });
+
+    var api = {
+      show: function (src) {
+        images.forEach(function (image) { image.src = src; });
+        picker.hidden = !src;
+      },
+      reset: function () {
+        input.value = '';
+        point = { x: 50, y: 50 };
+        draw();
+      },
+    };
+    api.show(preview.hidden ? '' : preview.getAttribute('src'));
+    draw();
+
+    return api;
+  }
+
+  // "x% y%", or the words CSS allows ("center 30%", "top", "left bottom"); anything else
+  // is the middle.
+  function readFocus(value) {
+    var named = { left: 0, top: 0, center: 50, right: 100, bottom: 100 };
+    var words = (value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    var part = function (word) {
+      if (word in named) {
+        return named[word];
+      }
+      var number = /^(\d+(?:\.\d+)?)%$/.exec(word);
+      return number ? Math.min(100, parseFloat(number[1])) : null;
+    };
+    var x = 50;
+    var y = 50;
+    if (words.length === 1) {
+      if (words[0] === 'top' || words[0] === 'bottom') {
+        y = named[words[0]];
+      } else if (part(words[0]) !== null) {
+        x = part(words[0]);
+      }
+    } else if (words.length >= 2) {
+      var swapped = words[0] === 'top' || words[0] === 'bottom' || words[1] === 'left' || words[1] === 'right';
+      var first = part(swapped ? words[1] : words[0]);
+      var second = part(swapped ? words[0] : words[1]);
+      x = first === null ? 50 : first;
+      y = second === null ? 50 : second;
+    }
+    return { x: x, y: y };
   }
 
   if (picker) {

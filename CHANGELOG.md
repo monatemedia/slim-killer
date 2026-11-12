@@ -13,6 +13,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Focus point picker.** An image's "focus" box becomes the photo with a dot: tap the part
+  that must stay in view when the website crops it (or use the arrow keys), and two small
+  crops, wide and square, show the result. Stored as `x% y%`, which the site uses as the
+  photo's object-position; values written in CSS words (`center 30%`) show in the right
+  place. A new photo starts with its focus in the middle; **Back to the middle** clears
+  it. Without JavaScript the box stays a text box.
+
 - **Browser tests.** The control panel's JavaScript is tested in a real browser with Pest's
   browser plugin and Playwright, in WebKit (Safari's engine) at the size of an iPhone 7:
   the form fits the screen with nothing to scroll sideways, a picked photo shows at once
@@ -235,6 +242,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Fixed
 
+- **A gallery photo's description.** Changing the second photo in a gallery cleared the
+  first photo's description: the description was looked for in the whole gallery rather
+  than in the photo's own item.
 - **The website's own 404 page.** `web:install` names `/404.html` as the error page in the
   website folder's `.htaccess` as a backstop, but missing pages are now answered by
   `cp/not-found.php`: the release's rules send any address it doesn't have there, and the
