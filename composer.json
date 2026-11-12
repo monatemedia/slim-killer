@@ -23,6 +23,7 @@
     "require-dev": {
         "laravel/pint": "^1.24",
         "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-browser": "^4.3",
         "phpstan/phpstan": "^2.1"
     },
     "autoload": {
@@ -36,13 +37,14 @@
         }
     },
     "scripts": {
-        "test": "pest",
+        "test": "pest --testsuite=Unit",
+        "test:browser": "pest --testsuite=Browser",
         "analyse": "phpstan analyse --no-progress",
         "format": "pint",
         "check": [
             "pint --test",
             "phpstan analyse --no-progress",
-            "pest"
+            "pest --testsuite=Unit"
         ]
     },
     "config": {

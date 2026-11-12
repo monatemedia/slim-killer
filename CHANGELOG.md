@@ -13,6 +13,14 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Browser tests.** The control panel's JavaScript is tested in a real browser with Pest's
+  browser plugin and Playwright, in WebKit (Safari's engine) at the size of an iPhone 7:
+  the form fits the screen with nothing to scroll sideways, a picked photo shows at once
+  and asks for a new description, the photo chooser fills the field, and a field's tip
+  stays on screen. `composer test:browser` runs them; `feature-branch-stop.sh` does too
+  when Playwright is installed. Each run serves the real panel on a copy of the test site
+  with PHP's built-in server.
+
 - **Photo upload.** An image field shows its photo with its file name underneath, and two
   buttons: **Upload a new photo** (JPEG, PNG or WebP, up to 20 MB) and **Choose a photo**
   for the site's existing photos. The file name is not a box to type in: a new photo is

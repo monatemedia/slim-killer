@@ -137,3 +137,8 @@ function enrol(Browser $browser, ContainerInterface $container, SteppingClock $c
 }
 
 require __DIR__ . '/photos.php';
+
+// Browser tests (tests/Browser, composer test:browser) run in WebKit, Safari's engine,
+// since the panel is tried on an iPhone. Run another with: pest --browser chrome
+pest()->browser()->inSafari();
+require __DIR__ . '/Browser/panel.php';

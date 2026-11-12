@@ -191,12 +191,22 @@ And yes, `php hammer artisan` is a thing. Try it.
 ### Quality checks
 
 ```sh
-composer check     # Pint (style), PHPStan (static analysis) and Pest (tests), in that order
-composer test      # tests only
-composer format    # fix code style
+composer check         # Pint (style), PHPStan (static analysis) and Pest (tests), in that order
+composer test          # tests only
+composer test:browser  # the control panel in a real browser (WebKit, at iPhone 7 size)
+composer format        # fix code style
 ```
 
-`feature-branch-stop.sh` runs the same checks before it merges a branch.
+The browser tests drive the control panel's JavaScript through [Playwright](https://playwright.dev/), with Pest's browser plugin. They need Node.js once:
+
+```sh
+npm install
+npx playwright install chromium webkit
+```
+
+They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Browser --browser chrome` tries Chromium. Each run starts PHP's built-in server with the panel on a copy of the test site (`tests/Browser/server.php`); nothing is saved to GitHub.
+
+`feature-branch-stop.sh` runs the same checks before it merges a branch, and the browser tests too when Playwright is installed.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
