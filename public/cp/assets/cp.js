@@ -143,6 +143,7 @@
       var chosen = parts.upload.files && parts.upload.files[0];
       if (chosen) {
         showPhoto(parts, URL.createObjectURL(chosen), chosen.name + ' (added when you press Save)');
+        askForDescription(field);
       }
     });
 
@@ -154,6 +155,27 @@
       });
     }
   });
+
+  // A new photo with no description: point at the description box and say why it
+  // matters. The description also names the file when the phone's own name says nothing.
+  function askForDescription(field) {
+    var group = field.closest('fieldset');
+    var alt = group && group.querySelector('input[name$="[alt]"]');
+    if (!alt || alt.value.trim() !== '') {
+      return;
+    }
+    var box = alt.closest('.field');
+    box.classList.add('needs-description');
+    if (!box.querySelector('.field-nudge')) {
+      var nudge = document.createElement('p');
+      nudge.className = 'field-nudge';
+      nudge.textContent = 'Describe this photo: it is read out to people who cannot see it, and it names the file.';
+      alt.insertAdjacentElement('afterend', nudge);
+    }
+    alt.addEventListener('input', function () {
+      box.classList.toggle('needs-description', alt.value.trim() === '');
+    });
+  }
 
   function showPhoto(parts, src, caption) {
     parts.preview.src = src;

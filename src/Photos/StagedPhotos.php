@@ -21,11 +21,17 @@ final class StagedPhotos
         private readonly PhotoLibrary $library,
     ) {}
 
+    /** Names that say nothing about the photo: what phones and cameras call a file. */
+    private const string MEANINGLESS = '/^(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|whatsapp-image.*|(?:img|dsc|dscn|dscf|pxl|mvimg|image|photo|pic|screenshot|wp)?(?:-?[0-9]+)*)$/';
+
     /**
      * Keeps a processed photo under a clean, unused file name made from the one it was
      * uploaded with ("Lions at dusk.JPG" → "lions-at-dusk.jpg"), and returns that name.
+     * A name that says nothing ("IMG_2041", or the random one an iPhone sends) is
+     * replaced by $fallback: the photo's description, or the page's title ("Discover
+     * Botswana" → "discover-botswana.jpg").
      */
-    public function stage(int $user, ProcessedPhoto $photo, string $uploadedName): string
+    public function stage(int $user, ProcessedPhoto $photo, string $uploadedName, string $fallback = 'photo'): string
     {
         $this->forgetOld($user);
         $folder = $this->folder($user);
@@ -33,9 +39,16 @@ final class StagedPhotos
             @mkdir($folder, 0755, true);
         }
 
-        $base = strtolower(pathinfo($uploadedName, PATHINFO_FILENAME));
-        $base = trim((string) preg_replace('/[^a-z0-9]+/', '-', $base), '-');
-        $base = substr($base, 0, 60) ?: 'photo';
+        $base = self::slug(pathinfo($uploadedName, PATHINFO_FILENAME));
+        if (preg_match(self::MEANINGLESS, $base) === 1) {
+            $base = self::slug($fallback);
+        }
+        if (strlen($base) > 60) {
+            // Cut at a word, not in the middle of one.
+            $base = substr($base, 0, 60);
+            $base = str_contains($base, '-') ? substr($base, 0, (int) strrpos($base, '-')) : $base;
+        }
+        $base = $base !== '' ? $base : 'photo';
         $file = $base . '.' . $photo->extension;
         for ($n = 2; $this->library->has($file) || is_file($folder . '/' . $file); $n++) {
             $file = $base . '-' . $n . '.' . $photo->extension;
@@ -89,6 +102,11 @@ final class StagedPhotos
             @unlink($preview);
         }
         @unlink($folder . '/' . $file);
+    }
+
+    private static function slug(string $text): string
+    {
+        return trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($text)), '-');
     }
 
     public static function isFileName(string $file): bool

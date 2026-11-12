@@ -320,3 +320,19 @@ it('hands out photo previews only to signed-in people, and only real ones', func
     expect($browser->get('/cp/photos/0123456789abcdef.jpg')->getStatusCode())->toBe(404)
         ->and($browser->get('/cp/photos/..%2F..%2F.env')->getStatusCode())->toBe(404);
 });
+
+it('names a photo from its description when the phone\'s name says nothing, or after the page', function (): void {
+    [$browser] = savingPanel();
+    $browser->get('/cp/content/articles/oryx');
+
+    $browser->post('/cp/content/articles/oryx', oryxForm([
+        'list_action' => 'add:gallery',
+        'f' => ['gallery' => [['alt' => 'A lion resting at a waterhole in Etosha National Park at dusk']]],
+    ]), ['upload' => [
+        'gallery.0.src' => uploaded(jpegPhoto(300, 200), 'IMG_2041.JPG'),
+        'heroImage' => uploaded(jpegPhoto(300, 200), '454a5227-b6e9-4a0d-98df-df22b9ff0ee0.jpg'),
+    ]]);
+
+    expect($browser->body())->toContain('value="lion-resting-at-a-waterhole-in-etosha-national.jpg"')
+        ->toContain('value="the-oryx.jpg"');
+});

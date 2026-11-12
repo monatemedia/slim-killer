@@ -87,7 +87,7 @@ final class EntryAction
 
         $posted = $request->getParsedBody();
         $posted = is_array($posted) ? $posted : [];
-        $uploadErrors = $this->stageUploads($request, $user, $posted);
+        $uploadErrors = $this->stageUploads($request, $user, $posted, $entry->title);
         $fields = $this->fields->fields($collection->schema);
         $submission = $this->reader->read($fields, $posted['f'] ?? []);
         $body = is_string($posted['body'] ?? null) ? $posted['body'] : null;
@@ -155,7 +155,7 @@ final class EntryAction
      * @param array<mixed> $posted
      * @return array<string, string> problems, by the field's path
      */
-    private function stageUploads(ServerRequestInterface $request, int $user, array &$posted): array
+    private function stageUploads(ServerRequestInterface $request, int $user, array &$posted, string $pageTitle): array
     {
         $uploads = $request->getUploadedFiles()['upload'] ?? [];
         $errors = [];
@@ -175,7 +175,12 @@ final class EntryAction
                     @mkdir(dirname($temporary), 0755, true);
                 }
                 $upload->moveTo($temporary);
-                $file = $this->staged->stage($user, $this->photos->process($temporary), (string) $upload->getClientFilename());
+                $file = $this->staged->stage(
+                    $user,
+                    $this->photos->process($temporary),
+                    (string) $upload->getClientFilename(),
+                    self::describedAs($posted['f'] ?? [], $path) ?? $pageTitle,
+                );
                 $posted['f'] = self::setAt(is_array($posted['f'] ?? null) ? $posted['f'] : [], explode('.', $path), $file);
             } catch (PhotoProblem $problem) {
                 $errors[$path] = $problem->getMessage();
@@ -187,6 +192,29 @@ final class EntryAction
         }
 
         return $errors;
+    }
+
+    /**
+     * The first words of a photo's description, from the image's "alt" beside its "src"
+     * ("gallery.0.src" → "gallery.0.alt"), for naming the file; null when there is none.
+     * A leading "A", "An" or "The" is dropped: "A lion at a waterhole" → "lion at a waterhole".
+     */
+    private static function describedAs(mixed $posted, string $path): ?string
+    {
+        if (! str_ends_with($path, '.src')) {
+            return null;
+        }
+        $value = $posted;
+        foreach (explode('.', substr($path, 0, -4) . '.alt') as $key) {
+            $value = is_array($value) ? ($value[$key] ?? null) : null;
+        }
+        $words = is_string($value) ? preg_split('/\s+/', trim($value), -1, PREG_SPLIT_NO_EMPTY) : [];
+        $words = is_array($words) ? $words : [];
+        if ($words !== [] && in_array(strtolower($words[0]), ['a', 'an', 'the'], true)) {
+            array_shift($words);
+        }
+
+        return $words === [] ? null : implode(' ', array_slice($words, 0, 8));
     }
 
     /**

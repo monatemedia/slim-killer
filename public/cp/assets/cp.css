@@ -757,3 +757,6 @@ footer.page-footer {
 .photo-option:hover, .photo-option:focus-visible { border-color: var(--text-muted); }
 .photo-option img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; }
 .photo-option span { overflow-wrap: anywhere; }
+.needs-description input { border-color: var(--orange); }
+.field-nudge { margin: 0; color: var(--orange); font-size: 0.88rem; font-weight: 600; }
+.field:not(.needs-description) .field-nudge { display: none; }
