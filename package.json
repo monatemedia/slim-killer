@@ -1,0 +1,8 @@
+{
+  "name": "slim-killer-browser-tests",
+  "private": true,
+  "description": "Only for testing the control panel in real browsers (Pest's browser plugin drives Playwright). Not needed to run Slim Killer.",
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

@@ -15,6 +15,10 @@
 # Screenshots from testing on a device, for review; never committed
 /review/
 
+# Browser tests: what Pest saves when one fails
+/tests/Browser/Screenshots/
+/tests/Browser/Traces/
+
 # Environment and dependencies
 .env
 /vendor/

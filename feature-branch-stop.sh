@@ -16,7 +16,8 @@
 # day one and picks each gate up as the project grows:
 #   - Pint style check     vendor/bin/pint --test
 #   - PHPStan              vendor/bin/phpstan analyse
-#   - Pest test suite      vendor/bin/pest
+#   - Pest test suite      vendor/bin/pest --testsuite=Unit
+#   - Pest browser tests   --testsuite=Browser, when node_modules/playwright exists
 #   - npm test             when package.json has a "test" script
 # A failing gate stops the script before anything is pushed or merged.
 #
@@ -134,8 +135,13 @@ else
         GATES_RUN=$((GATES_RUN + 1))
     fi
     if [ -f vendor/bin/pest ]; then
-        run_gate "Pest" php vendor/bin/pest
+        run_gate "Pest" php vendor/bin/pest --testsuite=Unit
         GATES_RUN=$((GATES_RUN + 1))
+        # Browser tests need Playwright and its browsers (npm install, npx playwright install).
+        if [ -d tests/Browser ] && [ -d node_modules/playwright ]; then
+            run_gate "Pest (browser)" php vendor/bin/pest --testsuite=Browser
+            GATES_RUN=$((GATES_RUN + 1))
+        fi
     fi
     if [ -f package.json ] && grep -q '"test"[[:space:]]*:' package.json; then
         run_gate "npm test" npm test
