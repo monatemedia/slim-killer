@@ -124,4 +124,46 @@
     check();
   }
 
+  // Photo fields. Picking a file shows it at once (it is checked and kept when the form
+  // is posted); "Choose a photo" opens the page's photo chooser and puts the chosen
+  // file's name in the field. Without JavaScript the field still takes a file or a name.
+  var picker = document.getElementById('photo-picker');
+  var choosingFor = null;
+  document.querySelectorAll('[data-photo-field]').forEach(function (field) {
+    var preview = field.querySelector('[data-photo-preview]');
+    var name = field.querySelector('[data-photo-name]');
+    var upload = field.querySelector('[data-photo-upload]');
+    var choose = field.querySelector('[data-photo-choose]');
+
+    upload.addEventListener('change', function () {
+      if (upload.files && upload.files[0]) {
+        preview.src = URL.createObjectURL(upload.files[0]);
+        preview.hidden = false;
+      }
+    });
+
+    if (picker && typeof picker.showModal === 'function') {
+      choose.hidden = false;
+      choose.addEventListener('click', function () {
+        choosingFor = { preview: preview, name: name, upload: upload };
+        picker.showModal();
+      });
+    }
+  });
+
+  if (picker) {
+    picker.querySelectorAll('[data-file]').forEach(function (option) {
+      option.addEventListener('click', function () {
+        if (choosingFor) {
+          choosingFor.name.value = option.getAttribute('data-file');
+          choosingFor.preview.src = option.getAttribute('data-preview');
+          choosingFor.preview.hidden = false;
+          choosingFor.upload.value = '';
+          choosingFor.name.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        picker.close();
+      });
+    });
+  }
+
 })();

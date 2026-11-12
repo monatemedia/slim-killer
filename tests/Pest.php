@@ -135,3 +135,5 @@ function enrol(Browser $browser, ContainerInterface $container, SteppingClock $c
 
     return [$secret, $codes[1]];
 }
+
+require __DIR__ . '/photos.php';

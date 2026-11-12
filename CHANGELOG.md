@@ -13,6 +13,19 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Photo upload.** An image field shows its photo, takes a new one (JPEG, PNG or WebP, up
+  to 20 MB), and has **Choose a photo** for the site's existing photos. An upload is
+  checked (its bytes and its content must agree it is a photo, at most 40 megapixels),
+  turned the right way up, made at most 2400 px on the long edge and re-encoded as a JPEG
+  at quality 85 (a transparent PNG stays PNG), which drops EXIF, GPS included, and
+  anything hidden in the file. It is kept on the host, outside the web root, under a clean
+  name, and goes to GitHub with the page in the same commit when Save is pressed; list
+  buttons in between keep it, and unsaved photos are forgotten after a day.
+- **Photo previews.** The site's build carries a small preview of every photo
+  (`_slim-killer/previews/`, kept beside the working copy); a photo uploaded through the
+  panel shows its own preview until the next build. Signed-in people get them at
+  `/cp/photos/<name>`.
+
 - **The doctor checks for photo uploads.** `exif` is now a required extension (it turns
   phone photos the right way up), and GD must be able to write a JPEG, tested by writing
   one. WebP reading is reported as information; the WebP-writing and AVIF lines are gone,

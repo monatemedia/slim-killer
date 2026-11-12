@@ -727,3 +727,19 @@ footer.page-footer {
 @media (prefers-reduced-motion: reduce) {
   .publishing-steps li.current::after { animation: none; }
 }
+
+/* Photo fields and the photo chooser */
+.photo-field { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.photo-preview { width: 160px; height: 110px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--border); }
+.photo-controls { flex: 1 1 260px; display: grid; gap: 10px; }
+.photo-upload { display: grid; gap: 4px; color: var(--text-muted); font-size: 0.95em; }
+.photo-upload input { color: var(--text); }
+.photo-picker { width: min(960px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+.photo-picker::backdrop { background: rgb(0 0 0 / 0.5); }
+.photo-picker-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); }
+.photo-picker-head h2 { margin: 0; font-size: 1.2em; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding: 16px 20px 20px; }
+.photo-option { display: grid; gap: 6px; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: none; color: var(--text-muted); font: inherit; font-size: 0.8em; text-align: left; cursor: pointer; }
+.photo-option:hover, .photo-option:focus-visible { border-color: var(--text-muted); }
+.photo-option img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; }
+.photo-option span { overflow-wrap: anywhere; }

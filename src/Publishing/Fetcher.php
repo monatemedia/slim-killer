@@ -289,13 +289,20 @@ final class Fetcher
             }
             Folder::replace($content, $panel . '/content');
             Folder::replace($schemas, $panel . '/schemas');
-            $addresses = dirname($content) . '/addresses.json';
-            if (is_file($panel . '/addresses.json')) {
-                if (! @copy($panel . '/addresses.json', $addresses)) {
-                    throw new RuntimeException("Could not write {$addresses}.");
+            $site = dirname($content);
+            foreach (['addresses.json', 'previews.json'] as $name) {
+                if (is_file($panel . '/' . $name)) {
+                    if (! @copy($panel . '/' . $name, $site . '/' . $name)) {
+                        throw new RuntimeException("Could not write {$site}/{$name}.");
+                    }
+                } elseif (is_file($site . '/' . $name)) {
+                    @unlink($site . '/' . $name);
                 }
-            } elseif (is_file($addresses)) {
-                @unlink($addresses);
+            }
+            if (is_dir($panel . '/previews')) {
+                Folder::replace($site . '/previews', $panel . '/previews');
+            } else {
+                Folder::delete($site . '/previews');
             }
         } catch (RuntimeException $exception) {
             return 'The website is live, but the working copy could not be refreshed: ' . $exception->getMessage();

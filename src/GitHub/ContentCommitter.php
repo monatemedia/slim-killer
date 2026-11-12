@@ -16,7 +16,8 @@ use SlimKiller\Http\Response;
  * 2. Check the file's version there is the one the client opened. If not, someone else
  *    saved this page: a conflict, nothing is written, and the page as it now is comes
  *    back, so the panel can show the newer version.
- * 3. Send the new file (a blob), build a tree on top of the head's, make a commit.
+ * 3. Send the new file (a blob), and any photos saved with it, build a tree on top of
+ *    the head's, make a commit. One save is one commit, so one build.
  * 4. Move the branch to the commit, fast-forward only. If another save moved the branch
  *    in between, start again from 1 (a save to a different file simply goes on top).
  */
@@ -35,8 +36,10 @@ final class ContentCommitter
      * @param string $contentPath the file's path inside content/: "articles/oryx.md"
      * @param string $openedVersion the Git blob hash of the file the client opened
      * @param array{name: string, email: string} $author
+     * @param array<string, string> $alongside more files for the same commit, by path inside content/
+     *        ("images/lions.jpg" => bytes): new photos, which have no version to check
      */
-    public function save(string $contentPath, string $bytes, string $openedVersion, string $message, array $author): SaveResult
+    public function save(string $contentPath, string $bytes, string $openedVersion, string $message, array $author, array $alongside = []): SaveResult
     {
         if (! $this->settings->isComplete()) {
             return SaveResult::failed('Saving is not set up for this website yet. Ask Monate Media to finish the setup.');
@@ -53,13 +56,17 @@ final class ContentCommitter
                     return SaveResult::conflict($current['bytes'] ?? null);
                 }
 
-                $blob = $this->string($this->call('POST', '/git/blobs', [
-                    'content' => base64_encode($bytes),
-                    'encoding' => 'base64',
-                ]), 'sha');
+                $entries = [];
+                foreach ([$contentPath => $bytes] + $alongside as $file => $fileBytes) {
+                    $blob = $this->string($this->call('POST', '/git/blobs', [
+                        'content' => base64_encode($fileBytes),
+                        'encoding' => 'base64',
+                    ]), 'sha');
+                    $entries[] = ['path' => $this->settings->path($file), 'mode' => '100644', 'type' => 'blob', 'sha' => $blob];
+                }
                 $newTree = $this->string($this->call('POST', '/git/trees', [
                     'base_tree' => $tree,
-                    'tree' => [['path' => $path, 'mode' => '100644', 'type' => 'blob', 'sha' => $blob]],
+                    'tree' => $entries,
                 ]), 'sha');
                 $commit = $this->string($this->call('POST', '/git/commits', [
                     'message' => $message,

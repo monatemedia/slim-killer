@@ -35,14 +35,14 @@
   <p class="read-only-note" role="status">{{ notice }}</p>
 {% endif %}
 
-<form method="post" action="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}" class="card entry-form" novalidate autocomplete="off">
+<form method="post" action="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}" class="card entry-form" enctype="multipart/form-data" novalidate autocomplete="off">
   <input type="hidden" name="_csrf" value="{{ csrf }}">
   <input type="hidden" name="version" value="{{ entry.version }}">
   {# Enter in a text box presses the first submit button: make that one Save, not a list button. #}
   <button type="submit" class="default-submit" tabindex="-1" aria-hidden="true">Save</button>
   <div class="card-pad form">
     {% for field in fields %}
-      {{ forms.field(field, values[field.name] ?? null, field.name, errors, focus) }}
+      {{ forms.field(field, values[field.name] ?? null, field.name, errors, focus, photos) }}
     {% endfor %}
 
     {% if entry.hasBody %}
@@ -59,4 +59,23 @@
     <a class="btn btn-quiet" href="{{ base }}/content/{{ collection.name }}/{{ entry.slug }}">Discard changes</a>
   </div>
 </form>
+
+{# One photo chooser for the whole page, opened by each image field's "Choose a photo"
+   (JavaScript). The previews only load when it opens. #}
+{% if photos is not empty %}
+<dialog class="photo-picker" id="photo-picker" aria-labelledby="photo-picker-title">
+  <div class="photo-picker-head">
+    <h2 id="photo-picker-title">Choose a photo</h2>
+    <form method="dialog"><button class="btn btn-quiet btn-small">Close</button></form>
+  </div>
+  <div class="photo-grid">
+    {% for file, preview in photos %}
+      <button type="button" class="photo-option" data-file="{{ file }}" data-preview="{{ base }}/photos/{{ preview }}">
+        <img src="{{ base }}/photos/{{ preview }}" alt="" loading="lazy">
+        <span>{{ file }}</span>
+      </button>
+    {% endfor %}
+  </div>
+</dialog>
+{% endif %}
 {% endblock %}
