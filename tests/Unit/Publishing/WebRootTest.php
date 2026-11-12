@@ -7,7 +7,7 @@ use SlimKiller\Publishing\WebRoot;
 use SlimKiller\Support\Paths;
 
 /** @return array{0: WebRoot, 1: string, 2: string, 3: Releases} the setup, the project, the web root and its releases */
-function webRootSetup(string $webRoot = 'public_html'): array
+function webRootSetup(string $webRoot = 'public_html', bool $hideFromSearch = false): array
 {
     $project = temporaryFolder();
     mkdir($project . '/public/cp/assets', 0755, true);
@@ -19,7 +19,7 @@ function webRootSetup(string $webRoot = 'public_html'): array
 
     $releases = new Releases($web, $paths->storage('releases.json'));
 
-    return [new WebRoot($releases, $paths), $project, $web, $releases];
+    return [new WebRoot($releases, $paths, $hideFromSearch), $project, $web, $releases];
 }
 
 it('routes /cp to the panel and everything else to the live release', function (): void {
@@ -95,3 +95,18 @@ it('answers missing pages with the live 404 page, or a plain one before the firs
     file_put_contents($web . '/404.html', 'This Trail Doesn\'t Exist');
     expect($run())->toBe('This Trail Doesn\'t Exist');
 });
+
+it('asks search engines not to list a test copy, and only then', function (): void {
+    [$hidden, , $web] = webRootSetup(hideFromSearch: true);
+    $done = $hidden->install();
+    expect((string) file_get_contents($web . '/.htaccess'))->toContain('Header always set X-Robots-Tag "noindex, nofollow"')
+        ->and($done)->toContain('Search engines are asked not to list this website (HIDE_FROM_SEARCH in .env).');
+
+    [$listed, , $web] = webRootSetup();
+    $listed->install();
+    expect((string) file_get_contents($web . '/.htaccess'))->not->toContain('X-Robots-Tag');
+});
+
+it('reads HIDE_FROM_SEARCH from .env', function (string $value, bool $hidden): void {
+    expect(SlimKiller\Support\AppConfig::fromEnvironment(['HIDE_FROM_SEARCH' => $value])->hideFromSearch)->toBe($hidden);
+})->with([['true', true], ['1', true], ['Yes', true], ['', false], ['false', false]]);

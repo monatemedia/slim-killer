@@ -13,6 +13,19 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **The page's real web address.** A content page shows where it is on the website, as a
+  link that opens it (for example `/destinations/namibia/`). The addresses come from the
+  site's build (`_slim-killer/addresses.json`, worked out from the site's
+  `slim-killer.json` and checked against the built pages) and are kept beside the working
+  copy. Without them the panel shows no address, rather than guessing one.
+- **Real redirects for old addresses.** The build's `_slim-killer/redirects.json` becomes
+  301 rules in the live release's `.htaccess`, so an old address (with or without its
+  trailing slash) reaches its new page in one step. Each release keeps its own, so a
+  rollback brings back that release's redirects. Anything that is not a plain path, or a
+  full http(s) address as the target, is left out.
+- **`HIDE_FROM_SEARCH` for test copies.** Set to `true` in `.env`, `web:install` adds an
+  `X-Robots-Tag: noindex, nofollow` header for the whole website.
+
 - **`hammer web:install`.** Sets up the website folder (`WEB_ROOT`): an `.htaccess` that
   sends `/cp` to the control panel and everything else to the live release, a stub
   `cp/index.php` that loads the panel from the project folder outside the web root, and

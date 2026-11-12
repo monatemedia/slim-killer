@@ -95,8 +95,11 @@ it('shows a page\'s form, built from the schema and filled with its values', fun
         ->toContain('The oryx can go for _weeks_ without water.')
         ->toContain('name="f[gallery][1][src]"')
         ->toContain('maxlength="20"')
-        ->toContain('Web address: <code>…/oryx/</code>')
+        ->toContain('Web address: <a href="/articles/oryx/" target="_blank" rel="noopener"><code>/articles/oryx/</code></a>')
         ->not->toContain('style=');
+
+    $browser->get('/cp/content/articles/deadvlei');
+    expect($browser->body())->toContain('Deadvlei')->not->toContain('Web address');
 });
 
 it('says a page is not there, rather than guessing', function (string $path): void {

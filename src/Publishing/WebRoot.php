@@ -29,6 +29,8 @@ final class WebRoot
     public function __construct(
         private readonly Releases $releases,
         private readonly Paths $paths,
+        /** HIDE_FROM_SEARCH in .env: a test copy, kept out of search results. */
+        private readonly bool $hideFromSearch = false,
     ) {}
 
     /**
@@ -56,6 +58,9 @@ final class WebRoot
         }
         $this->write($htaccess, $this->htaccess());
         $done[] = 'Wrote .htaccess: /cp goes to the control panel, everything else to the live release.';
+        if ($this->hideFromSearch) {
+            $done[] = 'Search engines are asked not to list this website (HIDE_FROM_SEARCH in .env).';
+        }
 
         $entry = $this->paths->root('public/cp/index.php');
         $this->write($root . '/cp/index.php', implode("\n", [
@@ -94,6 +99,13 @@ final class WebRoot
             '# 404.html is a copy of the live release\'s 404 page, replaced at every switch.',
             'ErrorDocument 404 /404.html',
             '',
+            ...($this->hideFromSearch ? [
+                '# HIDE_FROM_SEARCH is on in .env: a test copy, kept out of search results.',
+                '<IfModule mod_headers.c>',
+                'Header always set X-Robots-Tag "noindex, nofollow"',
+                '</IfModule>',
+                '',
+            ] : []),
             '# Certificate renewals (Let\'s Encrypt) must reach their files.',
             'RewriteRule ^\.well-known/ - [L]',
             '',

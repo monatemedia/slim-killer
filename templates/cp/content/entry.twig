@@ -13,7 +13,9 @@
 <section class="hero">
   <h1>{{ entry.title }}</h1>
 </section>
-<p class="entry-address">Web address: <code>…/{{ entry.slug }}/</code></p>
+{% if entry.address %}
+<p class="entry-address">Web address: <a href="{{ entry.link }}" target="_blank" rel="noopener"><code>{{ entry.address }}</code></a></p>
+{% endif %}
 
 {% if problem %}
   <div class="form-problems" role="alert" tabindex="-1">

@@ -212,6 +212,7 @@ final class Releases
             'RewriteCond %{THE_REQUEST} \\s/' . self::FOLDER . '/ [NC]',
             'RewriteRule ^ - [F]',
             '',
+            ...$this->redirectRules($release),
             '# Already inside the live release: serve the file.',
             "RewriteRule ^{$id}/ - [L]",
             '',
@@ -232,6 +233,28 @@ final class Releases
             "ErrorDocument 404 /" . self::FOLDER . "/{$id}/404.html",
             '',
         ]);
+    }
+
+    /**
+     * The release's old addresses, each a single 301 to where it now goes, with or without
+     * the trailing slash. Before every other rule, so they win over the build's own
+     * redirect pages.
+     *
+     * @return list<string>
+     */
+    private function redirectRules(Release $release): array
+    {
+        if ($release->redirects === []) {
+            return [];
+        }
+        $lines = ['# Old addresses (the site\'s slim-killer.json), sent on in one step.'];
+        foreach ($release->redirects as $redirect) {
+            $path = preg_quote(trim($redirect['from'], '/'), '#');
+            $lines[] = "RewriteRule ^{$path}/?\$ {$redirect['to']} [R=301,L]";
+        }
+        $lines[] = '';
+
+        return $lines;
     }
 
     /** @return array{live: string|null, releases: array<mixed>} */

@@ -32,6 +32,8 @@ final readonly class AppConfig
         public string $webRoot = '',
         /** Shared with the site's workflow, to sign "a build is ready". Empty: the webhook is off. */
         public string $webhookSecret = '',
+        /** A test copy: web:install asks search engines not to list the website. */
+        public bool $hideFromSearch = false,
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -56,6 +58,7 @@ final readonly class AppConfig
             $text('GITHUB_CONTENT_FOLDER', 'content'),
             $text('WEB_ROOT'),
             $text('WEBHOOK_SECRET'),
+            in_array(strtolower($text('HIDE_FROM_SEARCH')), ['1', 'true', 'yes', 'on'], true),
         );
     }
 
