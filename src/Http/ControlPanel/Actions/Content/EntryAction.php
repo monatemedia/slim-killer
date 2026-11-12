@@ -15,12 +15,14 @@ use SlimKiller\Content\Entry;
 use SlimKiller\Content\Form\FieldFactory;
 use SlimKiller\Content\Form\FormReader;
 use SlimKiller\Content\Form\ListChange;
+use SlimKiller\Content\PageAddresses;
 use SlimKiller\GitHub\ContentCommitter;
 use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\ControlPanel\SignedIn;
 use SlimKiller\Http\ControlPanel\View;
 use SlimKiller\Http\Session\Session;
 use SlimKiller\Publishing\PublishLog;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 
 /**
@@ -46,6 +48,8 @@ final class EntryAction
         private readonly AuditLog $audit,
         private readonly PublishLog $publishLog,
         private readonly Clock $clock,
+        private readonly PageAddresses $addresses,
+        private readonly AppConfig $config,
     ) {}
 
     /** @param array<string, string> $args */
@@ -122,6 +126,8 @@ final class EntryAction
     /** @param array<string, mixed> $form */
     private function page(ResponseInterface $response, Session $session, Collection $collection, Entry $entry, array $form, int $status = 200): ResponseInterface
     {
+        $address = $this->addresses->of($collection->name, $entry->slug);
+
         return $this->view->render($response, 'cp/content/entry.twig', [
             'collection' => ['name' => $collection->name, 'label' => $collection->label],
             'entry' => [
@@ -130,6 +136,8 @@ final class EntryAction
                 'body' => $form['body'] ?? $entry->body,
                 'hasBody' => trim($entry->body) !== '',
                 'version' => $form['version'] ?? $entry->version,
+                'address' => $address,
+                'link' => $address === null ? null : $this->config->link($address),
             ],
             'fields' => $this->fields->fields($collection->schema),
             'values' => $form['values'] ?? $entry->data,

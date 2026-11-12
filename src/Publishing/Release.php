@@ -9,6 +9,8 @@ namespace SlimKiller\Publishing;
  *
  * `build` is the commit on the dist branch (one per build); `commit` is the save it was
  * built from, on the client site's branch. The folder is named after the build.
+ * `redirects` are the build's old addresses and where they now go (site/slim-killer.json);
+ * the host writes them as 301 rules while this release is live.
  */
 final readonly class Release
 {
@@ -18,9 +20,33 @@ final readonly class Release
         public string $commit,
         public string $builtAt,
         public string $fetchedAt,
+        /** @var list<array{from: string, to: string}> */
+        public array $redirects = [],
     ) {}
 
-    /** @return array{id: string, build: string, commit: string, builtAt: string, fetchedAt: string} */
+    /**
+     * The redirects worth keeping from a build's redirects.json: an old path on this site,
+     * and a path or a full http(s) address to send it to. Anything else is dropped, since
+     * each one becomes a line in the website's .htaccess.
+     *
+     * @return list<array{from: string, to: string}>
+     */
+    public static function redirectsFrom(mixed $data): array
+    {
+        $redirects = [];
+        foreach (is_array($data) ? $data : [] as $redirect) {
+            $from = is_array($redirect) && is_string($redirect['from'] ?? null) ? $redirect['from'] : '';
+            $to = is_array($redirect) && is_string($redirect['to'] ?? null) ? $redirect['to'] : '';
+            if (preg_match('#^/[A-Za-z0-9._~/-]*[A-Za-z0-9._~-]/?$#', $from) === 1
+                && preg_match('#^(https?://[A-Za-z0-9.-]+(:[0-9]+)?)?/[A-Za-z0-9._~/-]*$#', $to) === 1) {
+                $redirects[] = ['from' => $from, 'to' => $to];
+            }
+        }
+
+        return $redirects;
+    }
+
+    /** @return array{id: string, build: string, commit: string, builtAt: string, fetchedAt: string, redirects: list<array{from: string, to: string}>} */
     public function toArray(): array
     {
         return [
@@ -29,6 +55,7 @@ final readonly class Release
             'commit' => $this->commit,
             'builtAt' => $this->builtAt,
             'fetchedAt' => $this->fetchedAt,
+            'redirects' => $this->redirects,
         ];
     }
 
@@ -40,7 +67,7 @@ final readonly class Release
             return null;
         }
 
-        return new self($text('id'), $text('build'), $text('commit'), $text('builtAt'), $text('fetchedAt'));
+        return new self($text('id'), $text('build'), $text('commit'), $text('builtAt'), $text('fetchedAt'), self::redirectsFrom($data['redirects'] ?? []));
     }
 
     /** "d9bc3e2": the save, as GitHub shortens it. */

@@ -43,6 +43,7 @@ use SlimKiller\Http\HttpClient;
 use SlimKiller\Publishing\Progress;
 use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Publishing\Releases;
+use SlimKiller\Publishing\WebRoot;
 use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
@@ -88,6 +89,7 @@ return [
 
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
+    WebRoot::class => factory(static fn(Releases $releases, Paths $paths, AppConfig $config): WebRoot => new WebRoot($releases, $paths, $config->hideFromSearch)),
     AfterResponse::class => get(ShutdownAfterResponse::class),
     PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
     Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),

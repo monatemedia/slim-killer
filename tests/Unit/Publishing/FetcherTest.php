@@ -283,3 +283,44 @@ it('puts the live release\'s 404 page in the web root, and keeps it in step with
     $fetcher->rollback();
     expect(file_get_contents($root . '/public_html/404.html'))->toBe('Not found: First');
 });
+
+it('writes the build\'s redirects as single 301s, and a rollback brings back the old ones', function (): void {
+    [$fetcher, , $github, $root] = publishingHost();
+    $htaccess = fn(): string => (string) file_get_contents($root . '/public_html/_site/.htaccess');
+    newBuild($github, str_repeat('a', 40), 'First', siteBuild(str_repeat('a', 40), 'First') + [
+        '_slim-killer/redirects.json' => json_encode([
+            ['from' => '/discover', 'to' => '/destinations/'],
+            ['from' => '/old-page/', 'to' => 'https://example.com/new/'],
+            ['from' => '/bad path', 'to' => '/destinations/'],
+            ['from' => '/sneaky', 'to' => '/x [R=302]'],
+            ['from' => '/', 'to' => '/destinations/'],
+        ]),
+    ]);
+    $fetcher->fetch();
+
+    expect($htaccess())->toContain('RewriteRule ^discover/?$ /destinations/ [R=301,L]')
+        ->toContain('RewriteRule ^old\\-page/?$ https://example.com/new/ [R=301,L]')
+        ->not->toContain('bad path')
+        ->not->toContain('sneaky')
+        ->and(substr_count($htaccess(), '[R=301,L]'))->toBe(3); // two redirects, and the trailing slash rule
+
+    newBuild($github, str_repeat('b', 40), 'Second');
+    $fetcher->fetch();
+    expect($htaccess())->not->toContain('discover');
+
+    $fetcher->rollback();
+    expect($htaccess())->toContain('RewriteRule ^discover/?$ /destinations/ [R=301,L]');
+});
+
+it('keeps the build\'s page addresses beside the working copy, and drops them when a build has none', function (): void {
+    [$fetcher, , $github, $root] = publishingHost();
+    newBuild($github, str_repeat('a', 40), 'First', siteBuild(str_repeat('a', 40), 'First') + [
+        '_slim-killer/addresses.json' => '{"destinations/namibia": "/destinations/namibia/"}',
+    ]);
+    $fetcher->fetch();
+    expect(file_get_contents($root . '/storage/site/addresses.json'))->toContain('/destinations/namibia/');
+
+    newBuild($github, str_repeat('b', 40), 'Second');
+    $fetcher->fetch();
+    expect($root . '/storage/site/addresses.json')->not->toBeFile();
+});

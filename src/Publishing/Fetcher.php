@@ -80,6 +80,7 @@ final class Fetcher
                     $record['commit'],
                     $record['builtAt'],
                     $this->clock->now()->format(DATE_ATOM),
+                    $this->redirects($panel),
                 );
                 $this->releases->add($release, $incoming);
                 $this->releases->switchTo($release);
@@ -259,7 +260,19 @@ final class Fetcher
     }
 
     /**
-     * Replaces the panel's content and schemas with the ones the build carried, so the
+     * The build's redirects (_slim-killer/redirects.json), if it has any.
+     *
+     * @return list<array{from: string, to: string}>
+     */
+    private function redirects(string $panel): array
+    {
+        $file = $panel . '/redirects.json';
+
+        return is_file($file) ? Release::redirectsFrom(json_decode((string) file_get_contents($file), true)) : [];
+    }
+
+    /**
+     * Replaces the panel's content, schemas and page addresses with the ones the build carried, so the
      * forms match the live site. Left alone when .env points them at a development folder.
      */
     private function refreshWorkingCopy(string $panel): string
@@ -276,6 +289,14 @@ final class Fetcher
             }
             Folder::replace($content, $panel . '/content');
             Folder::replace($schemas, $panel . '/schemas');
+            $addresses = dirname($content) . '/addresses.json';
+            if (is_file($panel . '/addresses.json')) {
+                if (! @copy($panel . '/addresses.json', $addresses)) {
+                    throw new RuntimeException("Could not write {$addresses}.");
+                }
+            } elseif (is_file($addresses)) {
+                @unlink($addresses);
+            }
         } catch (RuntimeException $exception) {
             return 'The website is live, but the working copy could not be refreshed: ' . $exception->getMessage();
         }
