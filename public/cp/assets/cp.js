@@ -131,6 +131,7 @@
   var choosingFor = null;
   document.querySelectorAll('[data-photo-field]').forEach(function (field) {
     var parts = {
+      field: field,
       preview: field.querySelector('[data-photo-preview]'),
       empty: field.querySelector('[data-photo-empty]'),
       file: field.querySelector('[data-photo-file]'),
@@ -142,7 +143,7 @@
     parts.upload.addEventListener('change', function () {
       var chosen = parts.upload.files && parts.upload.files[0];
       if (chosen) {
-        showPhoto(parts, URL.createObjectURL(chosen), chosen.name + ' (added when you press Save)');
+        showPhoto(parts, URL.createObjectURL(chosen), 'New photo, added when you press Save');
         askForDescription(field);
       }
     });
@@ -156,13 +157,19 @@
     }
   });
 
-  // A new photo with no description: point at the description box and say why it
+  // The photo changed, so its description belongs to the old one: clear it (keeping it
+  // as a faint "Was: ..." to retype if it still fits), point at the box and say why it
   // matters. The description also names the file when the phone's own name says nothing.
   function askForDescription(field) {
     var group = field.closest('fieldset');
     var alt = group && group.querySelector('input[name$="[alt]"]');
-    if (!alt || alt.value.trim() !== '') {
+    if (!alt) {
       return;
+    }
+    if (alt.value.trim() !== '') {
+      alt.placeholder = 'Was: ' + alt.value.trim();
+      alt.value = '';
+      alt.dispatchEvent(new Event('input', { bubbles: true }));
     }
     var box = alt.closest('.field');
     box.classList.add('needs-description');
@@ -191,6 +198,7 @@
           choosingFor.name.value = option.getAttribute('data-file');
           choosingFor.upload.value = '';
           showPhoto(choosingFor, option.getAttribute('data-preview'), option.getAttribute('data-file'));
+          askForDescription(choosingFor.field);
           choosingFor.name.dispatchEvent(new Event('change', { bubbles: true }));
         }
         picker.close();

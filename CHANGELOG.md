@@ -19,8 +19,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   named after the file it came from ("Lions at dusk.jpg" → `lions-at-dusk.jpg`). When that
   name says nothing (an iPhone's random name, `IMG_2041`, `PXL_…`, WhatsApp's), it is named
   from the first words of the photo's description ("A lion at a waterhole" →
-  `lion-at-a-waterhole.jpg`), or else after the page (`discover-botswana.jpg`). Picking a
-  photo with an empty description highlights that box and says why it matters. An upload is
+  `lion-at-a-waterhole.jpg`), or else after the page (`discover-botswana.jpg`). Changing
+  the photo clears its description (keeping the old one as a faint "Was: …" to retype) and
+  highlights the box, saying why it matters: a description belongs to one photo. An upload is
   checked (its bytes and its content must agree it is a photo, at most 40 megapixels),
   turned the right way up, made at most 2400 px on the long edge and re-encoded as a JPEG
   at quality 85 (a transparent PNG stays PNG), which drops EXIF, GPS included, and
