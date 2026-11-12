@@ -12,6 +12,9 @@
 /Claude outputs/
 *-output.txt
 
+# Screenshots from testing on a device, for review; never committed
+/review/
+
 # Environment and dependencies
 .env
 /vendor/

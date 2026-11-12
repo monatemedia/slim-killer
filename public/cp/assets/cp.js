@@ -130,36 +130,46 @@
   var picker = document.getElementById('photo-picker');
   var choosingFor = null;
   document.querySelectorAll('[data-photo-field]').forEach(function (field) {
-    var preview = field.querySelector('[data-photo-preview]');
-    var name = field.querySelector('[data-photo-name]');
-    var upload = field.querySelector('[data-photo-upload]');
+    var parts = {
+      preview: field.querySelector('[data-photo-preview]'),
+      empty: field.querySelector('[data-photo-empty]'),
+      file: field.querySelector('[data-photo-file]'),
+      name: field.querySelector('[data-photo-name]'),
+      upload: field.querySelector('[data-photo-upload]'),
+    };
     var choose = field.querySelector('[data-photo-choose]');
 
-    upload.addEventListener('change', function () {
-      if (upload.files && upload.files[0]) {
-        preview.src = URL.createObjectURL(upload.files[0]);
-        preview.hidden = false;
+    parts.upload.addEventListener('change', function () {
+      var chosen = parts.upload.files && parts.upload.files[0];
+      if (chosen) {
+        showPhoto(parts, URL.createObjectURL(chosen), chosen.name + ' (added when you press Save)');
       }
     });
 
     if (picker && typeof picker.showModal === 'function') {
       choose.hidden = false;
       choose.addEventListener('click', function () {
-        choosingFor = { preview: preview, name: name, upload: upload };
+        choosingFor = parts;
         picker.showModal();
       });
     }
   });
+
+  function showPhoto(parts, src, caption) {
+    parts.preview.src = src;
+    parts.preview.hidden = false;
+    parts.empty.hidden = true;
+    parts.file.textContent = caption;
+  }
 
   if (picker) {
     picker.querySelectorAll('[data-file]').forEach(function (option) {
       option.addEventListener('click', function () {
         if (choosingFor) {
           choosingFor.name.value = option.getAttribute('data-file');
-          choosingFor.preview.src = option.getAttribute('data-preview');
-          choosingFor.preview.hidden = false;
           choosingFor.upload.value = '';
-          choosingFor.name.dispatchEvent(new Event('input', { bubbles: true }));
+          showPhoto(choosingFor, option.getAttribute('data-preview'), option.getAttribute('data-file'));
+          choosingFor.name.dispatchEvent(new Event('change', { bubbles: true }));
         }
         picker.close();
       });

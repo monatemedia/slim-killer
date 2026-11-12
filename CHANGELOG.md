@@ -13,8 +13,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
-- **Photo upload.** An image field shows its photo, takes a new one (JPEG, PNG or WebP, up
-  to 20 MB), and has **Choose a photo** for the site's existing photos. An upload is
+- **Photo upload.** An image field shows its photo with its file name underneath, and two
+  buttons: **Upload a new photo** (JPEG, PNG or WebP, up to 20 MB) and **Choose a photo**
+  for the site's existing photos. The file name is not a box to type in: a new photo is
+  named after the file it came from. An upload is
   checked (its bytes and its content must agree it is a photo, at most 40 megapixels),
   turned the right way up, made at most 2400 px on the long edge and re-encoded as a JPEG
   at quality 85 (a transparent PNG stays PNG), which drops EXIF, GPS included, and
