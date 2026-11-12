@@ -55,7 +55,7 @@ function oryxForm(array $changes = []): array
     return array_replace_recursive([
         'f' => [
             'title' => 'The Oryx', 'description' => "Namibia's national animal.", 'heroImage' => 'oryx.jpg',
-            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole'], ['src' => 'oryx-2.jpg', 'alt' => '']],
+            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole', 'focus' => 'center 30%'], ['src' => 'oryx-2.jpg', 'alt' => '']],
         ],
         'body' => "## In the desert\r\n\r\nThe oryx can go for _weeks_ without water.",
     ], $changes);
@@ -159,7 +159,7 @@ it('says so when a posted page changes nothing', function (): void {
     $browser->post('/cp/content/articles/oryx', [
         'f' => [
             'title' => 'The Oryx', 'description' => "Namibia's national animal.", 'heroImage' => 'oryx.jpg',
-            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole'], ['src' => 'oryx-2.jpg', 'alt' => '']],
+            'gallery' => [['src' => 'oryx-1.jpg', 'alt' => 'An oryx at a waterhole', 'focus' => 'center 30%'], ['src' => 'oryx-2.jpg', 'alt' => '']],
         ],
         'body' => "## In the desert\r\n\r\nThe oryx can go for _weeks_ without water.",
     ]);

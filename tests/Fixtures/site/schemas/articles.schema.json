@@ -2,22 +2,51 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "title": { "type": "string", "title": "Page title", "maxLength": 20 },
-    "description": { "type": "string", "title": "Description for search results", "input": "textarea", "description": "One or two sentences." },
-    "heroImage": { "type": "string" },
+    "title": {
+      "type": "string",
+      "title": "Page title",
+      "maxLength": 20
+    },
+    "description": {
+      "type": "string",
+      "title": "Description for search results",
+      "input": "textarea",
+      "description": "One or two sentences."
+    },
+    "heroImage": {
+      "type": "string"
+    },
     "gallery": {
       "default": [],
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "src": { "type": "string" },
-          "alt": { "default": "", "type": "string" }
+          "src": {
+            "type": "string"
+          },
+          "alt": {
+            "default": "",
+            "type": "string"
+          },
+          "focus": {
+            "type": "string",
+            "title": "Focus point",
+            "description": "The part to keep in view when the photo is cropped."
+          }
         },
-        "required": ["src"]
+        "required": [
+          "src"
+        ]
       }
     },
-    "$schema": { "type": "string" }
+    "$schema": {
+      "type": "string"
+    }
   },
-  "required": ["title", "description", "heroImage"]
+  "required": [
+    "title",
+    "description",
+    "heroImage"
+  ]
 }
