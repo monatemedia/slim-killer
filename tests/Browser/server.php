@@ -24,6 +24,15 @@ if ($path !== '/' && is_file($root . '/public' . $path)) {
 require $root . '/vendor/autoload.php';
 require __DIR__ . '/panel.php';
 
+// The publishing report a test set (publishingReport()), instead of asking GitHub.
+$report = getenv('SK_BROWSER_STATE') . '/publishing-report.json';
+if ($path === '/cp/publishing') {
+    header('Content-Type: application/json');
+    echo is_file($report) ? file_get_contents($report) : '{"stage":"none","message":"","done":true}';
+
+    return true;
+}
+
 $container = browserContainer((string) getenv('SK_BROWSER_STATE'));
 $app = ControlPanel::create($container, showErrorDetails: true, logErrors: false);
 

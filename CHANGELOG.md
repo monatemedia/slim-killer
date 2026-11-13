@@ -13,6 +13,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Publishing chip.** Publishing shows as a small chip under the logo ("Building…",
+  "Live ✓") with a coloured light, instead of a large box above the page; tap it for the
+  steps, the message and the estimate.
+- **Light and dark switch.** The panel follows the device's setting until the switch in
+  the header is used; the choice is then kept on that device and applied before the page
+  is drawn (`theme.js`).
+
 - **Focus point picker.** An image's "focus" box becomes the photo with a dot: tap the part
   that must stay in view when the website crops it (or use the arrow keys), and two small
   crops, wide and square, show the result. Stored as `x% y%`, which the site uses as the
@@ -218,6 +225,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   layers (core, site, content), the build rules, the git workflow, and what never to do.
 
 ### Changed
+
+- **The logo and the name** are one link to the dashboard (only the logo was).
+- **Focus rings** follow the rounded corners of fields and buttons (a box-shadow ring;
+  older Safari drew a square outline around rounded fields).
+- **Small phones** give the form more width: smaller page, card and group margins below
+  520 px.
 
 - The dashboard no longer says saving is coming: it is here.
 - **Code names follow the glossary.** Welcome links are `WelcomeLinks` in code (was

@@ -1,12 +1,16 @@
-{# How the newest save is getting on. Filled and kept up to date by cp.js from
-   /cp/publishing; hidden when there is nothing to show, or without JavaScript. #}
-<section class="publishing" data-publishing="{{ base }}/publishing" aria-live="polite" hidden>
-  <ol class="publishing-steps">
-    <li data-step="saved">Saved</li>
-    <li data-step="building">Building</li>
-    <li data-step="going-live">Going live</li>
-    <li data-step="live">Live</li>
-  </ol>
-  <p class="publishing-message"></p>
-  <p class="publishing-estimate"></p>
-</section>
+{# How the newest save is getting on: a small chip under the logo, with the steps behind
+   it. Filled and kept up to date by cp.js from /cp/publishing; hidden when there is
+   nothing to show, or without JavaScript. #}
+<details class="publishing-chip" data-publishing="{{ base }}/publishing" hidden>
+  <summary><span class="chip-light" aria-hidden="true"></span><span data-chip-text aria-live="polite">Publishing</span></summary>
+  <div class="publishing">
+    <ol class="publishing-steps">
+      <li data-step="saved">Saved</li>
+      <li data-step="building">Building</li>
+      <li data-step="going-live">Going live</li>
+      <li data-step="live">Live</li>
+    </ol>
+    <p class="publishing-message"></p>
+    <p class="publishing-estimate"></p>
+  </div>
+</details>
