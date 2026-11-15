@@ -50,6 +50,36 @@ function signedIn(string $path): string
     return browserPanel() . '/cp/__test/sign-in?next=' . rawurlencode($path);
 }
 
+/** The test server's state folder: its storage and its copy of the site. */
+function browserState(): string
+{
+    static $state = null;
+    if ($state === null) {
+        $state = temporaryFolder();
+        prepareBrowserState($state);
+    }
+
+    return $state;
+}
+
+/**
+ * Sets what /cp/publishing answers, as the panel's publishing chip polls it; null goes
+ * back to nothing to show. The test server has no GitHub to ask.
+ *
+ * @param array<string, mixed>|null $report
+ */
+function publishingReport(?array $report): void
+{
+    $file = browserState() . '/publishing-report.json';
+    if ($report === null) {
+        if (is_file($file)) {
+            unlink($file);
+        }
+    } else {
+        file_put_contents($file, json_encode($report));
+    }
+}
+
 /** Starts the test server once per run, and returns its address. */
 function browserPanel(): string
 {
@@ -58,8 +88,7 @@ function browserPanel(): string
         return $address;
     }
 
-    $state = temporaryFolder();
-    prepareBrowserState($state);
+    $state = browserState();
 
     $socket = stream_socket_server('tcp://127.0.0.1:0');
     $port = (int) substr((string) strrchr((string) stream_socket_get_name($socket, false), ':'), 1);
@@ -125,9 +154,11 @@ function pickFile(mixed $page, string $selector, string $path, string $type = 'i
 }
 
 /** A page of the panel, signed in, on a touch phone the size of an iPhone 7. */
-function onIPhone7(string $path): mixed
+function onIPhone7(string $path, bool $dark = false): mixed
 {
-    return visit(signedIn($path))->on()->mobile()->resize(375, 667);
+    $page = visit(signedIn($path));
+
+    return ($dark ? $page->inDarkMode() : $page->inLightMode())->on()->mobile()->resize(375, 667);
 }
 
 /** Taps (clicks) an element at a spot given in percent of its width and height. */

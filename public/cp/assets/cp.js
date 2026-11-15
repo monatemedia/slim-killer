@@ -79,6 +79,31 @@
   // After a save with problems, move to the list of problems so it is read first.
   var problems = document.querySelector('.form-problems');
   if (problems) problems.focus();
+  // Light or dark: follows the device until the person picks one with the switch, and
+  // the choice is kept on this device (theme.js applies it before the page is drawn).
+  var themeSwitch = document.querySelector('[data-theme-switch]');
+  if (themeSwitch) {
+    var isDark = function () {
+      var chosen = document.documentElement.getAttribute('data-theme');
+      return chosen ? chosen === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    };
+    var describe = function () {
+      themeSwitch.setAttribute('aria-label', isDark() ? 'Switch to light mode' : 'Switch to dark mode');
+    };
+    themeSwitch.hidden = false;
+    describe();
+    themeSwitch.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        window.localStorage.setItem('sk-theme', next);
+      } catch (e) {
+        // Not kept (private browsing), but switched for this page.
+      }
+      describe();
+    });
+  }
+
   // Publishing progress: Saved → Building → Going live → Live. Asks the panel every
   // few seconds until the newest save is live (or its build failed), then stops.
   var publishing = document.querySelector('[data-publishing]');
@@ -86,6 +111,8 @@
     var order = ['saved', 'building', 'going-live', 'live'];
     var message = publishing.querySelector('.publishing-message');
     var estimate = publishing.querySelector('.publishing-estimate');
+    var chipText = publishing.querySelector('[data-chip-text]');
+    var chipWords = { saved: 'Saved', building: 'Building…', 'going-live': 'Going live…', live: 'Live ✓', failed: 'Not published' };
 
     var show = function (report) {
       if (!report || report.stage === 'none') {
@@ -104,6 +131,8 @@
         }
       });
       publishing.classList.toggle('publishing-failed', failed);
+      publishing.setAttribute('data-stage', report.stage);
+      chipText.textContent = chipWords[report.stage] || 'Publishing';
       message.textContent = report.message;
       estimate.textContent = report.estimate || '';
       estimate.hidden = !report.estimate;
