@@ -14,6 +14,12 @@ use Throwable;
  * command line's. It places a temporary folder in the web root containing a probe
  * file (answers only to a random key), an .htaccess rewrite rule and an empty folder,
  * requests them over HTTP, and always deletes the folder again.
+ *
+ * It still works after `hammer web:install`, whose .htaccess sends every address into
+ * _site/: the probe folder's own .htaccess turns the rewrite engine on, and on Apache
+ * and LiteSpeed a folder's own rewrite rules replace the parent folder's rather than
+ * adding to them. Keep "RewriteEngine On" in place() for that reason. (Checked on
+ * Hostinger's LiteSpeed, 19 November 2026.)
  */
 final class WebProbe
 {
