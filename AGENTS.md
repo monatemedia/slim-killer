@@ -86,7 +86,7 @@ Other conventions:
 ```sh
 php hammer                     # list the commands
 php hammer doctor              # check this host (add --url and --webroot to check the website)
-php hammer cron:heartbeat      # what cron runs every minute, for now
+php hammer cron:run            # the one cron line, every minute: runs whatever is due
 composer check                 # Pint, PHPStan and Pest: run before handing work back
 ```
 
@@ -95,7 +95,10 @@ itself on an old PHP. Keep that part of the file old-syntax. The same goes for
 `src/Doctor/WebProbe/probe-template.php`, which runs on the website's PHP.
 
 Commands implement `SlimKiller\Console\Command` and are registered in the container's
-`console.commands` list (`config/container.php`). Doctor checks implement `PhpCheck`
+`console.commands` list (`config/container.php`). Anything cron should do is a job, not
+another cron line: it implements `SlimKiller\Cron\CronJob` (a name, how often, the work)
+and goes in the `cron.jobs` list, quick jobs before slow ones. `cron:run` gives each job
+its own lock and its own try/catch. Doctor checks implement `PhpCheck`
 (runs against the command line's PHP and again against the website's) or `HostCheck`
 (runs once), and are registered in `doctor.php_checks` / `doctor.host_checks`. What a
 host must provide is defined once, in `SlimKiller\Doctor\Requirements`; the wiki page

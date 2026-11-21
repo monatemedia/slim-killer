@@ -12,6 +12,7 @@ use SlimKiller\Http\HttpClient;
 use SlimKiller\Http\Response;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Folder;
+use SlimKiller\Support\Lock;
 use SlimKiller\Support\Paths;
 use ZipArchive;
 
@@ -136,25 +137,19 @@ final class Fetcher
      */
     private function locked(callable $work): FetchResult
     {
-        $file = $this->paths->storage('fetch.lock');
-        if (! is_dir(dirname($file))) {
-            @mkdir(dirname($file), 0755, true);
+        try {
+            $lock = Lock::attempt($this->paths->storage('fetch.lock'));
+        } catch (RuntimeException $problem) {
+            return FetchResult::failed($problem->getMessage());
         }
-        $lock = @fopen($file, 'c');
-        if ($lock === false) {
-            return FetchResult::failed("Could not open {$file}. Is the storage folder writable?");
-        }
-        if (! flock($lock, LOCK_EX | LOCK_NB)) {
-            fclose($lock);
-
+        if ($lock === null) {
             return FetchResult::busy();
         }
 
         try {
             return $work();
         } finally {
-            flock($lock, LOCK_UN);
-            fclose($lock);
+            $lock->release();
         }
     }
 

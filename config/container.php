@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
+use SlimKiller\Console\Commands\CronRunCommand;
 use SlimKiller\Console\Commands\DeployFetchCommand;
 use SlimKiller\Console\Commands\DeployRollbackCommand;
 use SlimKiller\Console\Commands\DoctorCommand;
@@ -21,6 +22,10 @@ use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
 use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
+use SlimKiller\Cron\CronRunner;
+use SlimKiller\Cron\Jobs\ContactFormJob;
+use SlimKiller\Cron\Jobs\DeployFetchJob;
+use SlimKiller\Cron\Jobs\HeartbeatJob;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
@@ -102,12 +107,23 @@ return [
         get(MigrateCommand::class),
         get(UserCreateCommand::class),
         get(UserResetCommand::class),
+        get(CronRunCommand::class),
         get(CronHeartbeatCommand::class),
         get(DeployFetchCommand::class),
         get(DeployRollbackCommand::class),
         get(WebInstallCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
+
+    // --- Cron --------------------------------------------------------------------
+    // What `hammer cron:run` does, in this order: quick jobs first, the slow fetch last.
+    // Sites add their own with DI\add([...]).
+    'cron.jobs' => add([
+        get(HeartbeatJob::class),
+        get(ContactFormJob::class),
+        get(DeployFetchJob::class),
+    ]),
+    CronRunner::class => autowire()->constructorParameter('jobs', get('cron.jobs')),
 
     // --- Doctor ------------------------------------------------------------------
     BinaryFinder::class => autowire()->constructorParameter('patterns', [
