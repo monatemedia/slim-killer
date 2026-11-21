@@ -48,13 +48,13 @@ final readonly class ContactFormJob implements CronJob
             return 'This website has no contact form.';
         }
 
-        $config = self::NAMESPACE . 'config';
-        $outbox = self::NAMESPACE . 'outbox';
         // Loaded once for each run of cron: a second copy would define the functions twice.
-        if (! function_exists($config)) {
+        if ($this->formFunction('config') === null) {
             require_once $file;
         }
-        if (! function_exists($config) || ! function_exists($outbox)) {
+        $config = $this->formFunction('config');
+        $outbox = $this->formFunction('outbox');
+        if ($config === null || $outbox === null) {
             return 'This contact form sends every message at once, so it holds nothing.';
         }
 
@@ -73,5 +73,16 @@ final readonly class ContactFormJob implements CronJob
             1 => 'Sent 1 held message.',
             default => "Sent {$sent} held messages.",
         };
+    }
+
+    /**
+     * One of the form's functions, or null when contact.php does not define it. Found by
+     * name, because contact.php is the site's file, loaded at run time, not part of core.
+     */
+    private function formFunction(string $name): ?\Closure
+    {
+        $function = self::NAMESPACE . $name;
+
+        return is_callable($function) ? \Closure::fromCallable($function) : null;
     }
 }

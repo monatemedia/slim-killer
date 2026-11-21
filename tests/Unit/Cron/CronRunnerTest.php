@@ -128,7 +128,8 @@ it('prints each failure and ends with exit code 1', function (): void {
         new FakeJob('heartbeat'),
     ], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
 
-    expect(runCron($runner))->toBe([1, "deploy-fetch: GitHub did not answer.\n"]);
+    // Output writes PHP_EOL: "\r\n" on Windows, "\n" on the host.
+    expect(runCron($runner))->toBe([1, 'deploy-fetch: GitHub did not answer.' . PHP_EOL]);
 });
 
 it('lists every job with -v', function (): void {
