@@ -179,7 +179,7 @@ php hammer user:create --email=client@example.com --name="Client Name"
 php hammer user:reset --email=client@example.com
                                # lost phone or password: clear both, print a new welcome link
 php hammer migrate             # bring the database up to date
-php hammer cron:heartbeat      # what cron runs every minute (for now)
+php hammer cron:run            # the one cron line, every minute: runs whatever is due (-v lists each job)
 ```
 
 Nobody types a password on the server: every account starts from a welcome link, and the person chooses their own password in the browser.

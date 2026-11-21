@@ -13,6 +13,14 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **One cron line: `hammer cron:run`.** Cron runs it every minute, and it runs whatever
+  is due: it notes that cron ran (for the doctor), sends the contact form's held
+  messages (`contact.php` in the live release, from slim-killer-forms), and every five
+  minutes checks for a build the webhook missed. Each job has its own lock, so a slow
+  fetch never holds up the others, and its own try/catch, so one failure does not stop
+  the rest. It prints nothing when all is well; `-v` lists each job. Sites add jobs of
+  their own to the container's `cron.jobs` list.
+
 - **Publishing chip.** Publishing shows as a small chip under the logo ("Building…",
   "Live ✓") with a coloured light, instead of a large box above the page; tap it for the
   steps, the message and the estimate.
@@ -225,6 +233,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   layers (core, site, content), the build rules, the git workflow, and what never to do.
 
 ### Changed
+
+- **The doctor asks for `cron:run`.** Its cron line is now `hammer cron:run`. A host that
+  still runs `cron:heartbeat` gets a warning: change the line, and delete the separate
+  `deploy:fetch` cron job. `cron:heartbeat` keeps working until then.
 
 - **The logo and the name** are one link to the dashboard (only the logo was).
 - **Focus rings** follow the rounded corners of fields and buttons (a box-shadow ring;

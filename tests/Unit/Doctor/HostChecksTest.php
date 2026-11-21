@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SlimKiller\Console\Commands\CronHeartbeatCommand;
+use SlimKiller\Cron\Heartbeat;
 use SlimKiller\Doctor\Checks\CronCheck;
 use SlimKiller\Doctor\Checks\GitHubReachableCheck;
 use SlimKiller\Doctor\Checks\StorageCheck;
@@ -11,10 +11,14 @@ use SlimKiller\Support\Paths;
 use Tests\Fakes\FakeHttpClient;
 use Tests\Fakes\FrozenClock;
 
-function writeHeartbeat(Paths $paths, string $at, string $version = '8.4.27'): void
+function writeHeartbeat(Paths $paths, string $at, string $version = '8.4.27', ?string $command = 'cron:run'): void
 {
     @mkdir($paths->storage(), 0755, true);
-    file_put_contents($paths->storage(CronHeartbeatCommand::FILE), json_encode(['at' => $at, 'php_version' => $version]));
+    $data = ['at' => $at, 'php_version' => $version];
+    if ($command !== null) {
+        $data['command'] = $command;
+    }
+    file_put_contents($paths->storage(Heartbeat::FILE), json_encode($data));
 }
 
 // --- Storage -----------------------------------------------------------------------
@@ -57,7 +61,7 @@ it('gives the exact cron line before cron has ever run', function (): void {
     [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09 01:00:00'), environment()))->check();
 
     expect($result->status->value)->toBe('warn')
-        ->and($result->hint)->toBe('/opt/alt/php84/usr/bin/php ' . $paths->root('hammer') . ' cron:heartbeat');
+        ->and($result->hint)->toBe('/opt/alt/php84/usr/bin/php ' . $paths->root('hammer') . ' cron:run');
 });
 
 it('passes when cron ran within the last few minutes', function (): void {
@@ -77,6 +81,21 @@ it('warns when cron has gone quiet', function (): void {
 
     expect($result->status->value)->toBe('warn')->and($result->detail)->toContain('2 hours');
 });
+
+it('asks for the cron:run line when cron runs the older one', function (?string $command): void {
+    $paths = new Paths(temporaryFolder());
+    writeHeartbeat($paths, '2026-11-09T01:00:00+00:00', command: $command);
+
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:30+00:00'), environment()))->check();
+
+    expect($result->status->value)->toBe('warn')
+        ->and($result->title)->toBe('Cron runs the older line')
+        ->and($result->hint)->toContain($paths->root('hammer') . ' cron:run')
+        ->and($result->hint)->toContain('delete the deploy:fetch cron job');
+})->with([
+    'cron:heartbeat' => ['cron:heartbeat'],
+    'a heartbeat from before the command was noted' => [null],
+]);
 
 it('fails when cron runs an old PHP', function (): void {
     $paths = new Paths(temporaryFolder());
