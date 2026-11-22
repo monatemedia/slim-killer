@@ -21,6 +21,7 @@ use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
 use SlimKiller\Console\Commands\VisitsCommand;
+use SlimKiller\Console\Commands\VisitsSampleCommand;
 use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
 use SlimKiller\Cron\CronRunner;
@@ -124,6 +125,7 @@ return [
         get(DeployRollbackCommand::class),
         get(WebInstallCommand::class),
         get(VisitsCommand::class),
+        get(VisitsSampleCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 

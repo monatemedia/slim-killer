@@ -20,6 +20,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   today so far. Drawn as SVG, with no JavaScript, so it works on any phone and within
   the panel's security rules. Signed-in people only.
 
+- **`hammer visits:sample`** fills a local copy with made-up visits, so the Visits page
+  can be seen before a real website has any (`--days=90`, `--fresh`). It refuses to run
+  unless `APP_URL` ends in `.test` or is `localhost`.
+
 - **Visit counter.** Each website can count its own visits, without cookies and
   without Google. Add `<script src="/cp/assets/visits.js" defer></script>` to every
   page. It counts pages opened, taps on WhatsApp, email and phone links (and anything
