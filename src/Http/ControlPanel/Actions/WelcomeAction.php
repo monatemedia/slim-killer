@@ -7,6 +7,7 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use SlimKiller\Auth\AuditLog;
+use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\PasswordHasher;
 use SlimKiller\Auth\PasswordPolicy;
 use SlimKiller\Auth\User;
@@ -19,7 +20,8 @@ use SlimKiller\Http\Session\Session;
 
 /**
  * The welcome link from `hammer install`, `user:create` or `user:reset`: choose a
- * password, then set up two-factor.
+ * password, then set up two-factor. A password must pass PasswordPolicy and must not
+ * have turned up in a data breach (BreachedPasswords, Have I Been Pwned).
  *
  * The token is swapped for the session on the first visit and the address bar is
  * cleaned, so the link does not linger in the browser's history.
@@ -34,6 +36,7 @@ final class WelcomeAction
         private readonly WelcomeLinks $welcomeLinks,
         private readonly PasswordHasher $hasher,
         private readonly AuditLog $audit,
+        private readonly BreachedPasswords $breaches,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -68,6 +71,14 @@ final class WelcomeAction
         $problem = PasswordPolicy::problem($password, Form::field($request, 'password_confirmation'));
         if ($problem !== null) {
             return $this->form($response, $session, $user, $problem, 422);
+        }
+
+        // Asked only once the password passes the other rules, so a typo costs no request.
+        $timesSeen = $this->breaches->timesSeen($password);
+        if ($timesSeen === null) {
+            $this->audit->record('breach_check_skipped', $user->id, Form::ip($request));
+        } elseif ($timesSeen > 0) {
+            return $this->form($response, $session, $user, PasswordPolicy::breached($timesSeen), 422);
         }
 
         $this->users->setPassword($user->id, $this->hasher->hash($password));

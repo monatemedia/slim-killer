@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
+use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\Role;
 use SlimKiller\Auth\Totp;
@@ -18,6 +19,7 @@ use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
 use Tests\Fakes\Browser;
+use Tests\Fakes\FakeBreachedPasswords;
 use Tests\Fakes\SteppingClock;
 
 /*
@@ -105,6 +107,8 @@ function installedPanel(array $definitions = []): array
         Paths::class => new Paths(temporaryFolder()),
         Clock::class => $clock,
         Environment::class => environment(['sapi' => 'litespeed'], 'Website'),
+        // Never ask Have I Been Pwned from a test; a test about it passes its own.
+        BreachedPasswords::class => new FakeBreachedPasswords(0),
         ...$definitions,
     ]);
     $container = $builder->build();
