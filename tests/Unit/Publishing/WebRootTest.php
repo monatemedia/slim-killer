@@ -44,7 +44,9 @@ it('loads the panel from the project folder, outside the web root', function ():
     expect((string) file_get_contents($web . '/cp/index.php'))
         ->toContain('require ' . var_export($project . '/public/cp/index.php', true) . ';')
         ->and(file_get_contents($web . '/cp/assets/cp.css'))->toBe('body{}')
-        ->and($web . '/cp/assets/logo.svg')->toBeFile();
+        ->and($web . '/cp/assets/logo.svg')->toBeFile()
+        ->and((string) file_get_contents($web . '/cp/visit.php'))
+        ->toContain('require ' . var_export($project . '/public/cp/visit.php', true) . ';');
 });
 
 it('keeps an .htaccess it did not write, and rewrites its own when run again', function (): void {

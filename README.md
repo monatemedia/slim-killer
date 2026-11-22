@@ -180,6 +180,7 @@ php hammer user:reset --email=client@example.com
                                # lost phone or password: clear both, print a new welcome link
 php hammer migrate             # bring the database up to date
 php hammer cron:run            # the one cron line, every minute: runs whatever is due (-v lists each job)
+php hammer visits              # what the visit counter counted in the last 7 days (--days=30)
 ```
 
 Nobody types a password on the server: every account starts from a welcome link, and the person chooses their own password in the browser.
@@ -222,6 +223,9 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [ ] Releases and recovery: panel self-update, rollbacks, backups with a test restore
 - [ ] Pilot client migration, including the move to Astro 7
 - [ ] `fleet:test` across client sites
+- [x] Visit counter: first-party, cookieless, kept for good unless a site sets a limit (`hammer visits`)
+- [x] Visit report by email, every morning, from one shared email layout
+- [ ] Visits dashboard in the control panel
 - [ ] Edge Storefront (Yoco checkout, stock)
 
 See the [open issues](https://github.com/monatemedia/slim-killer/issues) for proposed features and known issues.

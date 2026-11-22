@@ -77,6 +77,8 @@ Other conventions:
   file, PSR-4 autoloading.
 - Controllers are single-action invokable classes, one per route.
 - Plain PDO behind repository classes. No ORM.
+- Every email is written with `LetterWriter` from the one layout in `templates/mail/`
+  (HTML and plain text), and sent through the `Mailer` interface.
 - Secrets live in `.env`, outside the web root, never in Git.
 - Follow `.editorconfig`: UTF-8, LF line endings, 4 spaces (2 for YAML, JS, TS, JSON and
   Astro files).
@@ -87,6 +89,7 @@ Other conventions:
 php hammer                     # list the commands
 php hammer doctor              # check this host (add --url and --webroot to check the website)
 php hammer cron:run            # the one cron line, every minute: runs whatever is due
+php hammer visits              # what the visit counter counted (see the wiki's Visit counter page)
 composer check                 # Pint, PHPStan and Pest: run before handing work back
 ```
 

@@ -1,0 +1,12 @@
+{#- The plain-text twin of layout.html.twig. Files ending .txt.twig are not escaped (Twig's "name" strategy). -#}
+{{ site_name }}
+{% for i in 1..site_name|length %}={% endfor %}
+
+
+{% block content %}{% endblock %}
+
+--
+{% block why %}{% endblock %}
+{% if site_url %}
+{{ site_url }}
+{% endif %}

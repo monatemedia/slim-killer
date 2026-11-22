@@ -14,6 +14,7 @@ use SlimKiller\Support\Paths;
  *
  *   WEB_ROOT/.htaccess       /cp to the control panel, everything else to the live release
  *   WEB_ROOT/cp/index.php    a two-line stub that loads the panel from the project folder
+ *   WEB_ROOT/cp/visit.php    the same for the visit counter's front door
  *   WEB_ROOT/cp/assets/      the panel's CSS, JS and images, copied from the project
  *   WEB_ROOT/cp/not-found.php  answers missing addresses with the 404 page and status
  *   WEB_ROOT/_site/          the releases (written by deploy:fetch)
@@ -71,6 +72,15 @@ final class WebRoot
             '',
         ]));
         $done[] = "Wrote cp/index.php, which loads the control panel from {$this->paths->root()}.";
+
+        $this->write($root . '/cp/visit.php', implode("\n", [
+            '<?php',
+            '',
+            '// ' . self::MARKER . '. Loads the visit counter from outside the web root.',
+            'require ' . var_export($this->paths->root('public/cp/visit.php'), true) . ';',
+            '',
+        ]));
+        $done[] = 'Wrote cp/visit.php, where the website\'s visits.js sends what it counts.';
 
         Folder::copy($this->paths->root('public/cp/assets'), $root . '/cp/assets');
         $done[] = "Copied the control panel's assets to cp/assets.";

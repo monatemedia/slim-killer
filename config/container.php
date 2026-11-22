@@ -20,12 +20,15 @@ use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
+use SlimKiller\Console\Commands\VisitsCommand;
 use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
 use SlimKiller\Cron\CronRunner;
 use SlimKiller\Cron\Jobs\ContactFormJob;
 use SlimKiller\Cron\Jobs\DeployFetchJob;
 use SlimKiller\Cron\Jobs\HeartbeatJob;
+use SlimKiller\Cron\Jobs\VisitReportJob;
+use SlimKiller\Cron\Jobs\VisitsJob;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
@@ -45,6 +48,8 @@ use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
+use SlimKiller\Mail\Mailer;
+use SlimKiller\Mail\PhpMailer;
 use SlimKiller\Publishing\Progress;
 use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Publishing\Releases;
@@ -56,6 +61,7 @@ use SlimKiller\Support\EnvFile;
 use SlimKiller\Support\Paths;
 use SlimKiller\Support\ShutdownAfterResponse;
 use SlimKiller\Support\SystemClock;
+use SlimKiller\Visits\SiteTime;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
@@ -71,6 +77,7 @@ return [
     Paths::class => create()->constructor(dirname(__DIR__)),
     Clock::class => get(SystemClock::class),
     HttpClient::class => get(CurlHttpClient::class),
+    Mailer::class => get(PhpMailer::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
     EnvFile::class => create()->constructor(dirname(__DIR__) . '/.env'),
@@ -99,6 +106,10 @@ return [
     PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
     Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),
 
+    // --- Visit counter -----------------------------------------------------------
+    // Days follow the business's time zone (TIMEZONE in .env), not the server's.
+    SiteTime::class => factory(static fn(AppConfig $config): SiteTime => SiteTime::named($config->timezone)),
+
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
     'console.commands' => add([
@@ -112,6 +123,7 @@ return [
         get(DeployFetchCommand::class),
         get(DeployRollbackCommand::class),
         get(WebInstallCommand::class),
+        get(VisitsCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 
@@ -121,6 +133,8 @@ return [
     'cron.jobs' => add([
         get(HeartbeatJob::class),
         get(ContactFormJob::class),
+        get(VisitsJob::class),
+        get(VisitReportJob::class),
         get(DeployFetchJob::class),
     ]),
     CronRunner::class => autowire()->constructorParameter('jobs', get('cron.jobs')),
@@ -164,6 +178,8 @@ return [
             'cache' => $paths->storage('cache/twig'),
             'auto_reload' => true,
             'strict_variables' => true,
+            // By file name: *.txt.twig (plain-text emails) is not escaped, everything else is HTML.
+            'autoescape' => 'name',
         ]);
         $twig->addGlobal('base', ControlPanel::BASE_PATH);
         $twig->addGlobal('site_name', $config->name);

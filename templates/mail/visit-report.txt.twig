@@ -1,0 +1,23 @@
+{% extends 'mail/layout.txt.twig' %}
+
+{% block content %}
+Visits on {{ date }}
+
+{{ '%-18s %10s %16s'|format('', 'That day', '7-day average') }}
+{% for measure in measures %}
+{{ '%-18s %10d %16.1f'|format(measure.label, measure.day, measure.average) }}
+{% endfor %}
+{% for list in lists %}
+
+{{ list.heading }}
+{% for row in list.rows %}
+{{ '%6d  %s'|format(row.events, row.name ?: '(none)') }}
+{% endfor %}
+{% endfor %}
+{% if lists is empty %}
+
+Nobody was counted that day.
+{% endif %}
+{% endblock %}
+
+{% block why %}You get this every morning because your address is VISIT_REPORT_TO in this website's settings. Counted by Slim Killer's visit counter: no cookies, no internet addresses. For longer: php hammer visits --days=30{% endblock %}

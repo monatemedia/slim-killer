@@ -34,6 +34,14 @@ final readonly class AppConfig
         public string $webhookSecret = '',
         /** A test copy: web:install asks search engines not to list the website. */
         public bool $hideFromSearch = false,
+        /** The business's time zone, like "Africa/Johannesburg": the visit counter's days follow it. */
+        public string $timezone = 'UTC',
+        /** The mailbox Slim Killer sends from, on the website's own domain. Empty: no email. */
+        public string $mailFrom = '',
+        /** Who gets the daily visit report. Empty: no report. */
+        public string $visitReportTo = '',
+        /** How many months single visit events are kept; null keeps them for good. 25 meets France's rules. */
+        public ?int $visitEventsMonths = null,
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -59,6 +67,10 @@ final readonly class AppConfig
             $text('WEB_ROOT'),
             $text('WEBHOOK_SECRET'),
             in_array(strtolower($text('HIDE_FROM_SEARCH')), ['1', 'true', 'yes', 'on'], true),
+            $text('TIMEZONE', 'UTC'),
+            $text('MAIL_FROM'),
+            $text('VISIT_REPORT_TO'),
+            ctype_digit($text('VISIT_EVENTS_MONTHS')) && (int) $text('VISIT_EVENTS_MONTHS') > 0 ? (int) $text('VISIT_EVENTS_MONTHS') : null,
         );
     }
 

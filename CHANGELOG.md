@@ -13,6 +13,30 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Visit counter.** Each website can count its own visits, without cookies and
+  without Google. Add `<script src="/cp/assets/visits.js" defer></script>` to every
+  page. It counts pages opened, taps on WhatsApp, email and phone links (and anything
+  marked `data-count`), and forms sent, with where each visit came from (campaign tags,
+  a Google Ads click, or the website that sent the visitor) and the kind of device. It
+  keeps no internet addresses: a visitor is a code made fresh each day from a secret
+  that is deleted when the day ends, so nobody can be followed from one day to the next.
+  It counts nothing when a browser sends Do Not Track or Global Privacy Control, or when
+  the visitor switches "Site statistics" off. Single events and daily totals are kept
+  for good; a site that must follow France's rules sets `VISIT_EVENTS_MONTHS=25` and
+  older single events are deleted (the totals stay). `hammer visits` shows the last 7 days (`--days=30` for
+  more). `web:install` writes `cp/visit.php`, so run it again after updating. New in
+  `.env`: `TIMEZONE`, so a day starts at the business's midnight. Run `hammer migrate`.
+
+- **Daily visit report by email.** Every morning after 06:00 (site time), yesterday's
+  visitors, pages, taps and forms next to the 7-day average, with where visitors came
+  from. Set `VISIT_REPORT_TO` and `MAIL_FROM` (a mailbox on the website's own domain) in
+  `.env`. Each day's report goes once; if the host refuses it, cron tries again an hour
+  later.
+
+- **One email layout.** Every email Slim Killer sends is written from
+  `templates/mail/layout.html.twig` and its plain-text twin `layout.txt.twig`, and sent
+  with both parts. A new email is two small templates that fill in the layout.
+
 - **One cron line: `hammer cron:run`.** Cron runs it every minute, and it runs whatever
   is due: it notes that cron ran (for the doctor), sends the contact form's held
   messages (`contact.php` in the live release, from slim-killer-forms), and every five
