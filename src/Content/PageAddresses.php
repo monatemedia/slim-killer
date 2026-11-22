@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SlimKiller\Content;
 
 /**
- * Where each content page is on the website ("destinations/namibia" → "/destinations/namibia/"),
+ * Where each content page is on the website ("destinations/iceland" → "/destinations/iceland/"),
  * from the addresses.json the site's build writes: the site lists a pattern per content
  * folder in site/slim-killer.json, and its build checks every address exists.
  *

@@ -228,8 +228,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
 - [ ] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
 - [ ] Panel self-update, and backups with a test restore
-- [ ] Pilot client migration: Honey Badger Namibia, on Astro 7
-- [ ] `fleet:test` across client sites
+- [ ] First client site live on its own hosting (already moved to Astro 7)
 - [ ] Catalogue mode: products and enquiries, for dealerships, property and tours (card payments go to Shopify, never Slim Killer)
 
 See the [open issues](https://github.com/monatemedia/slim-killer/issues) for proposed features and known issues.

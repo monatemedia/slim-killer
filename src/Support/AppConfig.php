@@ -14,7 +14,7 @@ final readonly class AppConfig
     public function __construct(
         /** The website's address, without a trailing slash; empty before install. */
         public string $url = '',
-        /** The site's own name, as its owner knows it ("Honey Badger Namibia"). */
+        /** The site's own name, as its owner knows it ("Acme Tours"). */
         public string $name = self::DEFAULT_NAME,
         /** Where the working copy of the client's content/ is; empty means the default in storage. */
         public string $contentDir = '',
