@@ -11,6 +11,15 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-22
+
+The first tagged release, and the first a live website runs. It has the host checker
+(`hammer doctor`), installation and the web root, the control panel with welcome links
+and two-factor sign-in, editing content and photos with saves to GitHub, publishing by
+fetching builds, one cron line (`hammer cron:run`), the contact form's held messages, and
+the visit counter with its daily email and Visits page. While the version starts with 0,
+a minor release may still ask a site to change something; the changelog will say so.
+
 ### Added
 
 - **Visits page in the control panel.** `/cp/visits`, from a new "Visits" tile on the
@@ -303,6 +312,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Fixed
 
+- **Made-up visits leave out the 404 page and files.** `hammer visits:sample` only uses
+  page addresses that end in `/`, so `/404.html` and `/llms.txt` no longer show as pages.
 - **A gallery photo's description.** Changing the second photo in a gallery cleared the
   first photo's description: the description was looked for in the whole gallery rather
   than in the photo's own item.

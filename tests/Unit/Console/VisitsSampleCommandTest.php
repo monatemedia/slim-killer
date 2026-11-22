@@ -42,10 +42,10 @@ it('fills a local copy, adds up the finished days, and asks before doing it agai
         ->and(sampleVisits('https://slim-killer.test', ['--days=10', '--fresh'], $pdo)[0])->toBe(0);
 });
 
-it('uses the pages of the site the copy is pointed at', function (): void {
+it('uses the pages of the site the copy is pointed at, and not its 404 page or files', function (): void {
     $site = temporaryFolder();
     mkdir($site . '/content');
-    file_put_contents($site . '/addresses.json', json_encode(['pages/home' => '/', 'tours/etosha' => '/tours/etosha/']));
+    file_put_contents($site . '/addresses.json', json_encode(['pages/home' => '/', 'tours/etosha' => '/tours/etosha/', 'not-found/index' => '/404.html', 'llms' => '/llms.txt']));
     $addresses = new PageAddresses(new ContentLocation($site . '/content', temporaryFolder()));
 
     [, , $pdo] = sampleVisits('https://slim-killer.test', ['--days=30'], null, $addresses);
