@@ -11,6 +11,15 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+### Changed
+
+- **Roadmap:** `fleet:test` dropped. Each host runs a pinned tag and each site will check
+  itself with `hammer site:check`, so testing every client site from one place isn't
+  worth keeping their content together. The first client site's item no longer names
+  the client.
+- **No client names in the product.** Examples in code comments, the Glossary and an
+  older changelog entry use neutral names ("Acme Tours", `/destinations/iceland/`).
+
 ## [0.1.1] - 2026-11-23
 
 Fixes from the first day of a live website (monatemedia.com), and one security
@@ -162,7 +171,7 @@ a minor release may still ask a site to change something; the changelog will say
 - **README recommends Laravel Herd** for local development, in place of a LAMP stack.
 
 - **The page's real web address.** A content page shows where it is on the website, as a
-  link that opens it (for example `/destinations/namibia/`). The addresses come from the
+  link that opens it (for example `/destinations/iceland/`). The addresses come from the
   site's build (`_slim-killer/addresses.json`, worked out from the site's
   `slim-killer.json` and checked against the built pages) and are kept beside the working
   copy. Without them the panel shows no address, rather than guessing one.
