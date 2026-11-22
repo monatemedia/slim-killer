@@ -135,4 +135,61 @@ final readonly class VisitLog
             array_values(array_filter($statement->fetchAll(PDO::FETCH_ASSOC), 'is_array')),
         );
     }
+
+    /**
+     * Visitors on each day from $first to $last, from the daily totals; 0 for a day
+     * nobody came.
+     *
+     * @return list<array{day: string, visitors: int}>
+     */
+    public function visitorsByDay(string $first, string $last): array
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT day, SUM(visitors) AS visitors FROM visit_days WHERE day BETWEEN ? AND ? AND kind = 'visit' GROUP BY day",
+        );
+        $statement->execute([$first, $last]);
+        $counted = [];
+        foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $counted[(string) $row['day']] = (int) $row['visitors'];
+        }
+
+        $days = [];
+        for ($day = new DateTimeImmutable($first); $day->format('Y-m-d') <= $last; $day = $day->modify('+1 day')) {
+            $days[] = ['day' => $day->format('Y-m-d'), 'visitors' => $counted[$day->format('Y-m-d')] ?? 0];
+        }
+
+        return $days;
+    }
+
+    /**
+     * Counts for a day that is not added up yet (today), from the single events.
+     *
+     * @return array{visitors: int, pages: int, taps: int, forms: int}
+     */
+    public function soFar(string $day): array
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT COUNT(DISTINCT visitor) AS visitors,
+                    SUM(kind = 'page') AS pages, SUM(kind = 'tap') AS taps, SUM(kind = 'form') AS forms
+             FROM visit_events WHERE day = ?",
+        );
+        $statement->execute([$day]);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        return [
+            'visitors' => is_array($row) ? (int) $row['visitors'] : 0,
+            'pages' => is_array($row) ? (int) $row['pages'] : 0,
+            'taps' => is_array($row) ? (int) $row['taps'] : 0,
+            'forms' => is_array($row) ? (int) $row['forms'] : 0,
+        ];
+    }
+
+    /** Whether anything has been counted yet, on any day. */
+    public function hasAny(): bool
+    {
+        $events = $this->pdo->query('SELECT 1 FROM visit_events LIMIT 1');
+        $days = $this->pdo->query('SELECT 1 FROM visit_days LIMIT 1');
+
+        return ($events !== false && $events->fetchColumn() !== false) || ($days !== false && $days->fetchColumn() !== false);
+    }
 }

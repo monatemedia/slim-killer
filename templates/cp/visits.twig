@@ -1,0 +1,99 @@
+{% extends 'cp/layout.twig' %}
+
+{% block shell %} shell-wide{% endblock %}
+
+{% block title %}Visits{% endblock %}
+
+{% block publishing %}{% include 'cp/_publishing.twig' %}{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › Visits</nav>
+
+<section class="hero">
+  <h1>Visits</h1>
+  <p>How many people came to your website, where they came from and what they did. Counted without cookies.</p>
+</section>
+
+{% if not ready %}
+<section class="card"><div class="card-pad">
+  <h2 class="card-title">The visit counter is not set up yet</h2>
+  <p class="form-help">Ask your web developer to run <code>php hammer migrate</code> on the server.</p>
+</div></section>
+{% elseif not counted %}
+<section class="card"><div class="card-pad">
+  <h2 class="card-title">Nothing counted yet</h2>
+  <p class="form-help">The numbers start when the first visitor opens a page. If nobody shows after a day, ask your web developer to add the visit counter's script to the website (see "Visit counter" in the Slim Killer wiki).</p>
+</div></section>
+{% else %}
+
+<nav class="period-switch" aria-label="How far back">
+  {% for period_days, label in periods %}
+    <a href="{{ base }}/visits?days={{ period_days }}"{% if period_days == days %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+<p class="period-dates">{{ first|date('j F Y') }} to {{ last|date('j F Y') }}. Today is added after midnight.</p>
+
+<ul class="stat-tiles">
+  {% for measure in measures %}
+  <li class="stat">
+    <span class="stat-label">{{ measure.label }}</span>
+    <span class="stat-value">{{ measure.value|number_format }}</span>
+    <span class="stat-change{% if measure.change is not null %}{{ measure.change >= 0 ? ' up' : ' down' }}{% endif %}">
+      {% if measure.change is null %}Nothing to compare with yet
+      {% elseif measure.change == 0 %}The same as the {{ periods[days] }} before
+      {% else %}{{ measure.change > 0 ? '+' : '−' }}{{ measure.change|abs }}% on the {{ periods[days] }} before{% endif %}
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+
+<section class="card">
+  <div class="card-pad">
+    <h2 class="card-title">Visitors, day by day</h2>
+    <svg class="day-chart" viewBox="0 0 {{ chart|length }} 100" preserveAspectRatio="none" role="img" aria-label="Visitors each day, most {{ chart_most }} in one day">
+      {% for day in chart %}
+        {% set height = day.visitors / chart_most * 100 %}
+        <rect x="{{ loop.index0 + 0.1 }}" y="{{ 100 - height }}" width="0.8" height="{{ height }}"><title>{{ day.day|date('D j M') }}: {{ day.visitors }} {{ day.visitors == 1 ? 'visitor' : 'visitors' }}</title></rect>
+      {% endfor %}
+    </svg>
+    <div class="day-chart-axis"><span>{{ first|date('j M') }}</span><span>Most in a day: {{ chart_most }}</span><span>{{ last|date('j M') }}</span></div>
+  </div>
+</section>
+
+<section class="card today">
+  <div class="card-pad">
+    <h2 class="card-title">Today so far</h2>
+    <p class="today-counts">
+      <strong>{{ today.visitors }}</strong> {{ today.visitors == 1 ? 'visitor' : 'visitors' }} ·
+      <strong>{{ today.pages }}</strong> {{ today.pages == 1 ? 'page' : 'pages' }} opened ·
+      <strong>{{ today.taps }}</strong> {{ today.taps == 1 ? 'button' : 'buttons' }} tapped ·
+      <strong>{{ today.forms }}</strong> {{ today.forms == 1 ? 'form' : 'forms' }} sent
+    </p>
+  </div>
+</section>
+
+<div class="visit-lists">
+  {% for list in lists %}
+  <section class="card">
+    <div class="card-pad">
+      <h2 class="card-title">{{ list.heading }}</h2>
+      <ul class="bar-list">
+        {% for row in list.rows %}
+        <li>
+          <span class="bar-name">{{ row.name ?: '(none)' }}</span>
+          <span class="bar-count">{{ row.events|number_format }}</span>
+          <svg class="bar" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true"><rect width="{{ row.events / list.most * 100 }}" height="4"/></svg>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% else %}
+  <section class="card"><div class="card-pad">
+    <p class="form-help">Nobody was counted in these {{ periods[days] }}.</p>
+  </div></section>
+  {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}

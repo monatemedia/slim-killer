@@ -225,7 +225,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [ ] `fleet:test` across client sites
 - [x] Visit counter: first-party, cookieless, kept for good unless a site sets a limit (`hammer visits`)
 - [x] Visit report by email, every morning, from one shared email layout
-- [ ] Visits dashboard in the control panel
+- [x] Visits page in the control panel
 - [ ] Edge Storefront (Yoco checkout, stock)
 
 See the [open issues](https://github.com/monatemedia/slim-killer/issues) for proposed features and known issues.
