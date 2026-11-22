@@ -82,6 +82,13 @@ $pct = $total > 0 ? (int) round($done / $total * 100) : 0;
 /** Roadmap text may contain `code`; escape everything, then restore code spans. */
 $markup = static fn(string $s): string => (string) preg_replace('/`([^`]+)`/', '<code>$1</code>', $e($s));
 
+// The newest released version: the first "## [x.y.z]" heading in the changelog.
+$version = '';
+$changelog = is_file($root . '/CHANGELOG.md') ? (string) file_get_contents($root . '/CHANGELOG.md') : '';
+if (preg_match('/^## \[(\d+\.\d+\.\d+)\]/m', $changelog, $release) === 1) {
+    $version = 'v' . $release[1];
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Live counts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,6 +141,15 @@ $modelling = [
     "Speak the client's words, exactly",
     'A failure the business can predict is not exceptional',
 ];
+// Slim Killer's own six (wiki: Slim Killer's rules), numbered on after the twelve.
+$product = [
+    'Static to the world',
+    'A login edits content, never runs code',
+    'The repository is the truth; the host is a cache',
+    'Keep every blast radius small',
+    'Assume instant discovery',
+    'Collect the least, keep it the shortest',
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,14 +157,14 @@ $modelling = [
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Slim Killer: a WordPress killer with personality · Monate Media</title>
-<meta name="description" content="Fast static Astro websites that clients edit from their phone, on plain shared hosting. No plugins to patch, no database behind the public pages. Part three of the Monate Media PHP series. MIT licensed.">
+<meta name="description" content="Fast static Astro websites that clients edit from their phone, on plain shared hosting. No plugins to patch, no database or PHP behind the pages, two-factor sign-in for editors. Part three of the Monate Media PHP series. MIT licensed.">
 <?php if ($static): ?>
 <link rel="canonical" href="<?= $site ?>">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Monate Media">
 <meta property="og:title" content="Slim Killer: a WordPress killer with personality">
 <meta property="og:description" content="Static Astro sites, edited from a phone, on plain shared hosting. Part three of the Monate Media PHP series, after OOP Mastery and Domain Architecture.">
-<meta property="og:image" content="https://www.monatemedia.com/wp-content/uploads/2024/06/Monate-Media-Logo-Wide-New-Age-6.png">
+<meta property="og:image" content="<?= $site ?>logo-wide.png">
 <meta name="twitter:card" content="summary">
 <?php endif; ?>
 <?php if ($favicon !== ''): ?>
@@ -203,10 +219,24 @@ $modelling = [
   h1 .pop { color: var(--orange); display: block; }
   .lede { font-size: 1.18rem; max-width: 60ch; margin: 0 0 1rem; }
   .lede.small { font-size: 1rem; color: var(--muted); }
-  .logo-badge { justify-self: center; width: 240px; height: 240px; border-radius: 50%; background: var(--skin); border: 4px solid var(--ink);
+  .lede.after { margin-top: 1.5rem; }
+  /* The clown and the name, tilted together. Above the headline on a phone, beside it on a wide screen. */
+  .brand { justify-self: center; align-self: start; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
+  .logo-badge { width: 240px; height: 240px; border-radius: 50%; background: var(--skin); border: 4px solid var(--ink);
     box-shadow: 8px 8px 0 var(--ink); display: grid; place-items: center; transform: rotate(-6deg); }
   .logo-badge svg { width: 170px; height: 170px; }
-  @media (max-width: 819px) { .logo-badge { width: 160px; height: 160px; } .logo-badge svg { width: 112px; height: 112px; } }
+  /* "Slim" leans with the clown, "Killer" leans the other way. */
+  .wordmark { margin: 0; font-weight: 900; font-size: 4.6rem; line-height: 0.9; letter-spacing: -0.05em; text-align: center; }
+  .wordmark span { display: block; }
+  .wordmark .slim { transform: rotate(-6deg); }
+  .wordmark .killer { color: var(--orange); text-shadow: 4px 4px 0 var(--ink); transform: rotate(6deg); }
+  @media (max-width: 819px) {
+    .brand { order: -1; flex-direction: row; gap: 1.1rem; justify-self: start; }
+    .logo-badge { width: 112px; height: 112px; box-shadow: 5px 5px 0 var(--ink); }
+    .logo-badge svg { width: 78px; height: 78px; }
+    .wordmark { font-size: 2.9rem; text-align: left; }
+    .wordmark .killer { text-shadow: 3px 3px 0 var(--ink); }
+  }
 
   .status { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0; }
   .pill { display: inline-flex; align-items: center; gap: 0.45rem; background: var(--panel); border: 2px solid var(--ink); border-radius: 999px;
@@ -271,6 +301,19 @@ $modelling = [
   .compare thead th { background: var(--ink); color: #fff; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; }
   .compare td:first-child { font-weight: 800; white-space: nowrap; }
   .compare td.us { background: #fff4ec; }
+  .compare th.us { background: var(--orange); }
+  table.three { min-width: 760px; }
+  table.three td:first-child { white-space: normal; width: 18%; }
+  table.three td { width: 27%; }
+  .security p { margin: 0; font-size: 1.12rem; }
+  .security p + p { margin-top: 0.9rem; }
+  .security .star { text-decoration: none; font-weight: 800; color: var(--orange); }
+  .footnote { margin: 1rem 0 0; font-size: 0.85rem; color: var(--muted); }
+  ul.reasons { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  ul.reasons li { padding-left: 1.6rem; position: relative; }
+  ul.reasons li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--orange); border: 2px solid var(--ink); }
+  .rules-grid .wide { grid-column: 1 / -1; }
+  @media (min-width: 820px) { .rules-grid .wide ol.rules { column-count: 2; column-gap: 2.4rem; } .rules-grid .wide ol.rules li { break-inside: avoid; } .rules-grid .wide ol.rules li:nth-child(4) { border-top: 0; } }
   .scroll { overflow-x: auto; padding: 0 6px 8px 0; }
 
   /* Rules */
@@ -346,17 +389,12 @@ $modelling = [
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow">Part three · Open source · PHP <?= $e($minPhp) ?> · MIT</span>
+      <span class="eyebrow">Part three<?= $version !== '' ? ' · ' . $e($version) : '' ?> · Open source · PHP <?= $e($minPhp) ?> · MIT</span>
       <h1>A WordPress killer, <span class="pop">with personality.</span></h1>
       <p class="lede">
         Fast static websites that clients edit from their phone, on plain shared hosting. No
-        plugins to patch, no database behind the public pages, no Node.js on the server, and
-        every change saved as a Git commit you can undo.
-      </p>
-      <p class="lede small">
-        <a href="<?= $oop ?>">Part one</a> taught <em>how to wire components</em>.
-        <a href="<?= $ddd ?>">Part two</a> taught <em>what the components should be</em>.
-        Slim Killer puts both to work in a real product that ships to real clients.
+        plugins to patch, no database or PHP behind the pages, no Node.js on the server,
+        two-factor sign-in for editors, and every change saved as a Git commit you can undo.
       </p>
 
       <?php if (! $static): ?>
@@ -372,19 +410,29 @@ $modelling = [
         <div class="progress">
           <div class="row"><strong>Roadmap</strong><span><?= $done ?> of <?= $total ?> done · <?= $pct ?>%</span></div>
           <div class="bar"><i style="width: <?= max($pct, 2) ?>%"></i></div>
-          <div class="row"><span><?= $static ? 'Early days, built in the open.' : 'Read from the README roadmap. Run <code>php hammer doctor</code> for the full check.' ?></span></div>
+          <div class="row"><span><?= $static ? 'Live on its first website, built in the open.' : 'Read from the README roadmap. Run <code>php hammer doctor</code> for the full check.' ?></span></div>
         </div>
       <?php endif; ?>
+
+      <p class="lede small after">
+        <a href="<?= $oop ?>">Part one</a> taught <em>how to wire components</em>.
+        <a href="<?= $ddd ?>">Part two</a> taught <em>what the components should be</em>.
+        Slim Killer puts both to work in a real product that ships to real clients.
+      </p>
 
       <div class="cta">
         <a class="btn primary" href="<?= $repo ?>">View on GitHub</a>
         <a class="btn" href="#how">How it works</a>
-        <a class="btn" href="#proof">What is proved</a>
+        <a class="btn" href="#features">Compared</a>
+        <a class="btn" href="#security">Security</a>
       </div>
     </div>
-    <?php if ($logo !== ''): ?>
-      <div class="logo-badge"><?= $logo ?></div>
-    <?php endif; ?>
+    <div class="brand">
+      <?php if ($logo !== ''): ?>
+        <div class="logo-badge"><?= $logo ?></div>
+      <?php endif; ?>
+      <p class="wordmark" aria-label="Slim Killer"><span class="slim">Slim</span><span class="killer">Killer</span></p>
+    </div>
   </div>
 </header>
 
@@ -415,8 +463,9 @@ $modelling = [
         </div>
         <div class="branch yes">
           <b>For editors: a small one</b>
-          A PHP control panel at <code>/cp</code> on the client's own domain. It saves every change
-          as a Git commit, so nothing is ever lost and any mistake can be undone.
+          A PHP control panel at <code>/cp</code> on the client's own domain, behind two-factor
+          sign-in. It saves every change as a Git commit, so nothing is ever lost and any mistake
+          can be undone.
         </div>
       </div>
     </div>
@@ -431,7 +480,7 @@ $modelling = [
       <li class="card"><h3>Edit anywhere</h3><p>The client opens <code>/cp</code> on any phone or laptop, changes a page or adds photos, and taps Save.</p></li>
       <li class="card"><h3>One commit</h3><p>The control panel writes the page and its photos to the site's GitHub repository in a single commit.</p></li>
       <li class="card"><h3>GitHub builds</h3><p>GitHub Actions builds the Astro site into plain files. No Node.js on the host, ever.</p></li>
-      <li class="card"><h3>The host fetches</h3><p>Cron collects the finished build and switches the site to it in one step. The old one stays, for instant rollback.</p></li>
+      <li class="card"><h3>The host fetches</h3><p>GitHub rings a signed bell; the host fetches the finished build and switches to it in one step (cron checks too). The old one stays, for instant rollback.</p></li>
     </ol>
   </div>
 </section>
@@ -446,7 +495,10 @@ $modelling = [
         <tbody>
           <tr><td>Each page view</td><td>PHP and a database run, unless a caching plugin steps in</td><td class="us">A plain file is sent. That's it.</td></tr>
           <tr><td>Adding features</td><td>Plugins from many authors, each with its own updates and risks</td><td class="us">Modules written in code, in one repository, behind tests</td></tr>
-          <tr><td>What attackers see</td><td>A login page at a well-known address, plus every plugin's endpoints</td><td class="us">Static files, and a small control panel (two-factor login planned)</td></tr>
+          <tr><td>What attackers see</td><td>A login page at a well-known address, plus every plugin's endpoints</td><td class="us">Static files, and a small control panel with required two-factor</td></tr>
+          <tr><td>Visitor statistics</td><td>Google Analytics or a plugin, and a cookie banner to go with it</td><td class="us">Built in: no cookies, no internet addresses kept, a short email every morning</td></tr>
+          <tr><td>Enquiries</td><td>Often stored in the database by a forms plugin, for anyone who gets in</td><td class="us">Emailed, not stored</td></tr>
+          <tr><td>Updates</td><td>Core, the theme and every plugin, each on its own schedule</td><td class="us">One tagged release for the panel; the pages have nothing to update</td></tr>
           <tr><td>Undo</td><td>Restore a backup, if there is one</td><td class="us">Every save is a Git commit; every release is kept</td></tr>
           <tr><td>Hosting</td><td>Any PHP host</td><td class="us">Any PHP host. <a href="<?= $wiki ?>/Host-requirements"><code>hammer doctor</code> checks it</a></td></tr>
         </tbody>
@@ -460,10 +512,77 @@ $modelling = [
   </div>
 </section>
 
-<section class="alt">
+<section id="woocommerce" class="alt">
   <div class="wrap">
-    <h2>Twelve rules, in two parts</h2>
-    <p class="sub">Slim Killer is built by the rules of the two courses before it. Rule 7 is the gate: it decides where rules 8 to 12 are worth their weight.</p>
+    <h2>Why we don't build WooCommerce shops</h2>
+    <p class="sub">A shop holds money and people's details. Shared hosting was built for neither, and WooCommerce makes both harder to protect.</p>
+    <div class="card">
+      <ul class="reasons">
+        <li><strong>It can't be cached.</strong> Carts and checkouts are built fresh for every shopper, on a plan that rations processing power. The site slows down when people are trying to pay.</li>
+        <li><strong>Bad neighbours.</strong> On shared hosting, one hacked site can often read another's settings, including the shop's database password, and with it every customer's details.</li>
+        <li><strong>Skimmers and card testing.</strong> A break-in can add a few lines of JavaScript that copy cards as they're typed, and bots use checkouts to try stolen cards in bulk. The shop pays the fees and risks its merchant account.</li>
+        <li><strong>Customer data, and the law that comes with it.</strong> Every order stores names, addresses, phone numbers and emails, which data-protection laws (the GDPR in Europe and the UK, the CCPA in California, and their equivalents elsewhere) require you to protect, and to report if they leak.</li>
+        <li><strong>Backups that lose orders.</strong> Restoring yesterday's copy of a shop deletes today's orders. The clean rollback that rescues a hacked website is gone.</li>
+        <li><strong>Receipts in spam.</strong> Shared hosting sends mail under the host's name, not the shop's, so order emails often never arrive.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <strong>What we do instead:</strong> a site that shows products and takes enquiries,
+      for dealerships, property and tours, runs on Slim Killer as it is (Catalogue mode).
+      When a card is involved, the payment goes to Shopify, which is built to carry exactly
+      that risk. Your website stays static; the money never touches it.
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>What comes in the box</h2>
+    <p class="sub">First-party only: what you get from the project itself, before any plugin, package or paid service. Slim Killer sits between the two on purpose: WordPress's ease for the client, Laravel's tooling for the developer.</p>
+    <div class="scroll">
+      <table class="compare three">
+        <thead><tr><th></th><th>WordPress</th><th class="us">Slim Killer</th><th>Laravel</th></tr></thead>
+        <tbody>
+          <tr><td>Command line</td><td>Not in the download. WP-CLI is installed separately</td><td class="us"><code>hammer</code>: doctor, install, users, cron, deploys, rollback, visits</td><td>Artisan</td></tr>
+          <tr><td>Dependency injection container</td><td>None. Global functions and hooks</td><td class="us">PHP-DI, wired once at the entry point</td><td>The service container</td></tr>
+          <tr><td>Automated tests</td><td>None for your site. Core's own suite is a separate setup</td><td class="us">Pest unit and real-browser tests (<?= $testCount ?> today), run before every merge</td><td>PHPUnit or Pest, set up in every new app</td></tr>
+          <tr><td>Static analysis and formatting</td><td>None</td><td class="us">PHPStan and Pint, with zero warnings to merge</td><td>Pint. Larastan is a community package</td></tr>
+          <tr><td>Instructions for AI coding agents</td><td>Separate agent skills and plugins</td><td class="us">In the repository: <code>AGENTS.md</code>, the rules and the wiki, written for people and agents alike</td><td>Laravel Boost, a separate first-party package</td></tr>
+          <tr><td>Database migrations</td><td>None. Each plugin manages its own tables</td><td class="us">Plain SQL migrations, <code>hammer migrate</code></td><td>Migrations</td></tr>
+          <tr><td>Two-factor sign-in</td><td>A plugin</td><td class="us">Required for everyone, with recovery codes and breached passwords refused</td><td>In the starter kits</td></tr>
+          <tr><td>Checking a host before you install</td><td>Site Health, once it's installed</td><td class="us"><code>hammer doctor</code>: PHP for web and command line, cron, rewrites, outgoing connections</td><td>None</td></tr>
+          <tr><td>Visitor statistics</td><td>None. A plugin or Google Analytics</td><td class="us">Cookieless visit counter, Visits page and a morning email</td><td>None</td></tr>
+          <tr><td>Deploys and rollback</td><td>None</td><td class="us">Fetch a finished build, switch in one step, roll back with one command</td><td>Paid services (Forge, Laravel Cloud)</td></tr>
+          <tr><td>A client editing their own pages</td><td>Yes: the block editor, WordPress's real strength</td><td class="us">A phone-friendly panel, built from the site's own schema</td><td>Nova, a paid add-on</td></tr>
+          <tr><td>Plugin marketplace</td><td>Yes, tens of thousands</td><td class="us">No, on purpose</td><td>Composer packages</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong>The point isn't the length of the list.</strong> It's that a developer can hold
+      the whole of Slim Killer in their head after an afternoon: the site's schema defines
+      the pages, the panel builds its forms from it, every save is a commit, GitHub builds,
+      and the host fetches. That isn't true of WordPress.
+    </div>
+  </div>
+</section>
+
+<section id="security" class="alt">
+  <div class="wrap">
+    <h2>Security, by having less</h2>
+    <p class="sub">Most of a site's security comes from what isn't there.</p>
+    <div class="card security">
+      <p><strong>No plugins to break, no hooks to exploit, no theme to go stale.</strong> Your pages are built ahead of time as plain HTML, with only the CSS and the little JavaScript each page uses, so there's no PHP and no database behind them for anyone to attack, and no caching layer hiding a slow site. Even your visitor statistics are counted without cookies or internet addresses.</p>
+      <p>The only door in is a small control panel, guarded by required two-factor sign-in, passwords stored with Argon2id<a href="#argon" class="star" aria-label="See the note on Argon2id">*</a> and checked against known data breaches, and a tiny SQLite database kept out of the website's reach. Every change is saved as a version you can roll back. And enquiries aren't stored at all: they go straight to your inbox, and on the rare busy moment they're held briefly outside the website and deleted as soon as they're sent.</p>
+    </div>
+    <p class="footnote" id="argon">* Argon2id when the host's PHP has it, as most PHP 8.4 hosts do (<code>php -r "print_r(password_algos());"</code> lists <code>argon2id</code>); bcrypt otherwise.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Eighteen rules, in three parts</h2>
+    <p class="sub">Slim Killer is built by the rules of the two courses before it, and six of its own. Rule 7 is the gate: it decides where rules 8 to 12 are worth their weight.</p>
     <div class="rules-grid">
       <div class="card">
         <h3>Part one: wiring</h3>
@@ -483,6 +602,15 @@ $modelling = [
           <?php endforeach; ?>
         </ol>
       </div>
+      <div class="card wide">
+        <h3>Part three: the product</h3>
+        <p class="from">Slim Killer's own, from building it and from cleaning up a hacked server. <a href="<?= $wiki ?>/Slim-Killer-rules">Each one explained</a>.</p>
+        <ol class="rules">
+          <?php foreach ($product as $i => $rule): ?>
+            <li><span><?= $i + 13 ?></span><?= $e($rule) ?></li>
+          <?php endforeach; ?>
+        </ol>
+      </div>
     </div>
     <div class="note">
       Content editing stays simple: schema in, file out. The deploy pipeline and the shop get the
@@ -492,7 +620,7 @@ $modelling = [
   </div>
 </section>
 
-<section id="proof">
+<section id="proof" class="alt">
   <div class="wrap">
     <h2>What is proved, rather than promised</h2>
     <p class="sub">Before a line of product code, two spikes ran on a real, entry-level shared hosting plan. These are their own words.</p>
@@ -523,10 +651,10 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 
 <?php if ($roadmap !== []): ?>
-<section class="alt">
+<section>
   <div class="wrap">
     <h2>The roadmap</h2>
-    <p class="sub">Read straight from the README, so it is never out of date. Early days, built in the open.</p>
+    <p class="sub">Read straight from the README, so it is never out of date. Built in the open.</p>
     <ol class="spine">
       <?php foreach ($roadmap as $item): ?>
         <li class="<?= $item['done'] ? 'done' : '' ?>"><?= $markup($item['text']) ?></li>
@@ -536,16 +664,18 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 <?php endif; ?>
 
-<section id="start">
+<section id="start" class="alt">
   <div class="wrap">
     <h2>Getting started</h2>
-    <p class="sub">You need PHP <?= $e($minPhp) ?> and Composer. Today Slim Killer can check a host; the control panel is next.</p>
+    <p class="sub">You need PHP <?= $e($minPhp) ?>, Composer and SSH on the host. The <a href="<?= $wiki ?>/Installing-on-a-new-host">installation guide</a> has every step, with the exact commands for shared hosting.</p>
     <ol class="steps">
-      <li><h3>Clone it</h3><pre>git clone <?= $repo ?>.git
-cd slim-killer</pre></li>
-      <li><h3>Install the dependencies</h3><pre>composer install</pre></li>
-      <li><h3>Ask the doctor</h3><p>Every line is PASS, WARN, FAIL or INFO, with a hint for anything to fix.</p><pre>php hammer doctor</pre></li>
-      <li><h3>Check a real host</h3><p>On shared hosting, include the website too. The <a href="<?= $wiki ?>/Installing-on-a-new-host">installation guide</a> walks through it.</p><pre>php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html</pre></li>
+      <li><h3>Clone a release</h3><p>Outside the web root. A website always runs a tagged version, never <code>main</code>.</p><pre>git clone <?= $repo ?>.git
+cd slim-killer
+git checkout <?= $e($version !== '' ? $version : 'main') ?></pre></li>
+      <li><h3>Install the dependencies</h3><pre>composer install --no-dev</pre></li>
+      <li><h3>Ask the doctor</h3><p>Every line is PASS, WARN, FAIL or INFO, with a hint for anything to fix.</p><pre>php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html</pre></li>
+      <li><h3>Install, and add one cron line</h3><p>It prints a welcome link: open it, choose a password and set up two-factor. Cron does the rest every minute.</p><pre>php hammer install --url=https://example.com --email=you@example.com --name="Your Name"
+* * * * * php ~/slim-killer/hammer cron:run</pre></li>
     </ol>
   </div>
 </section>

@@ -11,6 +11,53 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-23
+
+Fixes from the first day of a live website (monatemedia.com), and one security
+addition. Nothing for a site to change: check out the tag and run `hammer migrate` as
+usual (there are no new migrations).
+
+### Added
+
+- **Passwords found in data breaches are refused.** When someone chooses a password from
+  a welcome link, Slim Killer asks Have I Been Pwned whether it has turned up in a
+  breach, and refuses it with how many times it was seen. Only the first five
+  characters of the password's SHA-1 hash leave the server (the k-anonymity range API,
+  with padding). If the service can't be reached within 5 seconds, the check is
+  skipped and `breach_check_skipped` is written to the audit log, so nobody is locked
+  out. See "Users and sign in" in the wiki.
+
+### Changed
+
+- **The setup page's next steps follow the install.** Once `hammer install` has run,
+  step 3 says to sign in (or to ask for a new welcome link with `hammer user:reset`)
+  instead of "Install, and create your account".
+- **Slim Killer's rules, revised.** Rule 1 now names the two small doors visitors can
+  reach (the visit count and the contact form); the old rules 4 and 5 are merged into
+  "Keep every blast radius small"; and a new rule 6, "Collect the least, keep it the
+  shortest". On the cover page they are numbered 13 to 18, after the twelve engineering
+  rules.
+- **The cover page** (`public/index.php`, and the static page printed from it) shows
+  the name beside the clown, the version from this changelog, a comparison of what
+  comes first-party with WordPress, Slim Killer and Laravel, why we don't build
+  WooCommerce shops (and what we do instead), a security section, the
+  product rules, and up-to-date getting-started steps. Its preview image no longer
+  points at the old WordPress site.
+
+- **`composer check` and `feature-branch-stop.sh` run the unit tests in parallel**
+  (`pest --parallel`): faster, and only failures are listed. `composer test` still
+  names every test.
+- **The README roadmap** is brought up to date: what's done since the spikes, what's
+  next (`hammer site:check`, email through the site's own mailbox), and the shop item
+  replaced by Catalogue mode, since card payments go to Shopify, never Slim Killer.
+
+### Fixed
+
+- **Visits page on a first day.** With nothing added up yet, the chart said "Most in a
+  day: 1" over an empty chart; it now shows no chart. And where a period has nothing
+  yet but today has visitors, it says today's visits are added after midnight, instead
+  of "Nobody was counted in these 30 days" right under "1 visitor".
+
 ## [0.1.0] - 2026-11-22
 
 The first tagged release, and the first a live website runs. It has the host checker

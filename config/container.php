@@ -10,6 +10,8 @@ use function DI\get;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
+use SlimKiller\Auth\BreachedPasswords;
+use SlimKiller\Auth\PwnedPasswords;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
 use SlimKiller\Console\Commands\CronRunCommand;
@@ -79,6 +81,7 @@ return [
     Clock::class => get(SystemClock::class),
     HttpClient::class => get(CurlHttpClient::class),
     Mailer::class => get(PhpMailer::class),
+    BreachedPasswords::class => get(PwnedPasswords::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
     EnvFile::class => create()->constructor(dirname(__DIR__) . '/.env'),

@@ -70,6 +70,20 @@ it('shows the last 30 days next to the 30 before, day by day, where visitors cam
         ->and($page)->toMatch('#<strong>1</strong> visitor ·#');
 });
 
+it('draws no chart on the first day, and says today is added up after midnight', function (): void {
+    [$browser, $container, $clock] = visitsPanel();
+    countVisit($container, $clock->now()->format(DATE_ATOM));
+
+    $browser->get('/cp/visits');
+    $page = $browser->body();
+
+    expect($page)->not->toContain('Most in a day')
+        ->and($page)->not->toContain('Nobody was counted')
+        ->and($page)->toContain('Nothing added up for these 30 days yet')
+        ->and($page)->toContain('added after midnight')
+        ->and($page)->toMatch('#<strong>1</strong> visitor ·#');
+});
+
 it('switches between 7, 30 and 90 days and 12 months, and ignores anything else', function (string $asked, string $current, string $from): void {
     [$browser, $container, $clock] = visitsPanel();
     countVisit($container, '2026-11-02T12:00:00Z');

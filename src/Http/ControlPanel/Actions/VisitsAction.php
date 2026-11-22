@@ -85,7 +85,8 @@ final class VisitsAction
             'last' => $last,
             'measures' => $measures,
             'chart' => $chart,
-            'chart_most' => max([1, ...array_map(static fn(array $day): int => $day['visitors'], $chart)]),
+            // The real most, 0 when nothing is added up yet; the template draws no chart then.
+            'chart_most' => max([0, ...array_map(static fn(array $day): int => $day['visitors'], $chart)]),
             'lists' => $lists,
             'today' => $this->log->soFar($this->time->day($now)),
         ]);

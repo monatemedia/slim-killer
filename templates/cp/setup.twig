@@ -84,12 +84,21 @@
       <p>The exact line is in the cron check above, with the full path to the right PHP.</p>
     </article>
 
-    <article class="step">
-      <div class="step-num">3</div>
-      <h3>Install, and create your account</h3>
-      <p>It prints a welcome link. Open it to choose a password and set up two-factor.</p>
-      <code class="next-cmd">php hammer install --url=… --email=… --name=…</code>
-    </article>
+    {% if installed %}
+      <article class="step">
+        <div class="step-num">3</div>
+        <h3>Sign in to the control panel</h3>
+        <p>Slim Killer is installed. Open the welcome link <code>hammer install</code> printed, or <a href="{{ base }}/sign-in">sign in</a> if you already have. Lost the link? Ask for a new one:</p>
+        <code class="next-cmd">php hammer user:reset --email=…</code>
+      </article>
+    {% else %}
+      <article class="step">
+        <div class="step-num">3</div>
+        <h3>Install, and create your account</h3>
+        <p>It prints a welcome link. Open it to choose a password and set up two-factor.</p>
+        <code class="next-cmd">php hammer install --url=… --email=… --name=…</code>
+      </article>
+    {% endif %}
 
   </div>
 </section>

@@ -6,6 +6,7 @@ namespace SlimKiller\Http\ControlPanel\Actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use SlimKiller\Auth\UserRepository;
 use SlimKiller\Doctor\CheckResult;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
@@ -24,6 +25,9 @@ use SlimKiller\Support\Clock;
  * The website's own PHP is checked live, on every visit. Everything only the command
  * line can know (which PHP cron should use, whether cron runs, outgoing connections)
  * comes from the doctor's last saved report, with how long ago it ran.
+ *
+ * The next steps follow the install: before `hammer install` they say to install;
+ * after it, to sign in (or ask for a new welcome link).
  */
 final class SetupAction
 {
@@ -34,6 +38,7 @@ final class SetupAction
         private readonly Environment $website,
         private readonly ReportStore $reports,
         private readonly Clock $clock,
+        private readonly UserRepository $users,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -61,6 +66,7 @@ final class SetupAction
             'warnings' => $report->count(Status::Warn),
             'failed' => $report->count(Status::Fail),
             'ready' => $report->passed(),
+            'installed' => $this->users->any(),
             'sections' => array_map($this->section(...), $sections),
             'checked_ago' => $saved === null
                 ? null

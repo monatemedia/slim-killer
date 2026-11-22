@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use SlimKiller\Auth\AuditLog;
+use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\Totp;
+use Tests\Fakes\FakeBreachedPasswords;
 
 it('takes a new user from the welcome link, through a password and two-factor, to the dashboard', function (): void {
     [$browser, $container, $clock] = installedPanel();
@@ -161,4 +163,25 @@ it('offers the recovery codes as a download, and says how to use them', function
 
     expect($browser->body())->toContain('data-download-codes data-account="edward@example.com" data-site="client.test" data-site-name="Slim Killer"')
         ->and($browser->body())->toContain('How to use one');
+});
+
+it('refuses a password that has turned up in a data breach', function (): void {
+    [$browser, $container] = installedPanel([BreachedPasswords::class => new FakeBreachedPasswords(9659365)]);
+    $browser->get(welcomeLink($container));
+    $browser->get('/cp/welcome');
+
+    $refused = $browser->post('/cp/welcome', ['password' => PASSWORD, 'password_confirmation' => PASSWORD]);
+
+    expect($refused->getStatusCode())->toBe(422)
+        ->and($browser->body())->toContain('turned up in data breaches 9,659,365 times');
+});
+
+it('still lets a password be set when the breach check cannot be made', function (): void {
+    [$browser, $container] = installedPanel([BreachedPasswords::class => new FakeBreachedPasswords(null)]);
+    $browser->get(welcomeLink($container));
+    $browser->get('/cp/welcome');
+
+    $saved = $browser->post('/cp/welcome', ['password' => PASSWORD, 'password_confirmation' => PASSWORD]);
+
+    expect($saved->getHeaderLine('Location'))->toBe('/cp/two-factor/setup');
 });

@@ -6,6 +6,9 @@ use DI\ContainerBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Slim\App;
 use Slim\Psr7\Factory\ServerRequestFactory;
+use SlimKiller\Auth\EmailAddress;
+use SlimKiller\Auth\Role;
+use SlimKiller\Auth\UserRepository;
 use SlimKiller\Doctor\CheckResult;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
@@ -86,6 +89,27 @@ it('says what is still unchecked when the doctor has not saved a report', functi
     $body = (string) getPage(controlPanel($paths), 'https://client.test/cp/setup?token=' . issueSetupLink($paths))->getBody();
 
     expect($body)->toContain('Not checked yet');
+});
+
+it('says to install before anyone has an account', function (): void {
+    $paths = new Paths(temporaryFolder());
+
+    $body = (string) getPage(controlPanel($paths), 'https://client.test/cp/setup?token=' . issueSetupLink($paths))->getBody();
+
+    expect($body)->toContain('Install, and create your account')
+        ->not->toContain('Sign in to the control panel');
+});
+
+it('says to sign in once Slim Killer is installed', function (): void {
+    [$browser, $container, $clock] = installedPanel();
+    $container->get(UserRepository::class)->create(EmailAddress::from('edward@example.com'), 'Edward', Role::Admin);
+    $token = (new SetupLink($container->get(Paths::class), $clock))->issue();
+
+    $body = (string) $browser->get('/cp/setup?token=' . $token)->getBody();
+
+    expect($body)->toContain('Sign in to the control panel')
+        ->toContain('hammer user:reset')
+        ->not->toContain('Install, and create your account');
 });
 
 it('sends its security headers on every response, errors included', function (string $path): void {

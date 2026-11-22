@@ -25,6 +25,11 @@
   <p class="form-help">The numbers start when the first visitor opens a page. If nobody shows after a day, ask your web developer to add the visit counter's script to the website (see "Visit counter" in the Slim Killer wiki).</p>
 </div></section>
 {% else %}
+{# Said wherever these days have nothing yet. Today is added up after midnight, so a
+   visitor today shows only under "Today so far" until then. #}
+{% set nobody = today.visitors > 0
+  ? 'Nothing added up for these ' ~ periods[days] ~ ' yet. Today\'s visits are added after midnight.'
+  : 'Nobody was counted in these ' ~ periods[days] ~ '.' %}
 
 <nav class="period-switch" aria-label="How far back">
   {% for period_days, label in periods %}
@@ -50,6 +55,7 @@
 <section class="card">
   <div class="card-pad">
     <h2 class="card-title">Visitors, day by day</h2>
+    {% if chart_most > 0 %}
     <svg class="day-chart" viewBox="0 0 {{ chart|length }} 100" preserveAspectRatio="none" role="img" aria-label="Visitors each day, most {{ chart_most }} in one day">
       {% for day in chart %}
         {% set height = day.visitors / chart_most * 100 %}
@@ -57,6 +63,9 @@
       {% endfor %}
     </svg>
     <div class="day-chart-axis"><span>{{ first|date('j M') }}</span><span>Most in a day: {{ chart_most }}</span><span>{{ last|date('j M') }}</span></div>
+    {% else %}
+    <p class="form-help">{{ nobody }}</p>
+    {% endif %}
   </div>
 </section>
 
@@ -90,10 +99,11 @@
   </section>
   {% else %}
   <section class="card"><div class="card-pad">
-    <p class="form-help">Nobody was counted in these {{ periods[days] }}.</p>
+    <p class="form-help">{{ nobody }}</p>
   </div></section>
   {% endfor %}
 </div>
 
 {% endif %}
 {% endblock %}
+
