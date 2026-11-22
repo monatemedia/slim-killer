@@ -21,7 +21,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   the panel's security rules. Signed-in people only.
 
 - **`hammer visits:sample`** fills a local copy with made-up visits, so the Visits page
-  can be seen before a real website has any (`--days=90`, `--fresh`). It refuses to run
+  can be seen before a real website has any (`--days=90`, `--fresh`). It uses the page
+  addresses of the site the copy is pointed at, from that site's last build. It refuses to run
   unless `APP_URL` ends in `.test` or is `localhost`.
 
 - **Visit counter.** Each website can count its own visits, without cookies and

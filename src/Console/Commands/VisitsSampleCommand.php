@@ -9,6 +9,7 @@ use PDO;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
+use SlimKiller\Content\PageAddresses;
 use SlimKiller\Database\Database;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
@@ -27,7 +28,11 @@ use SlimKiller\Visits\VisitLog;
  */
 final class VisitsSampleCommand implements Command
 {
-    private const array PAGES = ['/' => 10, '/services/' => 5, '/fix/' => 3, '/work/' => 3, '/about/' => 2, '/contact/' => 2];
+    /** Used when the site's last build listed no page addresses. */
+    private const array PAGES = ['/' => 10, '/services/' => 5, '/about/' => 3, '/contact/' => 2];
+
+    /** @var array<string, int> page => weight: the site's own pages when its build listed them */
+    private array $pages = self::PAGES;
 
     /** @var array<string, array{int, array<string, mixed>}> name => [weight, what the browser sends] */
     private const array SOURCES = [
@@ -54,6 +59,7 @@ final class VisitsSampleCommand implements Command
         private readonly SiteTime $time,
         private readonly Clock $clock,
         private readonly AppConfig $config,
+        private readonly PageAddresses $addresses,
     ) {}
 
     public function name(): string
@@ -86,6 +92,13 @@ final class VisitsSampleCommand implements Command
             $output->line('The visit counter already has numbers. Add --fresh to delete them first.', 'red');
 
             return 1;
+        }
+
+        // The pages of the site this copy is pointed at, the home page most of all.
+        $known = $this->addresses->all();
+        if ($known !== []) {
+            $this->pages = array_fill_keys($known, 2);
+            $this->pages['/'] = 10;
         }
 
         $days = max(1, min(800, (int) ($input->option('days') ?? 400)));
@@ -125,13 +138,13 @@ final class VisitsSampleCommand implements Command
 
         $pages = random_int(1, 100) <= 60 ? 1 : random_int(2, 4);
         for ($p = 0; $p < $pages; $p++) {
-            $count += $this->record(['k' => 'page', 'p' => self::pick(self::PAGES), ...($p === 0 ? $origin : [])], $userAgent, $visitor, $day, $at);
+            $count += $this->record(['k' => 'page', 'p' => self::pick($this->pages), ...($p === 0 ? $origin : [])], $userAgent, $visitor, $day, $at);
         }
         if (random_int(1, 100) <= 14) {
             $count += $this->record(['k' => 'tap', 'p' => '/', 'l' => random_int(1, 4) === 1 ? 'Email' : 'WhatsApp: WhatsApp us'], $userAgent, $visitor, $day, $at);
         }
         if (random_int(1, 100) <= 3) {
-            $count += $this->record(['k' => 'form', 'p' => '/contact/', 'l' => 'contact'], $userAgent, $visitor, $day, $at);
+            $count += $this->record(['k' => 'form', 'p' => self::pick($this->pages), 'l' => 'contact'], $userAgent, $visitor, $day, $at);
         }
 
         return $count;

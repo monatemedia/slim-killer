@@ -65,9 +65,9 @@
     <h2 class="card-title">Today so far</h2>
     <p class="today-counts">
       <strong>{{ today.visitors }}</strong> {{ today.visitors == 1 ? 'visitor' : 'visitors' }} ·
-      <strong>{{ today.pages }}</strong> pages opened ·
-      <strong>{{ today.taps }}</strong> buttons tapped ·
-      <strong>{{ today.forms }}</strong> forms sent
+      <strong>{{ today.pages }}</strong> {{ today.pages == 1 ? 'page' : 'pages' }} opened ·
+      <strong>{{ today.taps }}</strong> {{ today.taps == 1 ? 'button' : 'buttons' }} tapped ·
+      <strong>{{ today.forms }}</strong> {{ today.forms == 1 ? 'form' : 'forms' }} sent
     </p>
   </div>
 </section>

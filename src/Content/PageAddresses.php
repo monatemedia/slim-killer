@@ -31,6 +31,14 @@ final class PageAddresses
         return $this->addresses[$collection . '/' . $slug] ?? null;
     }
 
+    /** @return list<string> every page address the site's last build listed, each once */
+    public function all(): array
+    {
+        $this->addresses ??= $this->read();
+
+        return array_values(array_unique(array_values($this->addresses)));
+    }
+
     /** @return list<string> where the file is looked for, in order */
     public function files(): array
     {
