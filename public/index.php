@@ -219,19 +219,23 @@ $product = [
   h1 .pop { color: var(--orange); display: block; }
   .lede { font-size: 1.18rem; max-width: 60ch; margin: 0 0 1rem; }
   .lede.small { font-size: 1rem; color: var(--muted); }
+  .lede.after { margin-top: 1.5rem; }
   /* The clown and the name, tilted together. Above the headline on a phone, beside it on a wide screen. */
   .brand { justify-self: center; align-self: start; display: flex; flex-direction: column; align-items: center; gap: 1.3rem; }
   .logo-badge { width: 240px; height: 240px; border-radius: 50%; background: var(--skin); border: 4px solid var(--ink);
     box-shadow: 8px 8px 0 var(--ink); display: grid; place-items: center; transform: rotate(-6deg); }
   .logo-badge svg { width: 170px; height: 170px; }
-  .wordmark { margin: 0; font-weight: 900; font-size: 3.3rem; line-height: 0.88; letter-spacing: -0.05em; text-align: center; transform: rotate(-6deg); }
+  /* "Slim" leans with the clown, "Killer" leans the other way. */
+  .wordmark { margin: 0; font-weight: 900; font-size: 4.6rem; line-height: 0.9; letter-spacing: -0.05em; text-align: center; }
   .wordmark span { display: block; }
-  .wordmark .killer { color: var(--orange); text-shadow: 3px 3px 0 var(--ink); }
+  .wordmark .slim { transform: rotate(-6deg); }
+  .wordmark .killer { color: var(--orange); text-shadow: 4px 4px 0 var(--ink); transform: rotate(6deg); }
   @media (max-width: 819px) {
     .brand { order: -1; flex-direction: row; gap: 1.1rem; justify-self: start; }
     .logo-badge { width: 112px; height: 112px; box-shadow: 5px 5px 0 var(--ink); }
     .logo-badge svg { width: 78px; height: 78px; }
-    .wordmark { font-size: 2.4rem; text-align: left; }
+    .wordmark { font-size: 2.9rem; text-align: left; }
+    .wordmark .killer { text-shadow: 3px 3px 0 var(--ink); }
   }
 
   .status { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0; }
@@ -303,6 +307,11 @@ $product = [
   table.three td { width: 27%; }
   .security p { margin: 0; font-size: 1.12rem; }
   .security p + p { margin-top: 0.9rem; }
+  .security .star { text-decoration: none; font-weight: 800; color: var(--orange); }
+  .footnote { margin: 1rem 0 0; font-size: 0.85rem; color: var(--muted); }
+  ul.reasons { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  ul.reasons li { padding-left: 1.6rem; position: relative; }
+  ul.reasons li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--orange); border: 2px solid var(--ink); }
   .rules-grid .wide { grid-column: 1 / -1; }
   @media (min-width: 820px) { .rules-grid .wide ol.rules { column-count: 2; column-gap: 2.4rem; } .rules-grid .wide ol.rules li { break-inside: avoid; } .rules-grid .wide ol.rules li:nth-child(4) { border-top: 0; } }
   .scroll { overflow-x: auto; padding: 0 6px 8px 0; }
@@ -387,11 +396,6 @@ $product = [
         plugins to patch, no database or PHP behind the pages, no Node.js on the server,
         two-factor sign-in for editors, and every change saved as a Git commit you can undo.
       </p>
-      <p class="lede small">
-        <a href="<?= $oop ?>">Part one</a> taught <em>how to wire components</em>.
-        <a href="<?= $ddd ?>">Part two</a> taught <em>what the components should be</em>.
-        Slim Killer puts both to work in a real product that ships to real clients.
-      </p>
 
       <?php if (! $static): ?>
         <div class="status" aria-label="This machine">
@@ -410,6 +414,12 @@ $product = [
         </div>
       <?php endif; ?>
 
+      <p class="lede small after">
+        <a href="<?= $oop ?>">Part one</a> taught <em>how to wire components</em>.
+        <a href="<?= $ddd ?>">Part two</a> taught <em>what the components should be</em>.
+        Slim Killer puts both to work in a real product that ships to real clients.
+      </p>
+
       <div class="cta">
         <a class="btn primary" href="<?= $repo ?>">View on GitHub</a>
         <a class="btn" href="#how">How it works</a>
@@ -421,7 +431,7 @@ $product = [
       <?php if ($logo !== ''): ?>
         <div class="logo-badge"><?= $logo ?></div>
       <?php endif; ?>
-      <p class="wordmark" aria-label="Slim Killer"><span>Slim</span><span class="killer">Killer</span></p>
+      <p class="wordmark" aria-label="Slim Killer"><span class="slim">Slim</span><span class="killer">Killer</span></p>
     </div>
   </div>
 </header>
@@ -502,7 +512,30 @@ $product = [
   </div>
 </section>
 
-<section id="features" class="alt">
+<section id="woocommerce" class="alt">
+  <div class="wrap">
+    <h2>Why we don't build WooCommerce shops</h2>
+    <p class="sub">A shop holds money and people's details. Shared hosting was built for neither, and WooCommerce makes both harder to protect.</p>
+    <div class="card">
+      <ul class="reasons">
+        <li><strong>It can't be cached.</strong> Carts and checkouts are built fresh for every shopper, on a plan that rations processing power. The site slows down when people are trying to pay.</li>
+        <li><strong>Bad neighbours.</strong> On shared hosting, one hacked site can often read another's settings, including the shop's database password, and with it every customer's details.</li>
+        <li><strong>Skimmers and card testing.</strong> A break-in can add a few lines of JavaScript that copy cards as they're typed, and bots use checkouts to try stolen cards in bulk. The shop pays the fees and risks its merchant account.</li>
+        <li><strong>Customer data, and the law that comes with it.</strong> Every order stores names, addresses, phone numbers and emails, which data-protection laws (the GDPR in Europe and the UK, the CCPA in California, and their equivalents elsewhere) require you to protect, and to report if they leak.</li>
+        <li><strong>Backups that lose orders.</strong> Restoring yesterday's copy of a shop deletes today's orders. The clean rollback that rescues a hacked website is gone.</li>
+        <li><strong>Receipts in spam.</strong> Shared hosting sends mail under the host's name, not the shop's, so order emails often never arrive.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <strong>What we do instead:</strong> a site that shows products and takes enquiries,
+      for dealerships, property and tours, runs on Slim Killer as it is (Catalogue mode).
+      When a card is involved, the payment goes to Shopify, which is built to carry exactly
+      that risk. Your website stays static; the money never touches it.
+    </div>
+  </div>
+</section>
+
+<section id="features">
   <div class="wrap">
     <h2>What comes in the box</h2>
     <p class="sub">First-party only: what you get from the project itself, before any plugin, package or paid service. Slim Killer sits between the two on purpose: WordPress's ease for the client, Laravel's tooling for the developer.</p>
@@ -534,18 +567,19 @@ $product = [
   </div>
 </section>
 
-<section id="security">
+<section id="security" class="alt">
   <div class="wrap">
     <h2>Security, by having less</h2>
     <p class="sub">Most of a site's security comes from what isn't there.</p>
     <div class="card security">
       <p><strong>No plugins to break, no hooks to exploit, no theme to go stale.</strong> Your pages are built ahead of time as plain HTML, with only the CSS and the little JavaScript each page uses, so there's no PHP and no database behind them for anyone to attack, and no caching layer hiding a slow site. Even your visitor statistics are counted without cookies or internet addresses.</p>
-      <p>The only door in is a small control panel, guarded by required two-factor sign-in, passwords stored with Argon2id and checked against known data breaches, and a tiny SQLite database kept out of the website's reach. Every change is saved as a version you can roll back. And enquiries aren't stored at all: they go straight to your inbox, and on the rare busy moment they're held briefly outside the website and deleted as soon as they're sent.</p>
+      <p>The only door in is a small control panel, guarded by required two-factor sign-in, passwords stored with Argon2id<a href="#argon" class="star" aria-label="See the note on Argon2id">*</a> and checked against known data breaches, and a tiny SQLite database kept out of the website's reach. Every change is saved as a version you can roll back. And enquiries aren't stored at all: they go straight to your inbox, and on the rare busy moment they're held briefly outside the website and deleted as soon as they're sent.</p>
     </div>
+    <p class="footnote" id="argon">* Argon2id when the host's PHP has it, as most PHP 8.4 hosts do (<code>php -r "print_r(password_algos());"</code> lists <code>argon2id</code>); bcrypt otherwise.</p>
   </div>
 </section>
 
-<section class="alt">
+<section>
   <div class="wrap">
     <h2>Eighteen rules, in three parts</h2>
     <p class="sub">Slim Killer is built by the rules of the two courses before it, and six of its own. Rule 7 is the gate: it decides where rules 8 to 12 are worth their weight.</p>
@@ -586,7 +620,7 @@ $product = [
   </div>
 </section>
 
-<section id="proof">
+<section id="proof" class="alt">
   <div class="wrap">
     <h2>What is proved, rather than promised</h2>
     <p class="sub">Before a line of product code, two spikes ran on a real, entry-level shared hosting plan. These are their own words.</p>
@@ -617,7 +651,7 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 
 <?php if ($roadmap !== []): ?>
-<section class="alt">
+<section>
   <div class="wrap">
     <h2>The roadmap</h2>
     <p class="sub">Read straight from the README, so it is never out of date. Built in the open.</p>
@@ -630,7 +664,7 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 <?php endif; ?>
 
-<section id="start">
+<section id="start" class="alt">
   <div class="wrap">
     <h2>Getting started</h2>
     <p class="sub">You need PHP <?= $e($minPhp) ?>, Composer and SSH on the host. The <a href="<?= $wiki ?>/Installing-on-a-new-host">installation guide</a> has every step, with the exact commands for shared hosting.</p>

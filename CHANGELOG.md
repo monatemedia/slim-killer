@@ -39,9 +39,17 @@ usual (there are no new migrations).
   rules.
 - **The cover page** (`public/index.php`, and the static page printed from it) shows
   the name beside the clown, the version from this changelog, a comparison of what
-  comes first-party with WordPress, Slim Killer and Laravel, a security section, the
+  comes first-party with WordPress, Slim Killer and Laravel, why we don't build
+  WooCommerce shops (and what we do instead), a security section, the
   product rules, and up-to-date getting-started steps. Its preview image no longer
   points at the old WordPress site.
+
+- **`composer check` and `feature-branch-stop.sh` run the unit tests in parallel**
+  (`pest --parallel`): faster, and only failures are listed. `composer test` still
+  names every test.
+- **The README roadmap** is brought up to date: what's done since the spikes, what's
+  next (`hammer site:check`, email through the site's own mailbox), and the shop item
+  replaced by Catalogue mode, since card payments go to Shopify, never Slim Killer.
 
 ### Fixed
 

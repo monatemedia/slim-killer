@@ -216,17 +216,21 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 
 - [x] Spikes S1 and S2: shared hosting can commit to GitHub, fetch and switch builds, and run cron
 - [x] Host checker: `hammer doctor`
-- [ ] Spikes S3 to S5: export Astro's Zod schemas; editor round trip; time from save to live
+- [x] Spikes S3 to S5: export Astro's Zod schemas; editor round trip; time from save to live
 - [x] Control panel skeleton: Slim, Twig, SQLite migrations, login with two-factor, `install`, the setup page
-- [ ] One collection end to end on a pilot client site
-- [ ] All collections, including nested lists and single pages
-- [ ] Releases and recovery: panel self-update, rollbacks, backups with a test restore
-- [ ] Pilot client migration, including the move to Astro 7
-- [ ] `fleet:test` across client sites
+- [x] One collection end to end on a live site (monatemedia.com, November 2026)
+- [x] All collections, including nested lists and single pages
+- [x] Rollbacks: the last three releases kept, `hammer deploy:rollback`
 - [x] Visit counter: first-party, cookieless, kept for good unless a site sets a limit (`hammer visits`)
 - [x] Visit report by email, every morning, from one shared email layout
 - [x] Visits page in the control panel
-- [ ] Edge Storefront (Yoco checkout, stock)
+- [x] Passwords found in data breaches refused (Have I Been Pwned)
+- [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
+- [ ] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
+- [ ] Panel self-update, and backups with a test restore
+- [ ] Pilot client migration: Honey Badger Namibia, on Astro 7
+- [ ] `fleet:test` across client sites
+- [ ] Catalogue mode: products and enquiries, for dealerships, property and tours (card payments go to Shopify, never Slim Killer)
 
 See the [open issues](https://github.com/monatemedia/slim-killer/issues) for proposed features and known issues.
 
