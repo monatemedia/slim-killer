@@ -280,7 +280,7 @@ Slim Killer uses [semantic versioning](https://semver.org/), `vMAJOR.MINOR.PATCH
 - **MINOR** (`v1.4.2` → `v1.5.0`): new features that existing client sites can take without changes.
 - **PATCH** (`v1.4.2` → `v1.4.3`): bug fixes and security fixes only.
 
-Tag releases with annotated tags, and never move or reuse a tag; a fix is always a new patch tag.
+Tag releases with annotated tags, and never move or reuse a tag; a fix is always a new patch tag. A client's host always runs a tag, never `main` (see "Installing on a new host" in the wiki).
 
 ```sh
 git tag -a v0.1.0 -m "v0.1.0"

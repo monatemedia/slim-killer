@@ -95,7 +95,8 @@ final class VisitsSampleCommand implements Command
         }
 
         // The pages of the site this copy is pointed at, the home page most of all.
-        $known = $this->addresses->all();
+        // Pages only: the 404 page and files such as llms.txt are left out.
+        $known = array_values(array_filter($this->addresses->all(), static fn(string $address): bool => str_ends_with($address, '/')));
         if ($known !== []) {
             $this->pages = array_fill_keys($known, 2);
             $this->pages['/'] = 10;
