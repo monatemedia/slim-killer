@@ -1,0 +1,39 @@
+{#
+  The one layout every email from Slim Killer uses (HTML part). An email extends it,
+  fills "content", and says in "why" why the reader gets it. Tables and inline styles,
+  because email apps ignore most CSS. The plain-text twin is layout.txt.twig.
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f2ef;">
+{% if preview is defined %}<div style="display:none;max-height:0;overflow:hidden;">{{ preview }}</div>{% endif %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ef;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:8px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#202529;font-size:16px;line-height:1.5;">
+        <tr>
+          <td style="padding:20px 24px;border-bottom:4px solid #f99314;font-weight:700;font-size:18px;">{{ site_name }}</td>
+        </tr>
+        <tr>
+          <td style="padding:24px;">
+            {% block content %}{% endblock %}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 24px 24px;border-top:1px solid #e6e3df;color:#5b6168;font-size:13px;">
+            {% block why %}{% endblock %}
+            {% if site_url %}<br><a href="{{ site_url }}" style="color:#5b6168;">{{ site_url|replace({'https://': '', 'http://': ''}) }}</a>{% endif %}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
