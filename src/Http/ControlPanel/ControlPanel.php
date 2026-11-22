@@ -20,6 +20,7 @@ use SlimKiller\Http\ControlPanel\Actions\SignInAction;
 use SlimKiller\Http\ControlPanel\Actions\SignOutAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorSetupAction;
+use SlimKiller\Http\ControlPanel\Actions\VisitsAction;
 use SlimKiller\Http\ControlPanel\Actions\WelcomeAction;
 use SlimKiller\Http\Session\CsrfMiddleware;
 use SlimKiller\Http\Session\SessionMiddleware;
@@ -63,6 +64,7 @@ final class ControlPanel
             $content->map(['GET', 'POST'], '/{collection}/{slug}', EntryAction::class);
         })->add(SignedIn::class);
         $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
+        $app->get('/visits', VisitsAction::class)->add(SignedIn::class);
         $app->get('/photos/{name}', PhotoPreviewAction::class)->add(SignedIn::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:

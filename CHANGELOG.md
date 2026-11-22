@@ -13,6 +13,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **Visits page in the control panel.** `/cp/visits`, from a new "Visits" tile on the
+  dashboard: visitors, pages opened, buttons tapped and forms sent for the last 7, 30
+  or 90 days or 12 months, each next to the same length of time before it; a chart of
+  visitors day by day; where they came from, the pages, buttons, forms and devices; and
+  today so far. Drawn as SVG, with no JavaScript, so it works on any phone and within
+  the panel's security rules. Signed-in people only.
+
 - **Visit counter.** Each website can count its own visits, without cookies and
   without Google. Add `<script src="/cp/assets/visits.js" defer></script>` to every
   page. It counts pages opened, taps on WhatsApp, email and phone links (and anything
