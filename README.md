@@ -276,6 +276,8 @@ There is **one long-lived branch, `main`**. Everything else is short-lived and d
 
 The start script refuses to run with uncommitted changes. The stop script checks that `CHANGELOG.md` was updated, runs whichever quality gates are installed (Pint, PHPStan, Pest, `npm test`), pushes, merges into `main`, deletes the branch locally and on GitHub, and returns you to `main`. A failing gate stops it before anything is pushed or merged. Both scripts read the branch rules from `feature-branch-types.sh`.
 
+**Every Slim Killer repository uses the same scripts** (the contact form helper, the Astro sites, and later the Astro template). This repository keeps the master copies; `./sync-branch-scripts.sh ../other-repo` copies them across. What "tested" means differs per repository, so each one may have its own `feature-branch-gates.sh`, which the sync never overwrites: it can set `CHANGELOG_REQUIRED=0` and define `run_gates()` (an Astro site checks types, builds, and writes the panel's files, for example). Without it, the stop script runs the gates it finds installed. A client's saves in the control panel still go straight to `main`; branches are for developer work.
+
 ### Versioning
 
 Slim Killer uses [semantic versioning](https://semver.org/), `vMAJOR.MINOR.PATCH`. Because client sites depend on core, the version number is a promise about upgrades:
