@@ -13,6 +13,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **A warning fails the tests.** `composer check` and `feature-branch-stop.sh` run Pest
+  with `--fail-on-warning`. In parallel a PHP warning isn't shown at all, so without
+  this one could reach `main` unseen (it happened in the contact form helper).
+
 - **The branch scripts, for every Slim Killer repository.** `sync-branch-scripts.sh`
   copies `feature-branch-start.sh`, `-stop.sh` and `-types.sh` from core into another
   repository. A repository says what "tested" means in its own `feature-branch-gates.sh`
