@@ -353,4 +353,54 @@
     });
   }
 
+  // The website bar. The website's pages can't ask the server who is signed in, so the
+  // panel leaves a marker in this browser that visits.js reads there:
+  //   slim-killer-editor     {"bar": "show" or "hide", "closed": true or false}
+  //                          while signed in. Its presence alone means "don't count".
+  //   slim-killer-dont-count "1": never count this browser, signed in or not.
+  // The dashboard and Preferences write the marker (and bring back a bar hidden from
+  // the bar itself); the sign-in page takes it away. The marker is not a key: the bar
+  // asks /cp/me before showing anything, and every link in it still needs sign-in.
+  var editorBar = document.body.getAttribute('data-editor-bar');
+  if (editorBar) {
+    try {
+      if (editorBar === 'out') {
+        window.localStorage.removeItem('slim-killer-editor');
+      } else {
+        window.localStorage.setItem('slim-killer-editor', JSON.stringify({ bar: editorBar, closed: false }));
+      }
+    } catch (e) {
+      // Private browsing: no bar on the website, and visits are counted as usual.
+    }
+  }
+
+  // Visits: "Don't count this browser", kept in this browser only.
+  var dontCount = document.querySelector('[data-dont-count]');
+  if (dontCount) {
+    var counted = function () {
+      try {
+        return window.localStorage.getItem('slim-killer-dont-count') !== '1';
+      } catch (e) {
+        return true;
+      }
+    };
+    var label = function () {
+      dontCount.textContent = counted() ? "Don't count this browser" : 'Count this browser again';
+    };
+    dontCount.addEventListener('click', function () {
+      try {
+        if (counted()) {
+          window.localStorage.setItem('slim-killer-dont-count', '1');
+        } else {
+          window.localStorage.removeItem('slim-killer-dont-count');
+        }
+      } catch (e) {
+        return;
+      }
+      label();
+    });
+    label();
+    dontCount.hidden = false;
+  }
+
 })();

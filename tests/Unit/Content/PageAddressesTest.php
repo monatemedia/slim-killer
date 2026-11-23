@@ -42,3 +42,14 @@ it('knows no addresses without the file, and ignores anything that is not a path
     expect(array_map(fn(string $slug): ?string => $addresses->of('a', $slug), ['one', 'two', 'three', 'four', 'five']))
         ->toBe([null, null, null, '/fine/', null]);
 });
+
+it('finds the page at an address, for "Edit this page", however the address ends', function (string $address): void {
+    $site = temporaryFolder();
+    file_put_contents($site . '/addresses.json', '{"home/index": "/", "services/cleaning": "/services/cleaning/"}');
+
+    $addresses = new PageAddresses(new ContentLocation($site . '/content', $site . '/schemas'));
+
+    expect($addresses->entryAt($address))->toBe(['collection' => 'services', 'slug' => 'cleaning'])
+        ->and($addresses->entryAt('/'))->toBe(['collection' => 'home', 'slug' => 'index'])
+        ->and($addresses->entryAt('/contact/'))->toBeNull();
+})->with(['/services/cleaning/', '/services/cleaning', '/services/cleaning/index.html']);

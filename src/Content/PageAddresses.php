@@ -31,6 +31,30 @@ final class PageAddresses
         return $this->addresses[$collection . '/' . $slug] ?? null;
     }
 
+    /**
+     * The content entry shown at an address on the website, for "Edit this page": the
+     * reverse of of(). An address without its closing slash, or ending in index.html,
+     * finds the same page.
+     *
+     * @return array{collection: string, slug: string}|null
+     */
+    public function entryAt(string $address): ?array
+    {
+        $this->addresses ??= $this->read();
+
+        $address = (string) preg_replace('#/index\.html$#', '/', $address);
+        foreach ([$address, rtrim($address, '/') . '/'] as $candidate) {
+            $key = array_search($candidate, $this->addresses, true);
+            if (is_string($key) && str_contains($key, '/')) {
+                [$collection, $slug] = explode('/', $key, 2);
+
+                return ['collection' => $collection, 'slug' => $slug];
+            }
+        }
+
+        return null;
+    }
+
     /** @return list<string> every page address the site's last build listed, each once */
     public function all(): array
     {

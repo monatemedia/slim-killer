@@ -14,6 +14,8 @@ use SlimKiller\Http\ControlPanel\Actions\Content\EntriesAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntryAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\PhotoPreviewAction;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
+use SlimKiller\Http\ControlPanel\Actions\MeAction;
+use SlimKiller\Http\ControlPanel\Actions\PreferencesAction;
 use SlimKiller\Http\ControlPanel\Actions\PublishingAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
 use SlimKiller\Http\ControlPanel\Actions\SignInAction;
@@ -65,6 +67,10 @@ final class ControlPanel
         })->add(SignedIn::class);
         $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
         $app->get('/visits', VisitsAction::class)->add(SignedIn::class);
+        $app->map(['GET', 'POST'], '/preferences', PreferencesAction::class)->add(SignedIn::class);
+
+        // For the website bar: JSON, saying who is signed in (or that nobody is).
+        $app->get('/me', MeAction::class);
         $app->get('/photos/{name}', PhotoPreviewAction::class)->add(SignedIn::class);
 
         // Middleware runs in the reverse of the order it is added. On the way in:

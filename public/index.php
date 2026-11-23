@@ -28,6 +28,7 @@ declare(strict_types=1);
  * numbers that cannot change are measurements from spikes S1 and S2, and say so.
  *
  * On a client's host the domain root serves the client's Astro site, never this page.
+ * Locally, LOCAL_WEBSITE=1 in .env does the same on Herd (see below).
  */
 
 // On Herd (nginx), a path with no file behind it falls through to this script. Hand
@@ -38,6 +39,57 @@ if (PHP_SAPI !== 'cli' && is_string($requestPath) && str_starts_with($requestPat
     require __DIR__ . '/cp/index.php';
 
     return;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Local development only: LOCAL_WEBSITE=1 in .env makes https://slim-killer.test
+// behave like a client's host, with the built site of CONTENT_DIR at the root
+// (../site/dist beside that content folder) and the panel at /cp. Then the panel's
+// "Web address" links and the website bar can be tried on this machine. Only when
+// APP_URL ends in .test or is localhost; on a client's host this file is never served.
+// Build the site first (npm run build:panel in the site's repository).
+// ─────────────────────────────────────────────────────────────────────────────
+
+if (PHP_SAPI !== 'cli' && is_string($requestPath) && is_file(dirname(__DIR__) . '/.env')) {
+    $env = [];
+    foreach (file(dirname(__DIR__) . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        if (preg_match('/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/', $line, $pair) === 1) {
+            $env[$pair[1]] = trim($pair[2], "\"'");
+        }
+    }
+    $local = (string) preg_replace('#^https?://#', '', $env['APP_URL'] ?? '');
+    $isLocal = str_ends_with(rtrim($local, '/'), '.test') || str_starts_with($local, 'localhost');
+    $contentDir = $env['CONTENT_DIR'] ?? '';
+    if (in_array(strtolower($env['LOCAL_WEBSITE'] ?? ''), ['1', 'true', 'yes'], true) && $isLocal && $contentDir !== '') {
+        $base = preg_match('#^([a-zA-Z]:)?[/\\\\]#', $contentDir) === 1 ? $contentDir : dirname(__DIR__) . '/' . $contentDir;
+        $dist = realpath($base . '/../site/dist');
+        if ($dist !== false) {
+            $file = realpath($dist . '/' . ltrim(rawurldecode($requestPath), '/'));
+            if ($file !== false && is_dir($file)) {
+                $file = realpath($file . '/index.html');
+            }
+            $status = 200;
+            // Only files inside the build: nothing a crafted path could reach beyond it.
+            if ($file === false || ! is_file($file) || ! str_starts_with($file, $dist . DIRECTORY_SEPARATOR)) {
+                $file = $dist . '/404.html';
+                $status = 404;
+            }
+            $types = [
+                'html' => 'text/html; charset=utf-8', 'css' => 'text/css', 'js' => 'text/javascript', 'mjs' => 'text/javascript',
+                'json' => 'application/json', 'xml' => 'application/xml', 'txt' => 'text/plain; charset=utf-8',
+                'svg' => 'image/svg+xml', 'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+                'webp' => 'image/webp', 'avif' => 'image/avif', 'gif' => 'image/gif', 'ico' => 'image/x-icon',
+                'woff' => 'font/woff', 'woff2' => 'font/woff2', 'webmanifest' => 'application/manifest+json',
+            ];
+            http_response_code($status);
+            header('Content-Type: ' . ($types[strtolower(pathinfo($file, PATHINFO_EXTENSION))] ?? 'application/octet-stream'));
+            if (is_file($file)) {
+                readfile($file);
+            }
+
+            return;
+        }
+    }
 }
 
 $root = dirname(__DIR__);

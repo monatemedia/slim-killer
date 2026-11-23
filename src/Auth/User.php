@@ -19,6 +19,7 @@ final readonly class User
         public ?string $passwordHash,
         public ?string $totpSecret,
         public ?int $totpLastCounter,
+        public WebsiteBar $websiteBar = WebsiteBar::Show,
     ) {}
 
     public function hasPassword(): bool

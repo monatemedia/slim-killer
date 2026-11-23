@@ -1,0 +1,38 @@
+{% extends 'cp/layout.twig' %}
+
+{% block body_attrs %} data-editor-bar="{{ website_bar }}"{% endblock %}
+
+{% block title %}Preferences{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › Preferences</nav>
+
+<section class="hero">
+  <h1>Preferences</h1>
+  <p>Your own choices. They don't change anything for anyone else.</p>
+</section>
+
+{% if saved %}
+  <p class="read-only-note" role="status">Saved. This browser knows already; on your other devices, open the control panel once.</p>
+{% endif %}
+
+<form method="post" action="{{ base }}/preferences" class="card">
+  <div class="card-pad">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <fieldset class="choices">
+      <legend class="card-title">The website bar</legend>
+      <p class="form-help">While you're signed in, a small button sits in the bottom-right corner of your website. Tap it to edit the page you're on, or to go to the control panel or Visits.</p>
+      <label class="choice">
+        <input type="radio" name="website_bar" value="show"{{ website_bar == 'show' ? ' checked' }}>
+        <span><strong>Show it</strong><br>You can still hide it from the button itself, until you next open the control panel.</span>
+      </label>
+      <label class="choice">
+        <input type="radio" name="website_bar" value="hide"{{ website_bar == 'hide' ? ' checked' }}>
+        <span><strong>Don't show it</strong><br>The website looks exactly as visitors see it.</span>
+      </label>
+      <p class="form-help">Either way, while you're signed in your own visits aren't counted.</p>
+    </fieldset>
+    <button type="submit" class="btn">Save</button>
+  </div>
+</form>
+{% endblock %}

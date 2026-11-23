@@ -15,10 +15,41 @@
  * privacy settings: { "choices": { "statistics": false } } in localStorage under
  * "privacy-choices".
  *
+ * It counts nothing in a browser that is signed in to the control panel, or that was
+ * told not to be counted (the Visits page): the panel leaves "slim-killer-editor" or
+ * "slim-killer-dont-count" in localStorage (see cp.js). A signed-in browser also gets
+ * the website bar (editor-bar.js), unless its person chose not to see it or hid it.
+ * Visitors download nothing more than this file.
+ *
  * Plain old JavaScript on purpose: it must run on every phone, an iPhone 7 included.
  */
 (function () {
   'use strict';
+
+  function stored(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Someone who edits this website, in a browser signed in to the control panel.
+  var editor = null;
+  try {
+    editor = JSON.parse(stored('slim-killer-editor') || 'null');
+  } catch (e) {
+    editor = null;
+  }
+  if (editor && editor.bar !== 'hide' && !editor.closed) {
+    var bar = document.createElement('script');
+    bar.src = '/cp/assets/editor-bar.js';
+    bar.defer = true;
+    document.head.appendChild(bar);
+  }
+  if (editor || stored('slim-killer-dont-count') === '1') {
+    return;
+  }
 
   var nav = window.navigator;
   if (nav.doNotTrack === '1' || window.doNotTrack === '1' || nav.globalPrivacyControl === true) {
