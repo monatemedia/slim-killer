@@ -225,6 +225,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [x] Visit report by email, every morning, from one shared email layout
 - [x] Visits page in the control panel
 - [x] Passwords found in data breaches refused (Have I Been Pwned)
+- [x] Website bar: Edit this page from the website, and signed-in people aren't counted as visitors
 - [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
 - [ ] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
 - [ ] Panel self-update, and backups with a test restore

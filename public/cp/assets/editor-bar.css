@@ -1,0 +1,91 @@
+/*
+ * The website bar (editor-bar.js), inside its shadow root: nothing here reaches the
+ * website, and nothing of the website's reaches this. Bottom right.
+ */
+:host { all: initial; }
+
+.bar {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #ECECEC;
+  -webkit-text-size-adjust: 100%;
+}
+.bar[hidden], .menu[hidden] { display: none; }
+/* Near the top, the menu opens below the button; on the left half, it lines up left. */
+.bar.near-top { flex-direction: column-reverse; }
+.bar.on-left { align-items: flex-start; }
+
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid #1E2129;
+  border-radius: 14px;
+  background: #FFE0C7;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  cursor: grab;
+  touch-action: none; /* a drag moves the button, not the page */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.bar.flung { transition: transform 0.3s ease-in, opacity 0.3s ease-in; opacity: 0; }
+.bar.dragging .toggle { cursor: grabbing; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+.toggle img { pointer-events: none; -webkit-user-drag: none; }
+.toggle img { width: 36px; height: 36px; display: block; }
+.toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px #2BA5F7, 0 4px 14px rgba(0, 0, 0, 0.28); }
+.toggle[aria-expanded="true"] { background: #F95428; }
+
+.menu {
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 14px;
+  background: #1E2129;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.who { margin: 0; }
+.who strong { color: #FFFFFF; }
+.note { margin: 0 0 6px; color: #A7ABB4; font-size: 13px; }
+.small { margin: 6px 0 0; color: #A7ABB4; font-size: 12px; line-height: 1.4; }
+.small a { color: #A7ABB4; text-decoration: underline; }
+
+.link {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 14px;
+  border: 1px solid #343846;
+  border-radius: 10px;
+  background: transparent;
+  color: #ECECEC;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.link:hover { background: #282C36; }
+.link:focus-visible, .small a:focus-visible { outline: none; box-shadow: 0 0 0 3px #2BA5F7; }
+.link.primary { background: #F95428; border-color: #F95428; color: #FFFFFF; }
+.link.primary:hover { background: #E0461C; }
+.link.hide { color: #A7ABB4; font-weight: 500; }

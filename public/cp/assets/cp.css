@@ -905,3 +905,11 @@ footer.page-footer {
 .bar-count { font-weight: 700; }
 .bar { grid-column: 1 / -1; display: block; width: 100%; height: 4px; }
 .bar rect { fill: var(--orange); }
+
+/* ---------- Preferences ---------- */
+fieldset.choices { border: 0; margin: 0 0 20px; padding: 0; display: grid; gap: 12px; }
+fieldset.choices legend { padding: 0; margin-bottom: 4px; }
+.choice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); cursor: pointer; line-height: 1.45; }
+.choice input { width: 20px; height: 20px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--orange); }
+.choice span { color: var(--text-muted); font-size: 0.95rem; }
+.choice strong { color: var(--text); }

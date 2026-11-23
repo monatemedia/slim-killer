@@ -35,6 +35,7 @@ final class HomeAction
                 'name' => $user->name,
                 'role' => $user->role->label(),
                 'codes_left' => $this->recoveryCodes->remaining($user->id),
+                'website_bar' => $user->websiteBar->value,
                 'csrf' => $session->csrfToken(),
             ]);
         }

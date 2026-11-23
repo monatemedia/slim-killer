@@ -62,6 +62,11 @@ final class UserRepository
     }
 
     /** Remembers the last code used, so the same code cannot be used twice. */
+    public function setWebsiteBar(int $id, WebsiteBar $bar): void
+    {
+        $this->pdo->prepare('UPDATE users SET website_bar = ? WHERE id = ?')->execute([$bar->value, $id]);
+    }
+
     public function recordTotpCounter(int $id, int $counter): void
     {
         $this->pdo->prepare('UPDATE users SET totp_last_counter = ? WHERE id = ?')->execute([$counter, $id]);
@@ -95,6 +100,7 @@ final class UserRepository
             $row['password_hash'] === null ? null : (string) $row['password_hash'],
             $row['totp_secret'] === null ? null : (string) $row['totp_secret'],
             $row['totp_last_counter'] === null ? null : (int) $row['totp_last_counter'],
+            WebsiteBar::tryFrom((string) ($row['website_bar'] ?? '')) ?? WebsiteBar::Show,
         );
     }
 }

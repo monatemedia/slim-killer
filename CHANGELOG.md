@@ -11,6 +11,28 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+### Added
+
+- **The website bar.** While someone is signed in to the control panel, a small button
+  sits in the bottom-right corner of their website. Tapped, it opens to Edit this page
+  (straight to that page's form), the control panel, Visits, and Hide this bar (until
+  the dashboard is next opened). Drag it anywhere to move it out of the way; it stays
+  there in that browser. Flick it off the screen to hide it. Visitors never see it or download it: `visits.js`
+  loads it only in a browser the panel marked as signed in, and the bar checks with
+  `/cp/me` before showing anything. It draws itself in a shadow root, so a site's
+  styles and the bar's can't touch. Sites get it with the `visits.js` they already
+  load; run `hammer migrate` and `hammer web:install` after updating. See "Website bar"
+  in the wiki.
+- **Signed-in browsers aren't counted** by the visit counter, whether the bar shows or
+  not. The Visits page has **Don't count this browser**, for a browser that should be
+  left out even when nobody is signed in.
+- **Preferences**, at `/cp/preferences` (from the dashboard): each person chooses
+  whether they see the website bar.
+- **`LOCAL_WEBSITE=1`** (local development only): on Herd, `slim-killer.test` serves
+  the built site beside `CONTENT_DIR` at the root, like a client's host, so "Web
+  address" links and the website bar can be tried on your own computer. Only when
+  `APP_URL` ends in `.test` or is `localhost`; the cover page shows otherwise.
+
 ### Changed
 
 - **Roadmap:** `fleet:test` dropped. Each host runs a pinned tag and each site will check

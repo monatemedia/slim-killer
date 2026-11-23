@@ -1,6 +1,9 @@
 {% extends 'cp/layout.twig' %}
 {% import 'cp/_fields.twig' as fields %}
 
+{# Signed out (or never signed in) in this browser: the website bar's marker goes. #}
+{% block body_attrs %} data-editor-bar="out"{% endblock %}
+
 {% block title %}Sign in{% endblock %}
 
 {% block main %}
