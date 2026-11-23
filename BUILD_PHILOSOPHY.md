@@ -160,7 +160,7 @@ of Slim Killer is exactly that.
 | Content editing (forms over Markdown files) | **No** | Schema in, file out. The only rules are "this field is required" and "this is an image". Keep it simple. |
 | Settings, users, the media list | **No** | Configuration and plain records. |
 | The deploy and release pipeline | **Yes** | Illegal transitions: a release cannot go live before its checksum is verified; a failed build must never replace a live site; a save must not overwrite a newer version. |
-| Edge Storefront (orders, stock, payments) | **Yes** | Invariants span entities (a reservation and its stock), money is involved, and mistakes carry consumer-law and POPIA consequences. |
+| Sign-in, two-factor and welcome links | **Yes** | Illegal transitions with real consequences: a welcome link works once, a two-factor code is never accepted twice, a reset clears everything at once. A mistake here lets intruders in. |
 
 When in doubt, start simple and add structure when a real rule appears. The domain-
 architecture course's signals for "this needs modelling": an invariant spans more than one
@@ -227,9 +227,10 @@ Every term has one meaning, written down in the
 [Writing for clients](https://github.com/monatemedia/slim-killer/wiki/Writing-for-clients), based on the ASD-STE100 Simplified
 Technical English writing rules.
 
-The same word can mean different things in different parts of the system: a "product" in
-the content editor is a page with photos; in the shop it is something with a price and
-stock. Each part keeps its own model rather than sharing one overloaded class.
+The same word can mean different things in different parts of the system: a "release" in
+publishing is a built copy of the website kept on the host; in development it is a tagged
+version of Slim Killer itself. Each part keeps its own model rather than sharing one
+overloaded class.
 
 ## Rule 12 — A Failure the Business Can Predict Is Not Exceptional
 

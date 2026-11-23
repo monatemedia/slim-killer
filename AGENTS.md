@@ -62,7 +62,7 @@ interface, container binding or domain object. It has two parts.
 
 7. **Ceremony must be paid for.** Content editing and settings stay simple: schema in,
    file out. Value objects, aggregates and exception trees are for the deploy pipeline and
-   the shop, where the rules are real.
+   sign-in, where the rules are real.
 8. **The dependency rule points inward.** Domain code imports nothing infrastructural and
    takes the current time as an argument.
 9. **Make illegal states unrepresentable.** No setters on domain objects.
