@@ -582,7 +582,9 @@ $product = [
       <strong>What we do instead:</strong> a site that shows products and takes enquiries,
       for dealerships, property and tours, runs on Slim Killer as it is (Catalogue mode).
       When a card is involved, the payment goes to Shopify, which is built to carry exactly
-      that risk. Your website stays static; the money never touches it.
+      that risk. When a business needs more than a shop (bookings, accounts, its own
+      rules), we build it in Laravel, on hosting made for it. Either way, your website
+      stays static and the money never touches it.
     </div>
   </div>
 </section>
