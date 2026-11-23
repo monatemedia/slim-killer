@@ -110,7 +110,11 @@ echo ""
 echo "Branch '$BRANCH_NAME' created and ready."
 echo "-------------------------------------------------------"
 echo "Next steps:"
-echo "1. Build your change on this branch, and add it to CHANGELOG.md under [Unreleased]."
+if [ -f CHANGELOG.md ]; then
+    echo "1. Build your change on this branch, and add it to CHANGELOG.md under [Unreleased]."
+else
+    echo "1. Build your change on this branch."
+fi
 echo "2. Commit and push:"
 echo "   git add ."
 echo "   git commit -m '$(commit_prefix_for_type "$TYPE"): <describe the change>'"

@@ -12,8 +12,16 @@
 #   ./feature-branch-stop.sh                # normal run
 #   ./feature-branch-stop.sh --skip-gates   # skip step 3 (asks you to confirm)
 #
-# Gates run only when the tool is installed, so the script works from
-# day one and picks each gate up as the project grows:
+# What "tested" means can differ per repo. A repo states it in its own
+# feature-branch-gates.sh (never overwritten by sync-branch-scripts.sh):
+#
+#   CHANGELOG_REQUIRED=0      # no CHANGELOG check (an Astro site, say)
+#   run_gates() {             # replaces the guessing below
+#       run_gate "Astro check" bash -c 'cd site && npx astro check'
+#   }
+#
+# Without that file, gates run only when the tool is installed, so the
+# script works from day one and picks each gate up as the project grows:
 #   - Pint style check     vendor/bin/pint --test
 #   - PHPStan              vendor/bin/phpstan analyse
 #   - Pest test suite      vendor/bin/pest --testsuite=Unit --parallel
@@ -31,6 +39,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=feature-branch-types.sh
 source "$SCRIPT_DIR/feature-branch-types.sh"
+
+# This repo's own gates and settings, if it has them.
+CHANGELOG_REQUIRED=1
+if [ -f "$SCRIPT_DIR/feature-branch-gates.sh" ]; then
+    # shellcheck source=/dev/null
+    source "$SCRIPT_DIR/feature-branch-gates.sh"
+fi
 
 START_TIME=$(date +%s)
 echo "==> Started: $(date '+%Y-%m-%d %H:%M:%S')"
@@ -90,18 +105,22 @@ if git show-ref --verify --quiet "refs/remotes/origin/$CURRENT_BRANCH"; then
     git pull --ff-only origin "$CURRENT_BRANCH"
 fi
 
-# 4. CHANGELOG.md check.
-echo "==> Checking whether CHANGELOG.md was updated on this branch..."
-MERGE_BASE="$(git merge-base "origin/$SOURCE_BRANCH" "$CURRENT_BRANCH")"
-if git diff --quiet "$MERGE_BASE" "$CURRENT_BRANCH" -- CHANGELOG.md; then
-    echo "WARNING: CHANGELOG.md has no changes on this branch."
-    read -r -p "Continue anyway? Only if nothing here is worth a changelog entry. [y/N] " ANSWER
-    if [[ ! "$ANSWER" =~ ^[Yy]$ ]]; then
-        echo "Aborting. Add an entry under [Unreleased] in CHANGELOG.md, commit, and re-run."
-        exit 1
-    fi
+# 4. CHANGELOG.md check (unless this repo keeps no changelog).
+if [ "$CHANGELOG_REQUIRED" != "1" ] || [ ! -f CHANGELOG.md ]; then
+    echo "==> This repository keeps no CHANGELOG.md: skipping that check."
 else
-    echo "==> CHANGELOG.md was updated."
+    echo "==> Checking whether CHANGELOG.md was updated on this branch..."
+    MERGE_BASE="$(git merge-base "origin/$SOURCE_BRANCH" "$CURRENT_BRANCH")"
+    if git diff --quiet "$MERGE_BASE" "$CURRENT_BRANCH" -- CHANGELOG.md; then
+        echo "WARNING: CHANGELOG.md has no changes on this branch."
+        read -r -p "Continue anyway? Only if nothing here is worth a changelog entry. [y/N] " ANSWER
+        if [[ ! "$ANSWER" =~ ^[Yy]$ ]]; then
+            echo "Aborting. Add an entry under [Unreleased] in CHANGELOG.md, commit, and re-run."
+            exit 1
+        fi
+    else
+        echo "==> CHANGELOG.md was updated."
+    fi
 fi
 
 # 5. Quality gates.
@@ -125,6 +144,9 @@ if [ "$SKIP_GATES" -eq 1 ]; then
         exit 1
     fi
     echo "==> Gates skipped."
+elif declare -F run_gates > /dev/null; then
+    echo "==> Running this repository's gates (feature-branch-gates.sh)."
+    run_gates
 else
     GATES_RUN=0
     if [ -f vendor/bin/pint ]; then

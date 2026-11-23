@@ -13,6 +13,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Added
 
+- **The branch scripts, for every Slim Killer repository.** `sync-branch-scripts.sh`
+  copies `feature-branch-start.sh`, `-stop.sh` and `-types.sh` from core into another
+  repository. A repository says what "tested" means in its own `feature-branch-gates.sh`
+  (`CHANGELOG_REQUIRED=0`, and a `run_gates` function); without one, the stop script
+  runs the gates it finds installed, as before. The start script mentions the changelog
+  only where there is one.
+
 - **The website bar.** While someone is signed in to the control panel, a small button
   sits in the bottom-right corner of their website. Tapped, it opens to Edit this page
   (straight to that page's form), the control panel, Visits, and Hide this bar (until
