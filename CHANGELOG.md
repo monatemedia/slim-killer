@@ -24,7 +24,8 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   hour. New commands: `hammer backup`, `hammer backup:check` (the test restore),
   `hammer backup:restore`, `hammer backup:connect` and `hammer backup:key`. `hammer doctor` warns when backups
   stop or stay on the server only. See the wiki page "Backups".
-- **Two rows in the comparison table:** password storage (Argon2id) and backups.
+- **The comparison table** gains password storage (Argon2id), backups and "if the host
+  is lost"; Photos names AVIF first and JPEG as the last fallback; its asterisk is orange.
 
 ## [0.2.1] - 2026-11-23
 
