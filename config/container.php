@@ -105,7 +105,7 @@ return [
 
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
-    WebRoot::class => factory(static fn(Releases $releases, Paths $paths, AppConfig $config): WebRoot => new WebRoot($releases, $paths, $config->hideFromSearch)),
+    WebRoot::class => factory(static fn(Releases $releases, Paths $paths, AppConfig $config): WebRoot => new WebRoot($releases, $paths, $config->hideFromSearch, $config->url)),
     AfterResponse::class => get(ShutdownAfterResponse::class),
     PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
     Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),

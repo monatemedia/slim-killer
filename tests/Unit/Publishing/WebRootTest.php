@@ -7,7 +7,7 @@ use SlimKiller\Publishing\WebRoot;
 use SlimKiller\Support\Paths;
 
 /** @return array{0: WebRoot, 1: string, 2: string, 3: Releases} the setup, the project, the web root and its releases */
-function webRootSetup(string $webRoot = 'public_html', bool $hideFromSearch = false): array
+function webRootSetup(string $webRoot = 'public_html', bool $hideFromSearch = false, string $siteUrl = ''): array
 {
     $project = temporaryFolder();
     mkdir($project . '/public/cp/assets', 0755, true);
@@ -19,7 +19,7 @@ function webRootSetup(string $webRoot = 'public_html', bool $hideFromSearch = fa
 
     $releases = new Releases($web, $paths->storage('releases.json'));
 
-    return [new WebRoot($releases, $paths, $hideFromSearch), $project, $web, $releases];
+    return [new WebRoot($releases, $paths, $hideFromSearch, $siteUrl), $project, $web, $releases];
 }
 
 it('routes /cp to the panel and everything else to the live release', function (): void {
@@ -45,6 +45,9 @@ it('loads the panel from the project folder, outside the web root', function ():
         ->toContain('require ' . var_export($project . '/public/cp/index.php', true) . ';')
         ->and(file_get_contents($web . '/cp/assets/cp.css'))->toBe('body{}')
         ->and($web . '/cp/assets/logo.svg')->toBeFile()
+        ->and((string) file_get_contents($web . '/cp/assets/.htaccess'))
+        ->toContain('<FilesMatch "^(visits\\.js|editor\\-bar\\.js|editor\\-bar\\.css)$">')
+        ->toContain('Header set Cache-Control "public, max-age=300"')
         ->and((string) file_get_contents($web . '/cp/visit.php'))
         ->toContain('require ' . var_export($project . '/public/cp/visit.php', true) . ';');
 });
@@ -112,3 +115,26 @@ it('asks search engines not to list a test copy, and only then', function (): vo
 it('reads HIDE_FROM_SEARCH from .env', function (string $value, bool $hidden): void {
     expect(SlimKiller\Support\AppConfig::fromEnvironment(['HIDE_FROM_SEARCH' => $value])->hideFromSearch)->toBe($hidden);
 })->with([['true', true], ['1', true], ['Yes', true], ['', false], ['false', false]]);
+
+it('moves the other form of the address, with or without www, to the one in APP_URL', function (string $url, string $from, string $to): void {
+    [$webRoot, , $web] = webRootSetup(siteUrl: $url);
+
+    $webRoot->install();
+    $htaccess = (string) file_get_contents($web . '/.htaccess');
+
+    expect($htaccess)->toContain('RewriteCond %{HTTP_HOST} ^' . $from . '$ [NC]')
+        ->toContain('RewriteRule ^(.*)$ ' . $to . '/$1 [R=301,L]')
+        // Certificates for both forms must still be issued, so that comes first.
+        ->and(strpos($htaccess, '.well-known'))->toBeLessThan(strpos($htaccess, 'HTTP_HOST'));
+})->with([
+    'bare address' => ['https://monatemedia.com', 'www\\.monatemedia\\.com', 'https://monatemedia.com'],
+    'www address' => ['https://www.example.co.za/', 'example\\.co\\.za', 'https://www.example.co.za'],
+]);
+
+it('moves nothing for a local address or none', function (string $url): void {
+    [$webRoot, , $web] = webRootSetup(siteUrl: $url);
+
+    $webRoot->install();
+
+    expect((string) file_get_contents($web . '/.htaccess'))->not->toContain('HTTP_HOST');
+})->with(['', 'https://slim-killer.test', 'http://localhost:8000', 'http://127.0.0.1']);

@@ -15,7 +15,8 @@ use SlimKiller\Support\Paths;
  *   WEB_ROOT/.htaccess       /cp to the control panel, everything else to the live release
  *   WEB_ROOT/cp/index.php    a two-line stub that loads the panel from the project folder
  *   WEB_ROOT/cp/visit.php    the same for the visit counter's front door
- *   WEB_ROOT/cp/assets/      the panel's CSS, JS and images, copied from the project
+ *   WEB_ROOT/cp/assets/      the panel's CSS, JS and images, copied from the project,
+ *                            with an .htaccess that keeps the website's own scripts fresh
  *   WEB_ROOT/cp/not-found.php  answers missing addresses with the 404 page and status
  *   WEB_ROOT/_site/          the releases (written by deploy:fetch)
  *   WEB_ROOT/404.html        a copy of the live release's 404 page (see Releases)
@@ -25,6 +26,12 @@ use SlimKiller\Support\Paths;
  */
 final class WebRoot
 {
+    /** Files in cp/assets that the website's own pages load, at a fixed address. */
+    public const array WEBSITE_FILES = ['visits.js', 'editor-bar.js', 'editor-bar.css'];
+
+    /** How long a CDN or browser may keep them: five minutes. */
+    public const int WEBSITE_FILES_SECONDS = 300;
+
     public const string MARKER = 'Written by Slim Killer (hammer web:install)';
 
     public function __construct(
@@ -32,6 +39,8 @@ final class WebRoot
         private readonly Paths $paths,
         /** HIDE_FROM_SEARCH in .env: a test copy, kept out of search results. */
         private readonly bool $hideFromSearch = false,
+        /** APP_URL in .env: the website's one address; the other www-form moves there. */
+        private readonly string $siteUrl = '',
     ) {}
 
     /**
@@ -83,6 +92,7 @@ final class WebRoot
         $done[] = 'Wrote cp/visit.php, where the website\'s visits.js sends what it counts.';
 
         Folder::copy($this->paths->root('public/cp/assets'), $root . '/cp/assets');
+        $this->write($root . '/cp/assets/.htaccess', $this->assetsHtaccess());
         $done[] = "Copied the control panel's assets to cp/assets.";
 
         $this->write($root . '/' . Releases::NOT_FOUND, $this->notFound());
@@ -119,6 +129,7 @@ final class WebRoot
             '# Certificate renewals (Let\'s Encrypt) must reach their files.',
             'RewriteRule ^\.well-known/ - [L]',
             '',
+            ...$this->oneAddress(),
             '# The control panel: its real files (assets) as they are, everything else to its',
             '# front controller.',
             'RewriteCond %{REQUEST_FILENAME} -f',
@@ -130,6 +141,54 @@ final class WebRoot
             'RewriteRule ^(.*)$ ' . Releases::FOLDER . '/$1 [L]',
             '',
         ]);
+    }
+
+    /**
+     * The files the website's pages load (the visit counter and the website bar) keep a
+     * fixed address, so without this a CDN or browser keeps an old copy for days after
+     * an update (Hostinger's CDN: 7 days). Five minutes is short enough for an update to
+     * reach everyone soon, and long enough to save every page view a request. The panel's
+     * own files carry their change time in their address, so they can be kept long.
+     */
+    private function assetsHtaccess(): string
+    {
+        return implode("\n", [
+            '# ' . self::MARKER . '. Run that command again rather than editing.',
+            '<IfModule mod_headers.c>',
+            '<FilesMatch "^(' . implode('|', array_map(static fn(string $file): string => preg_quote($file, '/'), self::WEBSITE_FILES)) . ')$">',
+            'Header set Cache-Control "public, max-age=' . self::WEBSITE_FILES_SECONDS . '"',
+            '</FilesMatch>',
+            '</IfModule>',
+            '',
+        ]);
+    }
+
+    /**
+     * One address for the website, the one in APP_URL: the www- or bare form of it moves
+     * there with a permanent redirect. Two addresses split search results and, since a
+     * browser keeps storage and sign-ins per address, the website bar would show on one
+     * and not the other. Nothing for a local address (.test, localhost) or an IP.
+     *
+     * @return list<string>
+     */
+    private function oneAddress(): array
+    {
+        $parts = parse_url($this->siteUrl);
+        $host = is_array($parts) ? strtolower((string) ($parts['host'] ?? '')) : '';
+        $scheme = is_array($parts) && ($parts['scheme'] ?? '') === 'http' ? 'http' : 'https';
+        if ($host === '' || ! str_contains($host, '.') || str_ends_with($host, '.test')
+            || str_starts_with($host, 'localhost') || filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return [];
+        }
+
+        $other = str_starts_with($host, 'www.') ? substr($host, 4) : 'www.' . $host;
+
+        return [
+            '# One address for the website (APP_URL): ' . $other . ' moves to ' . $host . '.',
+            'RewriteCond %{HTTP_HOST} ^' . preg_quote($other, '/') . '$ [NC]',
+            'RewriteRule ^(.*)$ ' . $scheme . '://' . $host . '/$1 [R=301,L]',
+            '',
+        ];
     }
 
     /** Whether a release is live, so the website itself is already in place. */
