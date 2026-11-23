@@ -12,7 +12,13 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\PwnedPasswords;
+use SlimKiller\Backups\BackupEncryption;
 use SlimKiller\Console\Application;
+use SlimKiller\Console\Commands\BackupCheckCommand;
+use SlimKiller\Console\Commands\BackupCommand;
+use SlimKiller\Console\Commands\BackupConnectCommand;
+use SlimKiller\Console\Commands\BackupKeyCommand;
+use SlimKiller\Console\Commands\BackupRestoreCommand;
 use SlimKiller\Console\Commands\CronHeartbeatCommand;
 use SlimKiller\Console\Commands\CronRunCommand;
 use SlimKiller\Console\Commands\DeployFetchCommand;
@@ -27,6 +33,7 @@ use SlimKiller\Console\Commands\VisitsSampleCommand;
 use SlimKiller\Console\Commands\WebInstallCommand;
 use SlimKiller\Content\ContentLocation;
 use SlimKiller\Cron\CronRunner;
+use SlimKiller\Cron\Jobs\BackupJob;
 use SlimKiller\Cron\Jobs\ContactFormJob;
 use SlimKiller\Cron\Jobs\DeployFetchJob;
 use SlimKiller\Cron\Jobs\HeartbeatJob;
@@ -35,6 +42,7 @@ use SlimKiller\Cron\Jobs\VisitsJob;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
+use SlimKiller\Doctor\Checks\BackupsCheck;
 use SlimKiller\Doctor\Checks\CronCheck;
 use SlimKiller\Doctor\Checks\DisabledFunctionsCheck;
 use SlimKiller\Doctor\Checks\ExtensionsCheck;
@@ -114,6 +122,10 @@ return [
     // Days follow the business's time zone (TIMEZONE in .env), not the server's.
     SiteTime::class => factory(static fn(AppConfig $config): SiteTime => SiteTime::named($config->timezone)),
 
+    // --- Backups -----------------------------------------------------------------
+    // The copies sent to Google Drive are encrypted with BACKUP_KEY.
+    BackupEncryption::class => factory(static fn(AppConfig $config): BackupEncryption => new BackupEncryption($config->backupKey)),
+
     // --- Console -----------------------------------------------------------------
     // The commands hammer knows about. Sites add their own with DI\add([...]).
     'console.commands' => add([
@@ -129,6 +141,11 @@ return [
         get(WebInstallCommand::class),
         get(VisitsCommand::class),
         get(VisitsSampleCommand::class),
+        get(BackupCommand::class),
+        get(BackupCheckCommand::class),
+        get(BackupConnectCommand::class),
+        get(BackupKeyCommand::class),
+        get(BackupRestoreCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 
@@ -140,6 +157,7 @@ return [
         get(ContactFormJob::class),
         get(VisitsJob::class),
         get(VisitReportJob::class),
+        get(BackupJob::class),
         get(DeployFetchJob::class),
     ]),
     CronRunner::class => autowire()->constructorParameter('jobs', get('cron.jobs')),
@@ -167,6 +185,7 @@ return [
         get(StorageCheck::class),
         get(GitHubReachableCheck::class),
         get(CronCheck::class),
+        get(BackupsCheck::class),
     ]),
 
     Doctor::class => autowire()

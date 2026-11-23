@@ -11,6 +11,12 @@ final readonly class AppConfig
 {
     public const string DEFAULT_NAME = 'Slim Killer';
 
+    /** The folder in the root of the site's Google Drive that backups go to. */
+    public const string DEFAULT_BACKUP_FOLDER = 'Website backups';
+
+    /** How many backups Google Drive keeps: two years of one a day. */
+    public const int DEFAULT_BACKUPS_KEPT = 731;
+
     public function __construct(
         /** The website's address, without a trailing slash; empty before install. */
         public string $url = '',
@@ -42,6 +48,15 @@ final readonly class AppConfig
         public string $visitReportTo = '',
         /** How many months single visit events are kept; null keeps them for good. 25 meets France's rules. */
         public ?int $visitEventsMonths = null,
+        /** A "Desktop app" OAuth client in the site's own Google account. Empty: backups stay on this server. */
+        public string $googleClientId = '',
+        public string $googleClientSecret = '',
+        /** The folder in the root of that Google Drive the backups go to. */
+        public string $backupFolder = self::DEFAULT_BACKUP_FOLDER,
+        /** How many backups that folder keeps; the oldest go first. */
+        public int $backupsKept = self::DEFAULT_BACKUPS_KEPT,
+        /** 64 hexadecimal characters that encrypt the copies sent to Google Drive. Kept in a password manager too. */
+        public string $backupKey = '',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -71,6 +86,11 @@ final readonly class AppConfig
             $text('MAIL_FROM'),
             $text('VISIT_REPORT_TO'),
             ctype_digit($text('VISIT_EVENTS_MONTHS')) && (int) $text('VISIT_EVENTS_MONTHS') > 0 ? (int) $text('VISIT_EVENTS_MONTHS') : null,
+            $text('GOOGLE_CLIENT_ID'),
+            $text('GOOGLE_CLIENT_SECRET'),
+            $text('BACKUP_FOLDER', self::DEFAULT_BACKUP_FOLDER),
+            ctype_digit($text('BACKUPS_KEPT')) && (int) $text('BACKUPS_KEPT') > 0 ? (int) $text('BACKUPS_KEPT') : self::DEFAULT_BACKUPS_KEPT,
+            $text('BACKUP_KEY'),
         );
     }
 

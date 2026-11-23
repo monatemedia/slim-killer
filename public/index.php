@@ -359,7 +359,7 @@ $product = [
   table.three td { width: 27%; }
   .security p { margin: 0; font-size: 1.12rem; }
   .security p + p { margin-top: 0.9rem; }
-  .security .star { text-decoration: none; font-weight: 800; color: var(--orange); }
+  .star { text-decoration: none; font-weight: 800; color: var(--orange); }
   .footnote { margin: 1rem 0 0; font-size: 0.85rem; color: var(--muted); }
   ul.reasons { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
   ul.reasons li { padding-left: 1.6rem; position: relative; }
@@ -597,7 +597,7 @@ $product = [
       <table class="compare three">
         <thead><tr><th></th><th>WordPress</th><th class="us">Slim Killer</th><th>Laravel</th></tr></thead>
         <tbody>
-          <tr><td>Command line</td><td>Not in the download. WP-CLI is installed separately</td><td class="us"><code>hammer</code>: doctor, install, users, cron, deploys, rollback, visits</td><td>Artisan</td></tr>
+          <tr><td>Command line</td><td>Not in the download. WP-CLI is installed separately</td><td class="us"><code>hammer</code>: doctor, install, users, cron, deploys, rollback, visits, backups</td><td>Artisan</td></tr>
           <tr><td>Middleware</td><td>None. Plugins hook in by priority number</td><td class="us">PSR-15 middleware, in one readable order</td><td>Middleware</td></tr>
           <tr><td>Dependency injection container</td><td>None. Global functions and hooks</td><td class="us">PHP-DI, wired once at the entry point</td><td>The service container</td></tr>
           <tr><td>Automated tests</td><td>None for your site. Core's own suite is a separate setup</td><td class="us">Pest unit and real-browser tests, run before every merge</td><td>PHPUnit or Pest, set up in every new app</td></tr>
@@ -606,11 +606,14 @@ $product = [
           <tr><td>Database migrations</td><td>None. Each plugin manages its own tables</td><td class="us">Plain SQL migrations, <code>hammer migrate</code></td><td>Migrations</td></tr>
           <tr><td>Form protection</td><td>Depends on each plugin</td><td class="us">CSRF tokens in the panel; origin checks and bot traps on public forms</td><td>CSRF tokens on every form</td></tr>
           <tr><td>Security headers</td><td>None by default</td><td class="us">A strict Content Security Policy on every panel page</td><td>None by default</td></tr>
-          <tr><td>Photos</td><td>JPEG in several sizes; WebP or AVIF need a plugin</td><td class="us">WebP, sized for each screen; location data removed</td><td>None</td></tr>
+          <tr><td>Photos</td><td>JPEG in several sizes; WebP or AVIF need a plugin</td><td class="us">AVIF first, WebP next, JPEG as the last fallback, sized for each screen; location data removed</td><td>None</td></tr>
           <tr><td>Two-factor sign-in</td><td>A plugin</td><td class="us">Required for everyone, with recovery codes and breached passwords refused</td><td>In the starter kits</td></tr>
+          <tr><td>Password storage</td><td>bcrypt, since 6.8 (phpass before)</td><td class="us">Argon2id<a href="#argon" class="star" aria-label="See the note on Argon2id">*</a>, the first choice of OWASP's guidance</td><td>bcrypt by default; Argon2id is one setting</td></tr>
           <tr><td>Checking a host before you install</td><td>Site Health, once it's installed</td><td class="us"><code>hammer doctor</code>: PHP for web and command line, cron, rewrites, outgoing connections</td><td>None</td></tr>
           <tr><td>Visitor statistics</td><td>None. A plugin or Google Analytics</td><td class="us">Cookieless visit counter, Visits page and a morning email</td><td>None</td></tr>
           <tr><td>Deploys and rollback</td><td>None</td><td class="us">Fetch a finished build, switch in one step, roll back with one command</td><td>Paid services (Forge, Laravel Cloud)</td></tr>
+          <tr><td>Backups</td><td>None in core. A plugin, often paid</td><td class="us">The database, daily: checked, encrypted (AES-256) and kept on the client's own Google Drive, with a test restore</td><td>None built in. A package (Spatie's laravel-backup)</td></tr>
+          <tr><td>If the host is lost</td><td>The site lives on the host: restore a backup, if there is one</td><td class="us">The host is a copy. Code and pages are in GitHub, the database on Google Drive: a new host is rebuilt from both</td><td>Code in Git; the database and uploads need their own backups</td></tr>
           <tr><td>A client editing their own pages</td><td>Yes: the block editor, WordPress's real strength</td><td class="us">A phone-friendly panel, built from the site's own schema</td><td>Nova, a paid add-on</td></tr>
           <tr><td>Plugin marketplace</td><td>Yes, tens of thousands</td><td class="us">No, on purpose</td><td>Composer packages</td></tr>
         </tbody>

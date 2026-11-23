@@ -34,12 +34,24 @@ final class CurlHttpClient implements HttpClient
         if ($body !== null) {
             $options[CURLOPT_POSTFIELDS] = $body;
         }
+        // The headers of the last response only: a redirect starts the list again.
+        $received = [];
+        $options[CURLOPT_HEADERFUNCTION] = static function ($handle, string $line) use (&$received): int {
+            if (str_starts_with($line, 'HTTP/')) {
+                $received = [];
+            } elseif (str_contains($line, ':')) {
+                [$name, $value] = explode(':', $line, 2);
+                $received[strtolower(trim($name))] = trim($value);
+            }
+
+            return strlen($line);
+        };
         curl_setopt_array($handle, $options);
         $response = curl_exec($handle);
         $status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         $error = curl_error($handle);
 
-        return new Response($status, is_string($response) ? $response : '', $error);
+        return new Response($status, is_string($response) ? $response : '', $error, $received);
     }
 
     public function download(string $url, array $headers, string $path, int $timeoutSeconds = 300): Response

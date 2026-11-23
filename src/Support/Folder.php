@@ -15,6 +15,14 @@ use RuntimeException;
  */
 final class Folder
 {
+    /** Removes a file if it is there; a file that is not there is not a problem. */
+    public static function removeFile(string $file): void
+    {
+        if (is_file($file)) {
+            unlink($file);
+        }
+    }
+
     public static function delete(string $folder): void
     {
         if (! is_dir($folder)) {

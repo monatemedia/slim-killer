@@ -11,6 +11,22 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+### Added
+
+- **Backups.** Cron backs up the control panel's database every day after 02:00 (site
+  time): copied by SQLite itself (`VACUUM INTO`), checked, gzipped, the last 7 kept in
+  `storage/backups/`. With `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` set and
+  `hammer backup:connect` run once, each one also goes to a folder in the root of the
+  site's own Google Drive (`BACKUP_FOLDER`), encrypted with AES-256-GCM and the site's
+  `BACKUP_KEY`, which keeps the last 731 (`BACKUPS_KEPT`).
+  Uploads use Google's web API from PHP with the `drive.file` permission only, and are
+  checked against Google's checksum. A backup that doesn't arrive is sent again the next
+  hour. New commands: `hammer backup`, `hammer backup:check` (the test restore),
+  `hammer backup:restore`, `hammer backup:connect` and `hammer backup:key`. `hammer doctor` warns when backups
+  stop or stay on the server only. See the wiki page "Backups".
+- **The comparison table** gains password storage (Argon2id), backups and "if the host
+  is lost"; Photos names AVIF first and JPEG as the last fallback; its asterisk is orange.
+
 ## [0.2.1] - 2026-11-23
 
 Two fixes, found on the first update to `v0.2.0`. After updating, run `hammer web:install`
