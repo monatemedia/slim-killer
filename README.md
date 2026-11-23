@@ -181,11 +181,16 @@ php hammer user:reset --email=client@example.com
 php hammer migrate             # bring the database up to date
 php hammer cron:run            # the one cron line, every minute: runs whatever is due (-v lists each job)
 php hammer visits              # what the visit counter counted in the last 7 days (--days=30)
+php hammer backup              # back up the database now, here and to Google Drive
+php hammer backup:check        # the test restore: open the newest backup in a temporary copy
+php hammer backup:restore      # list the backups; <name> --yes puts one back
+php hammer backup:connect      # connect the site's own Google Drive (see the wiki page Backups)
+php hammer backup:key          # make the key that encrypts backups; keep it in your password manager
 ```
 
 Nobody types a password on the server: every account starts from a welcome link, and the person chooses their own password in the browser.
 
-Planned: `deploy:fetch`, `deploy:rollback`, `cp:update`, `backup:run` and `fleet:test`.
+Planned: `cp:update`.
 
 And yes, `php hammer artisan` is a thing. Try it.
 
@@ -228,7 +233,10 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [x] Website bar: Edit this page from the website, and signed-in people aren't counted as visitors
 - [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
 - [ ] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
-- [ ] Panel self-update, and backups with a test restore
+- [x] Daily encrypted backups to the site's own Google Drive, with a test restore
+- [ ] Alerts by email when a job fails or cron goes quiet
+- [ ] Choose when the visit report comes: daily, weekly or monthly, at an hour
+- [ ] Panel self-update
 - [ ] First client site live on its own hosting (already moved to Astro 7)
 - [ ] Catalogue mode: products and enquiries, for dealerships, property and tours (card payments go to Shopify, never Slim Killer)
 
