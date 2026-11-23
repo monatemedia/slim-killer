@@ -496,7 +496,7 @@ $product = [
       <div class="fig"><b>~1 s</b><span>to commit a client's save to GitHub from shared hosting</span></div>
       <div class="fig"><b>2–3 s</b><span>to fetch, unpack and switch a real 30 MB, 217-file client site</span></div>
       <div class="fig"><b>0</b><span>plugins, databases or PHP between a visitor and the page</span></div>
-      <div class="fig"><b><?= $testCount ?></b><span>automated tests<?= $checkCount > 0 ? ', and ' . $checkCount . ' host checks in <code>hammer doctor</code>' : '' ?></span></div>
+      <div class="fig"><b><?= $testCount ?></b><span>behaviours under test<?= $checkCount > 0 ? ', and ' . $checkCount . ' host checks in <code>hammer doctor</code>' : '' ?></span></div>
     </div>
   </div>
 </section>
@@ -551,7 +551,7 @@ $product = [
           <tr><td>Visitor statistics</td><td>Google Analytics or a plugin, and a cookie banner to go with it</td><td class="us">Built in: no cookies, no internet addresses kept, a short email every morning</td></tr>
           <tr><td>Enquiries</td><td>Often stored in the database by a forms plugin, for anyone who gets in</td><td class="us">Emailed, not stored</td></tr>
           <tr><td>Updates</td><td>Core, the theme and every plugin, each on its own schedule</td><td class="us">One tagged release for the panel; the pages have nothing to update</td></tr>
-          <tr><td>Undo</td><td>Restore a backup, if there is one</td><td class="us">Every save is a Git commit; every release is kept</td></tr>
+          <tr><td>Undo</td><td>Revisions for text; for anything else, a backup</td><td class="us">Every save is a Git commit; every release is kept</td></tr>
           <tr><td>Hosting</td><td>Any PHP host</td><td class="us">Any PHP host. <a href="<?= $wiki ?>/Host-requirements"><code>hammer doctor</code> checks it</a></td></tr>
         </tbody>
       </table>
@@ -600,10 +600,13 @@ $product = [
           <tr><td>Command line</td><td>Not in the download. WP-CLI is installed separately</td><td class="us"><code>hammer</code>: doctor, install, users, cron, deploys, rollback, visits</td><td>Artisan</td></tr>
           <tr><td>Middleware</td><td>None. Plugins hook in by priority number</td><td class="us">PSR-15 middleware, in one readable order</td><td>Middleware</td></tr>
           <tr><td>Dependency injection container</td><td>None. Global functions and hooks</td><td class="us">PHP-DI, wired once at the entry point</td><td>The service container</td></tr>
-          <tr><td>Automated tests</td><td>None for your site. Core's own suite is a separate setup</td><td class="us">Pest unit and real-browser tests (<?= $testCount ?> today), run before every merge</td><td>PHPUnit or Pest, set up in every new app</td></tr>
+          <tr><td>Automated tests</td><td>None for your site. Core's own suite is a separate setup</td><td class="us">Pest unit and real-browser tests, run before every merge</td><td>PHPUnit or Pest, set up in every new app</td></tr>
           <tr><td>Static analysis and formatting</td><td>None</td><td class="us">PHPStan and Pint, with zero warnings to merge</td><td>Pint. Larastan is a community package</td></tr>
           <tr><td>Instructions for AI coding agents</td><td>Separate agent skills and plugins</td><td class="us">In the repository: <code>AGENTS.md</code>, the rules and the wiki, written for people and agents alike</td><td>Laravel Boost, a separate first-party package</td></tr>
           <tr><td>Database migrations</td><td>None. Each plugin manages its own tables</td><td class="us">Plain SQL migrations, <code>hammer migrate</code></td><td>Migrations</td></tr>
+          <tr><td>Form protection</td><td>Depends on each plugin</td><td class="us">CSRF tokens in the panel; origin checks and bot traps on public forms</td><td>CSRF tokens on every form</td></tr>
+          <tr><td>Security headers</td><td>None by default</td><td class="us">A strict Content Security Policy on every panel page</td><td>None by default</td></tr>
+          <tr><td>Photos</td><td>JPEG in several sizes; WebP or AVIF need a plugin</td><td class="us">WebP, sized for each screen; location data removed</td><td>None</td></tr>
           <tr><td>Two-factor sign-in</td><td>A plugin</td><td class="us">Required for everyone, with recovery codes and breached passwords refused</td><td>In the starter kits</td></tr>
           <tr><td>Checking a host before you install</td><td>Site Health, once it's installed</td><td class="us"><code>hammer doctor</code>: PHP for web and command line, cron, rewrites, outgoing connections</td><td>None</td></tr>
           <tr><td>Visitor statistics</td><td>None. A plugin or Google Analytics</td><td class="us">Cookieless visit counter, Visits page and a morning email</td><td>None</td></tr>
