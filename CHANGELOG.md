@@ -45,6 +45,9 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   publishing and sign-in.
 - **The cover page's "What comes in the box"** has a Middleware row: WordPress's hooks
   against Slim Killer's PSR-15 middleware and Laravel's, in the table's short style.
+- **"What comes in the box"** gains Form protection, Security headers and Photos rows;
+  the Undo row now credits WordPress's revisions; the test figure reads "behaviours under
+  test" (each written test, where Pest also counts every variation it runs).
 - **"What we do instead"** under the WooCommerce reasons also names Laravel, for
   businesses that need more than a shop.
 - **No client names in the product.** Examples in code comments, the Glossary and an
