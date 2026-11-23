@@ -35,6 +35,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ### Changed
 
+- **"Not looking AI-made"**, a design brief in the wiki: the habits that make a page look
+  machine-made (gradients, card grids, stock section order, stock or AI images, scroll
+  animation, em dashes and stock phrases), and what to do instead. `AGENTS.md` now has
+  "Building a client's website": an AI assistant asks the developer at the start of
+  each site and follows the brief unless they opt out. The status line is brought up to
+  date too.
+
 - **Roadmap:** `fleet:test` dropped. Each host runs a pinned tag and each site will check
   itself with `hammer site:check`, so testing every client site from one place isn't
   worth keeping their content together. The first client site's item no longer names
