@@ -39,6 +39,12 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   itself with `hammer site:check`, so testing every client site from one place isn't
   worth keeping their content together. The first client site's item no longer names
   the client.
+- **No more "the shop".** Slim Killer doesn't build shops (card payments go to Shopify),
+  so the cover page, `BUILD_PHILOSOPHY.md`, `AGENTS.md` and the wiki (Glossary, Rule 7,
+  Rule 10) no longer use one as an example. Where the full modelling rules pay off is now
+  publishing and sign-in.
+- **The cover page's "What comes in the box"** has a Middleware row: WordPress's hooks
+  against Slim Killer's PSR-15 middleware and Laravel's.
 - **No client names in the product.** Examples in code comments, the Glossary and an
   older changelog entry use neutral names ("Acme Tours", `/destinations/iceland/`).
 

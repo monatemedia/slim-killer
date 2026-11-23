@@ -596,6 +596,7 @@ $product = [
         <thead><tr><th></th><th>WordPress</th><th class="us">Slim Killer</th><th>Laravel</th></tr></thead>
         <tbody>
           <tr><td>Command line</td><td>Not in the download. WP-CLI is installed separately</td><td class="us"><code>hammer</code>: doctor, install, users, cron, deploys, rollback, visits</td><td>Artisan</td></tr>
+          <tr><td>Middleware: what every request passes through</td><td>Hooks: any plugin can step in almost anywhere, in an order set by priority numbers. When two plugins clash, the site breaks and nobody can see why</td><td class="us">Standard PHP middleware (PSR-15): security headers, sessions, the forgery check and sign-in, in one order you can read top to bottom</td><td>Middleware</td></tr>
           <tr><td>Dependency injection container</td><td>None. Global functions and hooks</td><td class="us">PHP-DI, wired once at the entry point</td><td>The service container</td></tr>
           <tr><td>Automated tests</td><td>None for your site. Core's own suite is a separate setup</td><td class="us">Pest unit and real-browser tests (<?= $testCount ?> today), run before every merge</td><td>PHPUnit or Pest, set up in every new app</td></tr>
           <tr><td>Static analysis and formatting</td><td>None</td><td class="us">PHPStan and Pint, with zero warnings to merge</td><td>Pint. Larastan is a community package</td></tr>
@@ -665,8 +666,9 @@ $product = [
       </div>
     </div>
     <div class="note">
-      Content editing stays simple: schema in, file out. The deploy pipeline and the shop get the
-      full treatment, because that's where a mistake loses a client's work or money. The reasoning
+      Content editing stays simple: schema in, file out. Publishing and sign-in get the full
+      treatment, because that's where a mistake loses a client's work or lets hackers and
+      crooks in. The reasoning
       is in <a href="<?= $repo ?>/blob/main/BUILD_PHILOSOPHY.md"><code>BUILD_PHILOSOPHY.md</code></a>.
     </div>
   </div>
