@@ -19,8 +19,9 @@ Slim Killer is a small, opinionated replacement for WordPress. This repository i
 - Saving commits the content to the client site's Git repository, GitHub Actions builds
   the site, and the host fetches the finished build. The host only needs PHP.
 
-**Status:** early. `hammer`, the host checker (`hammer doctor`), installation and the
-control panel's sign-in with two-factor exist. Editing content is next. When a section
+**Status:** live on its first website. `hammer`, the host checker (`hammer doctor`),
+installation, sign-in with two-factor, editing content and photos, publishing, the visit
+counter and the website bar exist; see the roadmap in `README.md`. When a section
 below describes something that does not exist yet, follow it as the plan, and do not
 invent code that the plan does not ask for.
 
@@ -37,6 +38,22 @@ invent code that the plan does not ask for.
 - Core updates must never touch a client's `content/`.
 - In a client site, never patch core files in place. Report the gap so it is fixed in
   core and released.
+
+## Building a client's website
+
+Before designing or writing anything for a client's website (a new site, a new page, a
+redesign, new copy), **ask the developer**:
+
+> "Shall I follow Slim Killer's design brief, *Not looking AI-made* (in the wiki), so
+> this site doesn't look like every other AI-built site? It's on unless you say no."
+
+- Ask once per site, at the start, even when the developer didn't bring it up.
+- If they say yes, or don't answer, follow every rule on that wiki page, and offer two
+  or three short design directions before building.
+- If they say no, don't follow it for that site, and say once that it's off.
+- Note the answer in the site's own `AGENTS.md`, so the next session doesn't ask again.
+
+The brief lives only on that wiki page; don't copy its rules into other files.
 
 ## How to build
 
