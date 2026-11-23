@@ -44,7 +44,7 @@
         "check": [
             "pint --test",
             "phpstan analyse --no-progress",
-            "pest --testsuite=Unit --parallel"
+            "pest --testsuite=Unit --parallel --fail-on-warning"
         ]
     },
     "config": {
