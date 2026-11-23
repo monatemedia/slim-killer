@@ -11,6 +11,27 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-23
+
+Two fixes, found on the first update to `v0.2.0`. After updating, run `hammer web:install`
+and flush the host's CDN once.
+
+### Fixed
+
+- **The website's own scripts reach visitors soon after an update.** `hammer web:install`
+  now writes `cp/assets/.htaccess`, which lets a CDN or browser keep `visits.js`,
+  `editor-bar.js` and `editor-bar.css` for five minutes instead of the host's default
+  (a week on Hostinger's CDN). After updating to `v0.2.0`, monatemedia.com showed no
+  website bar until the CDN was flushed and the page reloaded with Ctrl+F5. The panel's
+  own files already carry their change time in their address. The wiki's "Updating
+  Slim Killer" now says to flush the CDN.
+- **One address for the website.** `hammer web:install` now moves the other form of the
+  address to the one in `APP_URL` with a permanent redirect: `www.example.com` to
+  `example.com`, or the other way round when `APP_URL` has `www`. monatemedia.com
+  answered on both, which splits search results and, because a browser keeps storage
+  and sign-ins per address, showed the website bar on one and not the other. Nothing
+  changes for a local address (`.test`, `localhost`) or an IP.
+
 ## [0.2.0] - 2026-11-23
 
 The website bar: people signed in to the control panel get a small button on their own
