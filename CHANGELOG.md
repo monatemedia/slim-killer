@@ -11,29 +11,26 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-23
+
+The website bar: people signed in to the control panel get a small button on their own
+website that takes them straight to the page's form, and their visits aren't counted.
+Also Preferences, a way to try a site on your own computer (`LOCAL_WEBSITE`), branch
+scripts shared by every Slim Killer repository, and a new cover page section on
+WooCommerce. After updating, run `hammer migrate` (one new migration) and
+`hammer web:install` (new files for the website bar). Sites need no change: the bar
+comes with the `visits.js` they already load.
+
 ### Added
-
-- **A warning fails the tests.** `composer check` and `feature-branch-stop.sh` run Pest
-  with `--fail-on-warning`. In parallel a PHP warning isn't shown at all, so without
-  this one could reach `main` unseen (it happened in the contact form helper).
-
-- **The branch scripts, for every Slim Killer repository.** `sync-branch-scripts.sh`
-  copies `feature-branch-start.sh`, `-stop.sh` and `-types.sh` from core into another
-  repository. A repository says what "tested" means in its own `feature-branch-gates.sh`
-  (`CHANGELOG_REQUIRED=0`, and a `run_gates` function); without one, the stop script
-  runs the gates it finds installed, as before. The start script mentions the changelog
-  only where there is one.
 
 - **The website bar.** While someone is signed in to the control panel, a small button
   sits in the bottom-right corner of their website. Tapped, it opens to Edit this page
   (straight to that page's form), the control panel, Visits, and Hide this bar (until
   the dashboard is next opened). Drag it anywhere to move it out of the way; it stays
-  there in that browser. Flick it off the screen to hide it. Visitors never see it or download it: `visits.js`
-  loads it only in a browser the panel marked as signed in, and the bar checks with
-  `/cp/me` before showing anything. It draws itself in a shadow root, so a site's
-  styles and the bar's can't touch. Sites get it with the `visits.js` they already
-  load; run `hammer migrate` and `hammer web:install` after updating. See "Website bar"
-  in the wiki.
+  there in that browser. Flick it off the screen to hide it. Visitors never see it or
+  download it: `visits.js` loads it only in a browser the panel marked as signed in, and
+  the bar checks with `/cp/me` before showing anything. It draws itself in a shadow
+  root, so a site's styles and the bar's can't touch. See "Website bar" in the wiki.
 - **Signed-in browsers aren't counted** by the visit counter, whether the bar shows or
   not. The Visits page has **Don't count this browser**, for a browser that should be
   left out even when nobody is signed in.
@@ -43,6 +40,15 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   the built site beside `CONTENT_DIR` at the root, like a client's host, so "Web
   address" links and the website bar can be tried on your own computer. Only when
   `APP_URL` ends in `.test` or is `localhost`; the cover page shows otherwise.
+- **The branch scripts, for every Slim Killer repository.** `sync-branch-scripts.sh`
+  copies `feature-branch-start.sh`, `-stop.sh` and `-types.sh` from core into another
+  repository. A repository says what "tested" means in its own `feature-branch-gates.sh`
+  (`CHANGELOG_REQUIRED=0`, and a `run_gates` function); without one, the stop script
+  runs the gates it finds installed, as before. The start script mentions the changelog
+  only where there is one.
+- **A warning fails the tests.** `composer check` and `feature-branch-stop.sh` run Pest
+  with `--fail-on-warning`. In parallel a PHP warning isn't shown at all, so without
+  this one could reach `main` unseen (it happened in the contact form helper).
 
 ### Changed
 
@@ -52,22 +58,18 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   "Building a client's website": an AI assistant asks the developer at the start of
   each site and follows the brief unless they opt out. The status line is brought up to
   date too.
-
-- **Roadmap:** `fleet:test` dropped. Each host runs a pinned tag and each site will check
-  itself with `hammer site:check`, so testing every client site from one place isn't
-  worth keeping their content together. The first client site's item no longer names
-  the client.
+- **The cover page:** why we don't build WooCommerce shops, and what we do instead
+  (Catalogue mode, Shopify for card payments, Laravel for businesses that need more);
+  "What comes in the box" gains Middleware, Form protection, Security headers and Photos
+  rows; the Undo row credits WordPress's revisions; the test figure reads "behaviours
+  under test" (each written test, where Pest also counts every variation it runs).
 - **No more "the shop".** Slim Killer doesn't build shops (card payments go to Shopify),
   so the cover page, `BUILD_PHILOSOPHY.md`, `AGENTS.md` and the wiki (Glossary, Rule 7,
   Rule 10) no longer use one as an example. Where the full modelling rules pay off is now
   publishing and sign-in.
-- **The cover page's "What comes in the box"** has a Middleware row: WordPress's hooks
-  against Slim Killer's PSR-15 middleware and Laravel's, in the table's short style.
-- **"What comes in the box"** gains Form protection, Security headers and Photos rows;
-  the Undo row now credits WordPress's revisions; the test figure reads "behaviours under
-  test" (each written test, where Pest also counts every variation it runs).
-- **"What we do instead"** under the WooCommerce reasons also names Laravel, for
-  businesses that need more than a shop.
+- **Roadmap:** `fleet:test` dropped. Each host runs a pinned tag and each site will check
+  itself with `hammer site:check`, so testing every client site from one place isn't
+  worth keeping their content together.
 - **No client names in the product.** Examples in code comments, the Glossary and an
   older changelog entry use neutral names ("Acme Tours", `/destinations/iceland/`).
 
