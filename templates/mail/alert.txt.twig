@@ -1,0 +1,24 @@
+{% extends 'mail/layout.txt.twig' %}
+
+{% block content %}
+{% if kind == 'fixed' %}
+Fixed: {{ what }} works again.
+
+It stopped on {{ since }} and worked again on {{ fixed }}.
+{% elseif kind == 'test' %}
+A test alert.
+
+{{ message }}
+{% else %}
+Something needs looking at: {{ what }} has stopped working.
+
+Since: {{ since }}
+{{ message }}
+
+What to do: {{ next }}
+
+You'll get one more email when it works again.
+{% endif %}
+{% endblock %}
+
+{% block why %}You get this because your address is {{ from_setting }} in this website's settings. Slim Killer emails once when something stops working, and once when it works again.{% endblock %}

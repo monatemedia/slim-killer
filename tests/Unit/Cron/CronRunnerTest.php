@@ -7,10 +7,17 @@ use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Cron\CronRunner;
 use SlimKiller\Cron\JobFailed;
+use SlimKiller\Support\Clock;
 use SlimKiller\Support\Lock;
 use SlimKiller\Support\Paths;
 use Tests\Fakes\FakeJob;
 use Tests\Fakes\SteppingClock;
+
+/** A cron runner whose alerts go nowhere a test can't see. */
+function cronRunner(array $jobs, Paths $paths, Clock $clock): CronRunner
+{
+    return new CronRunner($jobs, $paths, $clock, testAlerts($paths)[0]);
+}
 
 /** @return array{0: int, 1: string} the exit code and what was printed */
 function runCron(CronRunner $runner, array $options = []): array
@@ -47,7 +54,7 @@ it('runs every job on the first run, in order, and notes when each started', fun
         return 'Slow.';
     });
 
-    $reports = (new CronRunner([$quick, $slow], $paths, new SteppingClock('2026-11-21T12:00:01+00:00')))->run();
+    $reports = (cronRunner([$quick, $slow], $paths, new SteppingClock('2026-11-21T12:00:01+00:00')))->run();
 
     $record = json_decode((string) file_get_contents($paths->storage('cron/slow.json')), true);
     expect(outcomes($reports))->toBe(['quick' => 'done', 'slow' => 'done'])
@@ -62,7 +69,7 @@ it('runs a job again only once its interval has passed, give or take cron being 
     $clock = new SteppingClock('2026-11-21T12:00:03+00:00');
     $everyMinute = new FakeJob('heartbeat');
     $everyFive = new FakeJob('fetch', 5);
-    $runner = new CronRunner([$everyMinute, $everyFive], $paths, $clock);
+    $runner = cronRunner([$everyMinute, $everyFive], $paths, $clock);
 
     $runner->run();
     $clock->advance(58);
@@ -83,7 +90,7 @@ it('reports a job that fails, and still runs the jobs after it', function (): vo
     $broken = new FakeJob('broken', work: fn(): string => throw new TypeError('A bug.'));
     $after = new FakeJob('after');
 
-    $reports = (new CronRunner([$failing, $broken, $after], $paths, new SteppingClock('2026-11-21T12:00:00+00:00')))->run();
+    $reports = (cronRunner([$failing, $broken, $after], $paths, new SteppingClock('2026-11-21T12:00:00+00:00')))->run();
 
     expect(outcomes($reports))->toBe(['failing' => 'failed', 'broken' => 'failed', 'after' => 'done'])
         ->and($reports[0]->message)->toBe('GitHub did not answer.')
@@ -97,7 +104,7 @@ it('skips a job an earlier minute is still running, and runs the others', functi
     $quick = new FakeJob('quick');
     $earlier = Lock::attempt($paths->storage('cron/slow.lock'));
 
-    $reports = (new CronRunner([$slow, $quick], $paths, new SteppingClock('2026-11-21T12:00:00+00:00')))->run();
+    $reports = (cronRunner([$slow, $quick], $paths, new SteppingClock('2026-11-21T12:00:00+00:00')))->run();
     $earlier?->release();
 
     expect(outcomes($reports))->toBe(['slow' => 'still running', 'quick' => 'done'])
@@ -111,19 +118,19 @@ it('waits its interval after a run that crashed halfway, rather than crashing ev
     file_put_contents($paths->storage('cron/fetch.json'), '{"started":"2026-11-21T12:00:00+00:00"}');
     $fetch = new FakeJob('fetch', 5);
 
-    $reports = (new CronRunner([$fetch], $paths, new SteppingClock('2026-11-21T12:01:00+00:00')))->run();
+    $reports = (cronRunner([$fetch], $paths, new SteppingClock('2026-11-21T12:01:00+00:00')))->run();
 
     expect(outcomes($reports))->toBe(['fetch' => 'not due']);
 });
 
 it('prints nothing when all is well, so the host\'s cron log only shows problems', function (): void {
-    $runner = new CronRunner([new FakeJob('heartbeat')], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
+    $runner = cronRunner([new FakeJob('heartbeat')], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
 
     expect(runCron($runner))->toBe([0, '']);
 });
 
 it('prints each failure and ends with exit code 1', function (): void {
-    $runner = new CronRunner([
+    $runner = cronRunner([
         new FakeJob('deploy-fetch', work: fn(): string => throw new JobFailed('GitHub did not answer.')),
         new FakeJob('heartbeat'),
     ], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
@@ -133,7 +140,7 @@ it('prints each failure and ends with exit code 1', function (): void {
 });
 
 it('lists every job with -v', function (): void {
-    $runner = new CronRunner([new FakeJob('heartbeat'), new FakeJob('contact-form')], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
+    $runner = cronRunner([new FakeJob('heartbeat'), new FakeJob('contact-form')], new Paths(temporaryFolder()), new SteppingClock('2026-11-21T12:00:00+00:00'));
 
     [$code, $output] = runCron($runner, ['-v']);
 

@@ -1,0 +1,239 @@
+<?php
+
+declare(strict_types=1);
+
+namespace SlimKiller\Alerts;
+
+use DateTimeImmutable;
+use SlimKiller\Cron\Heartbeat;
+use SlimKiller\Mail\LetterWriter;
+use SlimKiller\Mail\Mailer;
+use SlimKiller\Support\Ago;
+use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Paths;
+use SlimKiller\Visits\SiteTime;
+
+/**
+ * Tells the site's administrator by email when something stops working, and once more
+ * when it works again. Never an email a minute: each problem is written down in
+ * storage/alerts.json, and its email goes once.
+ *
+ * - A cron job that fails twice in a row (once can be a passing hiccup).
+ * - Cron going quiet for 15 minutes. Cron can't report its own silence, so the
+ *   website notices: the visit counter's endpoint looks at cron's last note.
+ * - A build that fails on GitHub, at once: the change is saved but the website is
+ *   unchanged.
+ *
+ * Alerts go to ALERTS_TO, or VISIT_REPORT_TO when that is empty, from MAIL_FROM.
+ */
+final readonly class Alerts
+{
+    public const string FILE = 'alerts.json';
+
+    public const int FAILURES_BEFORE_ALERT = 2;
+
+    public const int CRON_QUIET_AFTER_SECONDS = 900;
+
+    /** What each cron job is called in an email, and what to do when it fails. */
+    private const array JOBS = [
+        'backup' => ['the daily backup', 'Run hammer backup on the server to see why.'],
+        'deploy-fetch' => ['fetching new builds of the website', 'Run hammer deploy:fetch on the server to see why. An expired GitHub token is the usual cause.'],
+        'visit-report' => ['the morning visit report', 'Run hammer cron:run -v on the server to see why. Check that MAIL_FROM is a mailbox on this website\'s domain.'],
+        'visits' => ['adding up the day\'s visits', 'Run hammer cron:run -v on the server to see why.'],
+        'contact-form' => ['sending held contact messages', 'Run hammer cron:run -v on the server to see why.'],
+    ];
+
+    public function __construct(
+        private Paths $paths,
+        private LetterWriter $writer,
+        private Mailer $mailer,
+        private AppConfig $config,
+        private SiteTime $time,
+    ) {}
+
+    /** Who alerts go to: ALERTS_TO, or VISIT_REPORT_TO; empty when neither is set. */
+    public function recipient(): string
+    {
+        return $this->config->alertsTo !== '' ? $this->config->alertsTo : $this->config->visitReportTo;
+    }
+
+    /** Can an alert be sent at all: someone to send it to, and a mailbox to send it from? */
+    public function canSend(): bool
+    {
+        return $this->recipient() !== '' && $this->config->mailFrom !== '';
+    }
+
+    public function jobFailed(string $job, string $message, DateTimeImmutable $now): void
+    {
+        if ($job === 'heartbeat') {
+            return;
+        }
+        [$what, $next] = self::JOBS[$job] ?? ["the cron job \"{$job}\"", 'Run hammer cron:run -v on the server to see why.'];
+        $state = $this->read();
+        $entry = $state['job:' . $job] ?? ['what' => $what, 'since' => $now->format(DATE_ATOM), 'failures' => 0, 'threshold' => self::FAILURES_BEFORE_ALERT, 'alerted' => false];
+        $entry['failures'] = (int) $entry['failures'] + 1;
+        $entry['message'] = $message;
+        if ($entry['alerted'] !== true && $entry['failures'] >= self::FAILURES_BEFORE_ALERT) {
+            $entry['alerted'] = $this->send('problem', $entry, $next);
+        }
+        $state['job:' . $job] = $entry;
+        $this->write($state);
+    }
+
+    public function jobDone(string $job, DateTimeImmutable $now): void
+    {
+        $this->resolve('job:' . $job, $now);
+    }
+
+    /** The website asks: has cron gone quiet? Cheap when all is well: two small files read. */
+    public function checkCron(Heartbeat $heartbeat, DateTimeImmutable $now): void
+    {
+        $file = $heartbeat->file();
+        $data = is_file($file) ? json_decode((string) file_get_contents($file), true) : null;
+        if (! is_array($data) || ! is_string($data['at'] ?? null)) {
+            return; // Cron was never set up: hammer doctor says so.
+        }
+        $quiet = $now->getTimestamp() - (new DateTimeImmutable($data['at']))->getTimestamp();
+        $state = $this->read();
+        if ($quiet < self::CRON_QUIET_AFTER_SECONDS || isset($state['cron'])) {
+            return;
+        }
+
+        $entry = [
+            'what' => 'cron (the jobs that run on a timer)',
+            'since' => $data['at'],
+            'failures' => 1,
+            'threshold' => 1,
+            'message' => 'Cron last ran ' . Ago::seconds($quiet) . ' ago. Backups, publishing and the morning report wait for it.',
+        ];
+        $entry['alerted'] = $this->send('problem', $entry, 'Check the cron job in the host\'s control panel (on Hostinger: Advanced, Cron Jobs), then run hammer doctor.');
+        $state['cron'] = $entry;
+        $this->write($state);
+    }
+
+    public function cronRan(DateTimeImmutable $now): void
+    {
+        $this->resolve('cron', $now);
+    }
+
+    /** A build failed on GitHub: one email for that change. */
+    public function buildFailed(string $commit, DateTimeImmutable $now): void
+    {
+        $state = $this->read();
+        if (($state['build']['commit'] ?? null) === $commit) {
+            return;
+        }
+        $entry = [
+            'what' => 'building the website',
+            'since' => $now->format(DATE_ATOM),
+            'failures' => 1,
+            'threshold' => 1,
+            'commit' => $commit,
+            'message' => 'GitHub\'s build for change ' . substr($commit, 0, 7) . ' failed. The change is saved; the website is unchanged.',
+        ];
+        $entry['alerted'] = $this->send('problem', $entry, 'Open the Actions tab of the site\'s repository on GitHub to see why.');
+        $state['build'] = $entry;
+        $this->write($state);
+    }
+
+    public function buildLive(DateTimeImmutable $now): void
+    {
+        $this->resolve('build', $now);
+    }
+
+    /**
+     * The problems not fixed yet, for hammer doctor.
+     *
+     * @return list<array{what: string, since: string, message: string}>
+     */
+    public function open(): array
+    {
+        $open = [];
+        foreach ($this->read() as $entry) {
+            $failures = is_int($entry['failures'] ?? null) ? $entry['failures'] : 0;
+            $threshold = is_int($entry['threshold'] ?? null) ? $entry['threshold'] : self::FAILURES_BEFORE_ALERT;
+            if (is_string($entry['what'] ?? null) && is_string($entry['since'] ?? null) && $failures >= $threshold) {
+                $open[] = ['what' => $entry['what'], 'since' => $entry['since'], 'message' => is_string($entry['message'] ?? null) ? $entry['message'] : ''];
+            }
+        }
+
+        return $open;
+    }
+
+    /** Sends a test alert, so the address and the mailbox can be tried before anything breaks. */
+    public function test(DateTimeImmutable $now): bool
+    {
+        return $this->send('test', [
+            'what' => 'a test alert',
+            'since' => $now->format(DATE_ATOM),
+            'message' => 'Nothing is wrong. This is what an alert looks like, sent by hammer alerts:test.',
+        ], 'Nothing to do.');
+    }
+
+    private function resolve(string $key, DateTimeImmutable $now): void
+    {
+        $state = $this->read();
+        if (! isset($state[$key])) {
+            return;
+        }
+        $entry = $state[$key];
+        if (($entry['alerted'] ?? false) === true) {
+            $this->send('fixed', $entry + ['fixed' => $now->format(DATE_ATOM)], 'Nothing to do.');
+        }
+        unset($state[$key]);
+        $this->write($state);
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function send(string $kind, array $entry, string $next): bool
+    {
+        if (! $this->canSend()) {
+            return false;
+        }
+        $what = is_string($entry['what'] ?? null) ? $entry['what'] : 'something';
+        $subject = $this->config->name . ': ' . match ($kind) {
+            'fixed' => $what . ' works again',
+            'test' => 'a test alert',
+            default => $what . ' has stopped working',
+        };
+        $letter = $this->writer->write('alert', $this->recipient(), $subject, [
+            'kind' => $kind,
+            'what' => $what,
+            'since' => $this->when((string) ($entry['since'] ?? '')),
+            'fixed' => $this->when((string) ($entry['fixed'] ?? '')),
+            'message' => (string) ($entry['message'] ?? ''),
+            'next' => $next,
+            'from_setting' => $this->config->alertsTo !== '' ? 'ALERTS_TO' : 'VISIT_REPORT_TO',
+        ]);
+
+        return $this->mailer->send($letter);
+    }
+
+    private function when(string $atom): string
+    {
+        if ($atom === '') {
+            return '';
+        }
+
+        return (new DateTimeImmutable($atom))->setTimezone($this->time->zone)->format('j F Y, H:i');
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private function read(): array
+    {
+        $file = $this->paths->storage(self::FILE);
+        $data = is_file($file) ? json_decode((string) file_get_contents($file), true) : null;
+
+        return is_array($data) ? array_filter($data, 'is_array') : [];
+    }
+
+    /** @param array<string, array<string, mixed>> $state */
+    private function write(array $state): void
+    {
+        $file = $this->paths->storage(self::FILE);
+        if (! is_dir(dirname($file))) {
+            mkdir(dirname($file), 0755, true);
+        }
+        file_put_contents($file, json_encode($state, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    }
+}

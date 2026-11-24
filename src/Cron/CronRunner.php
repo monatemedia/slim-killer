@@ -6,6 +6,7 @@ namespace SlimKiller\Cron;
 
 use DateTimeImmutable;
 use RuntimeException;
+use SlimKiller\Alerts\Alerts;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Lock;
 use SlimKiller\Support\Paths;
@@ -40,14 +41,24 @@ final class CronRunner
         private readonly array $jobs,
         private readonly Paths $paths,
         private readonly Clock $clock,
+        private readonly Alerts $alerts,
     ) {}
 
     /** @return list<JobReport> one for each job, in order */
     public function run(): array
     {
+        // Cron is running: if it had gone quiet, say it works again.
+        $this->alerts->cronRan($this->clock->now());
+
         $reports = [];
         foreach ($this->jobs as $job) {
-            $reports[] = $this->runOne($job);
+            $report = $this->runOne($job);
+            match ($report->outcome) {
+                JobOutcome::Done => $this->alerts->jobDone($report->job, $this->clock->now()),
+                JobOutcome::Failed => $this->alerts->jobFailed($report->job, $report->message, $this->clock->now()),
+                default => null,
+            };
+            $reports[] = $report;
         }
 
         return $reports;
