@@ -405,6 +405,11 @@ $product = [
   ol.steps h3 { font-size: 1.1rem; margin: 0.2rem 0 0.35rem; letter-spacing: -0.02em; }
   ol.steps p { margin: 0 0 0.5rem; color: var(--muted); }
   ol.steps pre { margin: 0; background: var(--ink); color: #f5efe8; border-radius: 8px; padding: 0.6rem 0.9rem; font-family: var(--mono); font-size: 0.84rem; overflow-x: auto; }
+  .cmd { position: relative; }
+  .cmd pre { padding-right: 5.2rem; }
+  .copy-btn { position: absolute; top: 0.45rem; right: 0.45rem; padding: 0.25rem 0.7rem; border: 1px solid #5a534c; border-radius: 6px; background: #2c2723; color: #f5efe8; font: inherit; font-size: 0.8rem; cursor: pointer; }
+  .copy-btn:hover { border-color: var(--orange); }
+  .copy-area { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; }
 
   /* Series */
   .series { display: grid; gap: 1.2rem; }
@@ -613,6 +618,7 @@ $product = [
           <tr><td>Visitor statistics</td><td>None. A plugin or Google Analytics</td><td class="us">Cookieless visit counter, Visits page and a morning email</td><td>None</td></tr>
           <tr><td>Deploys and rollback</td><td>None</td><td class="us">Fetch a finished build, switch in one step, roll back with one command</td><td>Paid services (Forge, Laravel Cloud)</td></tr>
           <tr><td>Backups</td><td>None in core. A plugin, often paid</td><td class="us">The database, daily: checked, encrypted (AES-256) and kept on the client's own Google Drive, with a test restore</td><td>None built in. A package (Spatie's laravel-backup)</td></tr>
+          <tr><td>If the database is lost</td><td>The site: every page and setting is in it</td><td class="us">No pages or photos: they're in GitHub. Accounts are made again; the visit history starts over</td><td>Usually everything the app stores</td></tr>
           <tr><td>If the host is lost</td><td>The site lives on the host: restore a backup, if there is one</td><td class="us">The host is a copy. Code and pages are in GitHub, the database on Google Drive: a new host is rebuilt from both</td><td>Code in Git; the database and uploads need their own backups</td></tr>
           <tr><td>A client editing their own pages</td><td>Yes: the block editor, WordPress's real strength</td><td class="us">A phone-friendly panel, built from the site's own schema</td><td>Nova, a paid add-on</td></tr>
           <tr><td>Plugin marketplace</td><td>Yes, tens of thousands</td><td class="us">No, on purpose</td><td>Composer packages</td></tr>
@@ -789,5 +795,49 @@ git checkout <?= $e($version !== '' ? $version : 'main') ?></pre></li>
   </div>
 </footer>
 
+<script>
+// A Copy button on each command in "Getting started". The clipboard API needs a secure
+// page; opened from a file, or on older Safari, the hidden-textarea way is used.
+(function () {
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.className = 'copy-area';
+      document.body.appendChild(area);
+      area.select();
+      area.setSelectionRange(0, text.length);
+      var copied = false;
+      try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+      document.body.removeChild(area);
+      if (copied) { resolve(); } else { reject(new Error('copy refused')); }
+    });
+  }
+  document.querySelectorAll('ol.steps pre').forEach(function (pre) {
+    var box = document.createElement('div');
+    box.className = 'cmd';
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-btn';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy the commands');
+    box.appendChild(button);
+    button.addEventListener('click', function () {
+      copyText(pre.textContent.trim()).then(function () {
+        button.textContent = 'Copied';
+      }, function () {
+        button.textContent = 'Select it';
+      });
+      setTimeout(function () { button.textContent = 'Copy'; }, 2000);
+    });
+  });
+})();
+</script>
 </body>
 </html>

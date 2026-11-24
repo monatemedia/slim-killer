@@ -259,6 +259,15 @@ it('refuses an address from another link', function (): void {
         ->toThrow(BackupFailed::class, 'That address is from another link');
 });
 
+it('says so when the link opened, or the placeholder, is pasted instead of the address landed on', function (): void {
+    ['drive' => $drive, 'google' => $google] = backupSite();
+    $link = $drive->connectLink();
+
+    expect(fn() => $drive->connect($link))->toThrow(BackupFailed::class, 'That is the link you opened')
+        ->and(fn() => $drive->connect('<the address>'))->toThrow(BackupFailed::class, 'in place of <the address>')
+        ->and($google->http->requested)->toBe([]);
+});
+
 it('asks for the link first when there is none', function (): void {
     ['drive' => $drive] = backupSite();
 
@@ -352,6 +361,20 @@ it('restores nothing without --yes', function (): void {
         ->and(glob($paths->storage('backups/before-restore-*')))->toBe([]);
 });
 
+it('makes no backup, and the doctor says what is at stake, when BACKUPS is off', function (): void {
+    ['backups' => $backups, 'drive' => $drive, 'encryption' => $encryption, 'time' => $time, 'database' => $database] = backupSite(connected: true);
+    $off = AppConfig::fromEnvironment(['BACKUPS' => 'off']);
+
+    $message = (new BackupJob($backups, $time, $off))->run(new DateTimeImmutable(BACKUP_NOW));
+    [$result] = (new BackupsCheck($backups, $drive, $encryption, $time, FrozenClock::at(BACKUP_NOW), $off))->check();
+
+    expect($message)->toBe('Backups are off (BACKUPS="off" in .env).')
+        ->and($database->here())->toBe([])
+        ->and($result->status->value)->toBe('info')
+        ->and($result->detail)->toContain('Pages and photos are safe in GitHub')
+        ->and(AppConfig::fromEnvironment([])->backupsOff)->toBeFalse();
+});
+
 // --- Encryption ------------------------------------------------------------------------
 
 it('encrypts so that only the same key opens it, and any change shows', function (): void {
@@ -388,7 +411,7 @@ it('adds a new key to .env once, and never replaces it', function (): void {
 
 it('makes the day\'s backup only after 02:00 in the site\'s time', function (): void {
     ['backups' => $backups, 'time' => $time] = backupSite();
-    $job = new BackupJob($backups, $time);
+    $job = new BackupJob($backups, $time, new AppConfig());
 
     expect($job->run(new DateTimeImmutable('2026-11-23T23:30:00+00:00')))->toBe('The day\'s backup is made after 02:00.')
         ->and($job->run(new DateTimeImmutable(BACKUP_NOW)))->toStartWith('Saved backup-2026-11-24-0215.sqlite.gz');
@@ -398,7 +421,7 @@ it('fails the cron job, saying why, when the backup does not reach Google Drive'
     ['backups' => $backups, 'time' => $time, 'google' => $google] = backupSite(connected: true);
     $google->failUploads = true;
 
-    expect(fn() => (new BackupJob($backups, $time))->run(new DateTimeImmutable(BACKUP_NOW)))
+    expect(fn() => (new BackupJob($backups, $time, new AppConfig()))->run(new DateTimeImmutable(BACKUP_NOW)))
         ->toThrow(JobFailed::class, 'but not on Google Drive');
 });
 
@@ -412,7 +435,7 @@ it('tells the doctor how backups stand', function (bool $setUp, bool $connected,
         }
     }
 
-    [$result] = (new BackupsCheck($backups, $drive, $encryption, $time, FrozenClock::at('2026-11-24T10:00:00+00:00')))->check();
+    [$result] = (new BackupsCheck($backups, $drive, $encryption, $time, FrozenClock::at('2026-11-24T10:00:00+00:00'), new AppConfig()))->check();
 
     expect($result->status->value)->toBe($status)
         ->and($result->title)->toBe($title);

@@ -10,6 +10,7 @@ use SlimKiller\Backups\Backups;
 use SlimKiller\Backups\GoogleDrive;
 use SlimKiller\Doctor\CheckResult;
 use SlimKiller\Doctor\HostCheck;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Visits\SiteTime;
 
@@ -28,10 +29,14 @@ final readonly class BackupsCheck implements HostCheck
         private BackupEncryption $encryption,
         private SiteTime $time,
         private Clock $clock,
+        private AppConfig $config,
     ) {}
 
     public function check(): array
     {
+        if ($this->config->backupsOff) {
+            return [CheckResult::info('Backups are off', 'BACKUPS="off": losing the database would lose the panel\'s accounts and the visit history. Pages and photos are safe in GitHub')];
+        }
         $last = $this->backups->last();
         if ($last === null) {
             return [CheckResult::warn('No backup yet', 'cron makes one each day after 02:00', 'Run hammer backup to make one now.')];

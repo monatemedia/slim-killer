@@ -52,10 +52,16 @@ final readonly class BackupConnectCommand implements Command
             $output->line();
             $output->line($this->drive->connectLink());
             $output->line();
-            $output->line('2. The browser then fails to load a page at 127.0.0.1. That is expected. Copy the whole');
-            $output->line('   address from its address bar, and run, within a few minutes:');
+            $output->line('2. The browser then shows "Unable to connect" at 127.0.0.1. That is expected.');
             $output->line();
-            $output->line('   ' . $input->script . ' backup:connect --code="<the address>"', 'cyan');
+            $output->line('   IMPORTANT: copy the address the browser landed on, not the link above.', 'yellow');
+            $output->line('   After Continue, the address bar changes to one starting', 'yellow');
+            $output->line('   ' . GoogleDrive::REDIRECT . '?state=... with code= in it. Click in the address', 'yellow');
+            $output->line('   bar, press Ctrl+A, then Ctrl+C.', 'yellow');
+            $output->line();
+            $output->line('3. Within a few minutes, run this with that address between the single quotes:');
+            $output->line();
+            $output->line('   ' . $input->script . " backup:connect --code='<the address>'", 'cyan');
 
             return 0;
         }

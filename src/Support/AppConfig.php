@@ -57,6 +57,8 @@ final readonly class AppConfig
         public int $backupsKept = self::DEFAULT_BACKUPS_KEPT,
         /** 64 hexadecimal characters that encrypt the copies sent to Google Drive. Kept in a password manager too. */
         public string $backupKey = '',
+        /** BACKUPS="off": no daily backup. Losing the database then loses accounts and visit history, never pages. */
+        public bool $backupsOff = false,
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -91,6 +93,7 @@ final readonly class AppConfig
             $text('BACKUP_FOLDER', self::DEFAULT_BACKUP_FOLDER),
             ctype_digit($text('BACKUPS_KEPT')) && (int) $text('BACKUPS_KEPT') > 0 ? (int) $text('BACKUPS_KEPT') : self::DEFAULT_BACKUPS_KEPT,
             $text('BACKUP_KEY'),
+            in_array(strtolower($text('BACKUPS')), ['off', 'no', 'false', '0'], true),
         );
     }
 
