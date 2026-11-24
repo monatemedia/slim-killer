@@ -11,11 +11,20 @@ namespace SlimKiller\Support;
  *
  * The PHP is set once, at the entry point (BUILD_PHILOSOPHY.md, Rule 1): hammer uses the
  * PHP it was started with; the control panel and the website use the one cron runs with,
- * from cron's last note. Until then, "php".
+ * from cron's last note. Until then, "php". With the shortcut set up (`hammer shortcut`),
+ * it's just "hammer backup".
  */
 final class Hammer
 {
     private static string $php = 'php';
+
+    private static bool $shortcut = false;
+
+    /** The shortcut is set up for this Slim Killer, so "hammer" works on its own. */
+    public static function useShortcut(bool $installed): void
+    {
+        self::$shortcut = $installed;
+    }
 
     public static function usePhp(string $binary): void
     {
@@ -36,6 +45,6 @@ final class Hammer
     /** The whole command line, like "/opt/alt/php84/usr/bin/php hammer backup". */
     public static function command(string $arguments): string
     {
-        return self::$php . ' hammer' . ($arguments !== '' ? ' ' . $arguments : '');
+        return (self::$shortcut ? 'hammer' : self::$php . ' hammer') . ($arguments !== '' ? ' ' . $arguments : '');
     }
 }

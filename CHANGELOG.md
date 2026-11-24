@@ -11,6 +11,21 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-24
+
+After updating, run `php hammer shortcut` once on the server (with the PHP's whole path if
+plain `php` is too old), then start a new SSH session.
+
+### Added
+
+- **`hammer` works on its own, from any folder.** `hammer shortcut` writes `~/bin/hammer`,
+  a three-line script that runs this server's Slim Killer with the PHP it was started
+  with, and adds `~/bin` to the PATH in `~/.bashrc` (one marked line, added once). Hosts
+  often have several PHPs, and the one a shell calls `php` isn't always the one Slim
+  Killer needs. Once it's set up, every hint says just `hammer backup`, and the doctor
+  says so; until then, hints keep naming the PHP's whole path. Run it again after
+  changing PHP. Cron keeps its own full line.
+
 ## [0.6.1] - 2026-11-24
 
 ### Fixed
