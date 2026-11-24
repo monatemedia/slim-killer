@@ -8,6 +8,7 @@ use SlimKiller\Publishing\Progress;
 use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Publishing\Release;
 use SlimKiller\Publishing\Releases;
+use SlimKiller\Support\Paths;
 use Tests\Fakes\FakeHttpClient;
 use Tests\Fakes\SteppingClock;
 
@@ -30,7 +31,7 @@ function progressHost(): array
     ])));
     $log = new PublishLog($root . '/storage/publishing.json');
     $releases = new Releases($root . '/public_html', $root . '/storage/releases.json');
-    $progress = new Progress($log, $releases, $http, new GitHubSettings('owner/site', 'main', 'secret'), $clock, $root . '/storage/cache/build-status.json');
+    $progress = new Progress($log, $releases, $http, new GitHubSettings('owner/site', 'main', 'secret'), $clock, $root . '/storage/cache/build-status.json', testAlerts(new Paths($root))[0]);
 
     return [$progress, $log, $releases, $github, $clock, $http];
 }

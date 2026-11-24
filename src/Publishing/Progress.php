@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SlimKiller\Publishing;
 
+use SlimKiller\Alerts\Alerts;
 use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\HttpClient;
 use SlimKiller\Support\Clock;
@@ -38,6 +39,7 @@ final class Progress
         private readonly GitHubSettings $settings,
         private readonly Clock $clock,
         private readonly string $cacheFile,
+        private readonly Alerts $alerts,
     ) {}
 
     /**
@@ -58,6 +60,7 @@ final class Progress
 
         if ($save['liveAt'] !== null || $this->releases->live()?->commit === $save['commit']) {
             $this->log->markLive($save['commit'], $now);
+            $this->alerts->buildLive($now);
 
             return $this->stage('live', 'Your change is live.', done: true);
         }
@@ -68,6 +71,7 @@ final class Progress
         $run = $this->run($save['commit']);
         if ($run === 'failed') {
             $this->log->markFailed($save['commit'], $now);
+            $this->alerts->buildFailed($save['commit'], $now);
 
             return $this->failed();
         }

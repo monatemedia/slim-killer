@@ -59,6 +59,8 @@ final readonly class AppConfig
         public string $backupKey = '',
         /** BACKUPS="off": no daily backup. Losing the database then loses accounts and visit history, never pages. */
         public bool $backupsOff = false,
+        /** Who gets an email when something stops working; empty: VISIT_REPORT_TO. */
+        public string $alertsTo = '',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -94,6 +96,7 @@ final readonly class AppConfig
             ctype_digit($text('BACKUPS_KEPT')) && (int) $text('BACKUPS_KEPT') > 0 ? (int) $text('BACKUPS_KEPT') : self::DEFAULT_BACKUPS_KEPT,
             $text('BACKUP_KEY'),
             in_array(strtolower($text('BACKUPS')), ['off', 'no', 'false', '0'], true),
+            $text('ALERTS_TO'),
         );
     }
 

@@ -1,0 +1,30 @@
+{% extends 'mail/layout.html.twig' %}
+
+{% block content %}
+{% if kind == 'fixed' %}
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">Fixed: {{ what }} works again</h1>
+<p style="margin:0;font-size:15px;">It stopped on {{ since }} and worked again on {{ fixed }}.</p>
+{% elseif kind == 'test' %}
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">A test alert</h1>
+<p style="margin:0;font-size:15px;">{{ message }}</p>
+{% else %}
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">{{ what|capitalize }} has stopped working</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;width:110px;vertical-align:top;">Since</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ since }}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">What happened</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;word-break:break-word;">{{ message }}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">What to do</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ next }}</td>
+  </tr>
+</table>
+<p style="margin:20px 0 0;color:#5b6168;font-size:14px;">You'll get one more email when it works again.</p>
+{% endif %}
+{% endblock %}
+
+{% block why %}You get this because your address is {{ from_setting }} in this website's settings. Slim Killer emails once when something stops working, and once when it works again.{% endblock %}

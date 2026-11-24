@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
+use SlimKiller\Alerts\Alerts;
 use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\EmailAddress;
 use SlimKiller\Auth\Role;
@@ -16,11 +17,17 @@ use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\Environment\SnapshotEnvironment;
 use SlimKiller\Doctor\Requirements;
 use SlimKiller\Http\ControlPanel\ControlPanel;
+use SlimKiller\Mail\LetterWriter;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
+use SlimKiller\Visits\SiteTime;
 use Tests\Fakes\Browser;
 use Tests\Fakes\FakeBreachedPasswords;
+use Tests\Fakes\FakeMailer;
 use Tests\Fakes\SteppingClock;
+use Twig\Environment as Twig;
+use Twig\Loader\FilesystemLoader;
 
 /*
  * A healthy PHP environment for tests. Override only what a test is about:
@@ -147,3 +154,19 @@ require __DIR__ . '/photos.php';
 // since the panel is tried on an iPhone. Run another with: pest --browser chrome
 pest()->browser()->inSafari();
 require __DIR__ . '/Browser/panel.php';
+
+/**
+ * Alerts for a test, with a mailer that keeps what it sends. By default they go to
+ * owner@example.com (VISIT_REPORT_TO) from website@example.com.
+ *
+ * @return array{0: Alerts, 1: FakeMailer}
+ */
+function testAlerts(Paths $paths, ?AppConfig $config = null, bool $accepts = true): array
+{
+    $config ??= new AppConfig(name: 'Acme Tours', timezone: 'Africa/Johannesburg', mailFrom: 'website@example.com', visitReportTo: 'owner@example.com');
+    $twig = new Twig(new FilesystemLoader(dirname(__DIR__) . '/templates'), ['strict_variables' => true, 'autoescape' => 'name']);
+    $twig->addGlobal('site_name', $config->name);
+    $mailer = new FakeMailer($accepts);
+
+    return [new Alerts($paths, new LetterWriter($twig, $config), $mailer, $config, SiteTime::named($config->timezone)), $mailer];
+}

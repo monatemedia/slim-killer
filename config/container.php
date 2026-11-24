@@ -14,6 +14,7 @@ use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\PwnedPasswords;
 use SlimKiller\Backups\BackupEncryption;
 use SlimKiller\Console\Application;
+use SlimKiller\Console\Commands\AlertsTestCommand;
 use SlimKiller\Console\Commands\BackupCheckCommand;
 use SlimKiller\Console\Commands\BackupCommand;
 use SlimKiller\Console\Commands\BackupConnectCommand;
@@ -43,6 +44,7 @@ use SlimKiller\Cron\Jobs\VisitsJob;
 use SlimKiller\Database\Database;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Doctor\BinaryFinder;
+use SlimKiller\Doctor\Checks\AlertsCheck;
 use SlimKiller\Doctor\Checks\BackupsCheck;
 use SlimKiller\Doctor\Checks\CronCheck;
 use SlimKiller\Doctor\Checks\DisabledFunctionsCheck;
@@ -148,6 +150,7 @@ return [
         get(BackupConnectCommand::class),
         get(BackupKeyCommand::class),
         get(BackupRestoreCommand::class),
+        get(AlertsTestCommand::class),
     ]),
     Application::class => autowire()->constructorParameter('commands', get('console.commands')),
 
@@ -188,6 +191,7 @@ return [
         get(GitHubReachableCheck::class),
         get(CronCheck::class),
         get(BackupsCheck::class),
+        get(AlertsCheck::class),
     ]),
 
     Doctor::class => autowire()

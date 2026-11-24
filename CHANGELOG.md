@@ -11,6 +11,23 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-24
+
+After updating, run `hammer web:install` (the visit counter's endpoint now notices when
+cron goes quiet), set `ALERTS_TO` if alerts should go to someone other than
+`VISIT_REPORT_TO`, and run `hammer alerts:test`.
+
+### Added
+
+- **Alerts by email.** One email when something stops working, one when it works again:
+  a cron job failing twice in a row (the backup, fetching builds, the visit report,
+  adding up visits, held contact messages), cron quiet for 15 minutes (noticed by the
+  website, since cron can't report its own silence), and a build failing on GitHub.
+  Each says since when, what went wrong and what to do. They go to `ALERTS_TO`, or
+  `VISIT_REPORT_TO` when that's empty. `hammer alerts:test` sends a test one.
+  `hammer doctor` lists anything not fixed yet, and warns when alerts go nowhere. See
+  the wiki page "Alerts".
+
 ## [0.4.0] - 2026-11-24
 
 After updating, run `hammer web:install`, so the website serves the panel's new files.

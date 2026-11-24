@@ -187,6 +187,7 @@ php hammer backup:check        # the test restore: open the newest backup in a t
 php hammer backup:restore      # list the backups; <name> --yes puts one back
 php hammer backup:connect      # connect the site's own Google Drive (see the wiki page Backups)
 php hammer backup:key          # make the key that encrypts backups; keep it in your password manager
+php hammer alerts:test         # send a test alert to ALERTS_TO (or VISIT_REPORT_TO)
 ```
 
 Nobody types a password on the server: every account starts from a welcome link, and the person chooses their own password in the browser.
@@ -235,7 +236,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
 - [ ] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
 - [x] Daily encrypted backups to the site's own Google Drive, with a test restore
-- [ ] Alerts by email when a job fails or cron goes quiet
+- [x] Alerts by email when a job fails, cron goes quiet or a build fails
 - [ ] Choose when the visit report comes: daily, weekly or monthly, at an hour
 - [ ] Panel self-update
 - [ ] First client site live on its own hosting (already moved to Astro 7)
