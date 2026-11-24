@@ -1,5 +1,6 @@
 /*
- * The website bar: a small button in the bottom-right corner of the website, for people
+ * The website bar: a small button in the bottom-right corner of the website (above the
+ * site's own floating button, if it marks one data-website-bar-above), for people
  * signed in to the control panel. Tapped, it opens to "Edit this page", the control
  * panel, Visits, and "Hide this bar". Dragged, it moves out of the way, and stays
  * where it was put in this browser ("slim-killer-bar-place" in localStorage).
@@ -24,6 +25,7 @@
   var KEY = 'slim-killer-editor';
   var PLACE = 'slim-killer-bar-place';
   var EDGE = 16;      // the closest it goes to the edge of the screen
+  var GAP = 12;       // the space it keeps above a site's own floating button
   var NUDGE = 6;      // how far a finger moves before a tap becomes a drag
   var FLICK = 1.2;    // pixels a millisecond: let go this fast, and it's a flick
   var BASE = '/cp';
@@ -109,8 +111,18 @@
     }
 
     // Where the button sits: distances from the right and bottom of the screen, kept
-    // inside it however the screen turns or shrinks.
+    // inside it however the screen turns or shrinks. Until it is moved, the corner; or,
+    // when the site has its own floating button there (marked data-website-bar-above,
+    // like a round WhatsApp button), just above it, so the two never overlap.
     var place = { right: EDGE, bottom: EDGE };
+    var below = document.querySelector('[data-website-bar-above]');
+    var box = below ? below.getBoundingClientRect() : null;
+    if (box && box.height > 0) {
+      place = {
+        right: Math.max(EDGE, Math.round(window.innerWidth - box.right)),
+        bottom: Math.round(window.innerHeight - box.top) + GAP
+      };
+    }
     try {
       var kept = JSON.parse(window.localStorage.getItem(PLACE) || 'null');
       if (kept && typeof kept.right === 'number' && typeof kept.bottom === 'number') {
