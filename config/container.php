@@ -52,6 +52,7 @@ use SlimKiller\Doctor\Checks\ExtensionsCheck;
 use SlimKiller\Doctor\Checks\GitHubReachableCheck;
 use SlimKiller\Doctor\Checks\ImageSupportCheck;
 use SlimKiller\Doctor\Checks\LimitsCheck;
+use SlimKiller\Doctor\Checks\MailCheck;
 use SlimKiller\Doctor\Checks\PhpBinaryCheck;
 use SlimKiller\Doctor\Checks\PhpVersionCheck;
 use SlimKiller\Doctor\Checks\StorageCheck;
@@ -64,6 +65,8 @@ use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Mail\PhpMailer;
+use SlimKiller\Mail\SmtpMailer;
+use SlimKiller\Mail\SocketSmtpConnection;
 use SlimKiller\Publishing\Progress;
 use SlimKiller\Publishing\PublishLog;
 use SlimKiller\Publishing\Releases;
@@ -91,7 +94,10 @@ return [
     Paths::class => create()->constructor(dirname(__DIR__)),
     Clock::class => get(SystemClock::class),
     HttpClient::class => get(CurlHttpClient::class),
-    Mailer::class => get(PhpMailer::class),
+    // Mail goes through the website's own mailbox when SMTP_HOST is set, so it passes DMARC.
+    Mailer::class => factory(static fn(AppConfig $config, Clock $clock): Mailer => $config->smtpHost !== ''
+        ? new SmtpMailer(new SocketSmtpConnection(), $config, $clock)
+        : new PhpMailer()),
     BreachedPasswords::class => get(PwnedPasswords::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
@@ -191,6 +197,7 @@ return [
         get(GitHubReachableCheck::class),
         get(CronCheck::class),
         get(BackupsCheck::class),
+        get(MailCheck::class),
         get(AlertsCheck::class),
     ]),
 

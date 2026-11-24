@@ -11,6 +11,24 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-24
+
+After updating, set `SMTP_HOST`, `SMTP_PORT` and `SMTP_PASSWORD` to send through the
+website's own mailbox (see the wiki page "Email"), then run `hammer doctor` and
+`hammer alerts:test`. Without them, nothing changes.
+
+### Added
+
+- **Email through the website's own mailbox (SMTP).** With `SMTP_HOST` set, every email
+  (the visit report, alerts, welcome links) goes through that mail server, signed in as
+  `SMTP_USER` (or `MAIL_FROM`). The provider DKIM-signs it for the website's domain, so
+  it passes DMARC, where the host's `mail()` fails it. Port 465 or 587 (STARTTLS); the
+  server's certificate is always checked. A small SMTP client in PHP, no new library.
+  The password is never printed, and never in an error.
+- **`hammer doctor` says how email leaves the website:** it signs in to the mail server
+  and out again without sending anything, or says that `mail()` fails DMARC.
+- **`hammer alerts:test` says why** a test alert wasn't sent, in the mail server's words.
+
 ## [0.5.0] - 2026-11-24
 
 After updating, run `hammer web:install` (the visit counter's endpoint now notices when

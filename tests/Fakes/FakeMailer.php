@@ -24,4 +24,9 @@ final class FakeMailer implements Mailer
 
         return $this->accepts;
     }
+
+    public function lastProblem(): string
+    {
+        return $this->accepts ? '' : 'The fake mail server said no.';
+    }
 }

@@ -61,6 +61,14 @@ final readonly class AppConfig
         public bool $backupsOff = false,
         /** Who gets an email when something stops working; empty: VISIT_REPORT_TO. */
         public string $alertsTo = '',
+        /** The website's own mail server, like "smtp.titan.email". Empty: PHP's mail(). */
+        public string $smtpHost = '',
+        /** 465 (encrypted at once) or 587 (STARTTLS). */
+        public int $smtpPort = 465,
+        /** The mailbox to sign in as; empty means MAIL_FROM. */
+        public string $smtpUser = '',
+        /** That mailbox's password. A secret: only in .env. */
+        public string $smtpPassword = '',
     ) {}
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
@@ -97,6 +105,10 @@ final readonly class AppConfig
             $text('BACKUP_KEY'),
             in_array(strtolower($text('BACKUPS')), ['off', 'no', 'false', '0'], true),
             $text('ALERTS_TO'),
+            $text('SMTP_HOST'),
+            ctype_digit($text('SMTP_PORT')) && (int) $text('SMTP_PORT') > 0 ? (int) $text('SMTP_PORT') : 465,
+            $text('SMTP_USER', $text('MAIL_FROM')),
+            is_string($environment['SMTP_PASSWORD'] ?? null) ? $environment['SMTP_PASSWORD'] : '',
         );
     }
 
