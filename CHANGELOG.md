@@ -11,6 +11,28 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-25
+
+Nothing to run on a host after updating: `site:check` runs on your own computer.
+
+### Added
+
+- **`hammer site:check ../client-site`** checks a client's site against the wiki's Astro
+  site rules, the way `hammer doctor` checks a host, in six sections: layout, content,
+  schemas, build, search engines and AI search, and the built pages. It only reads
+  files, and exits with 1 when anything fails, so a GitHub workflow can use it. Without
+  a folder, it checks the site `CONTENT_DIR` points at.
+  - **Search:** a sitemap, `robots.txt` pointing to it, schema.org data, and on every
+    page a search engine may list: a title, a description, a canonical address,
+    schema.org data and a share image. `llms.txt` is only mentioned, never required.
+  - **Schemas:** a title on every field, so the control panel never shows a bare field
+    name, and every image field marked as one.
+
+### Changed
+
+- The doctor's report printing is shared with `site:check`; the doctor's output is the
+  same.
+
 ## [0.10.3] - 2026-11-25
 
 After updating, run `hammer web:install` (it copies the website bar's script).

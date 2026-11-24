@@ -29,6 +29,7 @@ use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\SetupLinkCommand;
 use SlimKiller\Console\Commands\ShortcutCommand;
+use SlimKiller\Console\Commands\SiteCheckCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
 use SlimKiller\Console\Commands\VisitsCommand;
@@ -123,6 +124,7 @@ return [
     // The working copy the panel reads from: in storage on a client's host, or wherever
     // CONTENT_DIR and SCHEMA_DIR point for local development.
     ContentLocation::class => factory(static fn(AppConfig $config, Paths $paths): ContentLocation => ContentLocation::from($config, $paths)),
+    SiteCheckCommand::class => autowire()->constructorParameter('contentConfigured', factory(static fn(AppConfig $config): bool => $config->contentDir !== '')),
 
     GitHubSettings::class => factory(static fn(AppConfig $config): GitHubSettings => new GitHubSettings(
         $config->githubRepository,
@@ -152,6 +154,7 @@ return [
         get(InstallCommand::class),
         get(DoctorCommand::class),
         get(SetupLinkCommand::class),
+        get(SiteCheckCommand::class),
         get(ShortcutCommand::class),
         get(MigrateCommand::class),
         get(UserCreateCommand::class),

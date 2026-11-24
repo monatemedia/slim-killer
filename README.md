@@ -170,6 +170,8 @@ Day to day, clients only ever see `/cp`. Developers work through `hammer`:
 ```sh
 php hammer                     # list every command
 php hammer doctor              # does this host have what Slim Killer needs?
+php hammer site:check ../client-site
+                               # does a client's site follow the Astro site rules?
 php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html
                                # ...including the website's own PHP and web server
 php hammer install --url=... --email=... --name=...
@@ -233,7 +235,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [x] Visits page in the control panel
 - [x] Passwords found in data breaches refused (Have I Been Pwned)
 - [x] Website bar: Edit this page from the website, and signed-in people aren't counted as visitors
-- [ ] `hammer site:check`: prove the panel can still read a site after an Astro upgrade
+- [x] `hammer site:check`: a client's site against the Astro site rules, its search essentials and its built pages
 - [x] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
 - [x] Daily encrypted backups to the site's own Google Drive, with a test restore
 - [x] Alerts by email when a job fails, cron goes quiet or a build fails
