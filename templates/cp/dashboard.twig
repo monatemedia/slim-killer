@@ -14,6 +14,15 @@
   <p>You are signed in as {{ role }}.</p>
 </section>
 
+{% if update %}
+<section class="card card-update">
+  <div class="card-pad">
+    <h2 class="card-title">Slim Killer v{{ update.latest }} is out</h2>
+    <p class="form-help">This website runs v{{ update.installed }}. <a href="{{ changelog_url }}" rel="noopener" target="_blank">What's new</a>, and what to run after updating.</p>
+  </div>
+</section>
+{% endif %}
+
 <a class="tile tile-wide" href="{{ base }}/content">
   <span class="tile-title">Your content</span>
   <span class="tile-meta">Change the words on the pages of your website.</span>

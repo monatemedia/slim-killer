@@ -11,6 +11,24 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-24
+
+After updating, run `hammer web:install` (the dashboard has a new style) and
+`hammer doctor`, which checks for a newer release straight away.
+
+### Added
+
+- **An update notice.** Cron asks GitHub once a day for the newest Slim Killer release
+  (the highest `vX.Y.Z` tag), and `hammer doctor` asks each time it runs.
+  - **The doctor** says "Slim Killer v0.8.1: the newest" (PASS), or warns "Slim Killer
+    v0.9.0 is out", with the changelog's address and the commands to update.
+  - **The dashboard** shows administrators a card: "Slim Killer v0.9.0 is out. This
+    website runs v0.8.1", with a link to what's new. Site owners don't see it: updating
+    is the administrator's job.
+  - The version running is the newest release in the copy's own `CHANGELOG.md`, so no
+    git is needed on the server. GitHub being out of reach is only INFO, and never an
+    alert.
+
 ## [0.8.1] - 2026-11-24
 
 After updating, run `hammer shortcut` again on a server where plain `hammer` is not found
