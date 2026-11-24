@@ -193,6 +193,9 @@ header.page-header {
 
 .card + .card { margin-top: 24px; }
 
+.card-update { border-left: 4px solid var(--warn); margin-bottom: 24px; }
+.card-update .card-title { margin-bottom: 8px; }
+
 .card-pad { padding: 24px; }
 @media (max-width: 520px) { .card-pad { padding: 18px; } }
 

@@ -40,6 +40,7 @@ use SlimKiller\Cron\Jobs\BackupJob;
 use SlimKiller\Cron\Jobs\ContactFormJob;
 use SlimKiller\Cron\Jobs\DeployFetchJob;
 use SlimKiller\Cron\Jobs\HeartbeatJob;
+use SlimKiller\Cron\Jobs\UpdateCheckJob;
 use SlimKiller\Cron\Jobs\VisitReportJob;
 use SlimKiller\Cron\Jobs\VisitsJob;
 use SlimKiller\Database\Database;
@@ -59,6 +60,7 @@ use SlimKiller\Doctor\Checks\PhpBinaryCheck;
 use SlimKiller\Doctor\Checks\PhpVersionCheck;
 use SlimKiller\Doctor\Checks\ShortcutCheck;
 use SlimKiller\Doctor\Checks\StorageCheck;
+use SlimKiller\Doctor\Checks\UpdatesCheck;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\Environment\RuntimeEnvironment;
@@ -180,6 +182,7 @@ return [
         get(VisitReportJob::class),
         get(BackupJob::class),
         get(DeployFetchJob::class),
+        get(UpdateCheckJob::class),
     ]),
     CronRunner::class => autowire()->constructorParameter('jobs', get('cron.jobs')),
 
@@ -206,6 +209,7 @@ return [
         get(PhpBinaryCheck::class),
         get(StorageCheck::class),
         get(GitHubReachableCheck::class),
+        get(UpdatesCheck::class),
         get(CronCheck::class),
         get(BackupsCheck::class),
         get(MailCheck::class),

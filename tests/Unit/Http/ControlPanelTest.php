@@ -19,6 +19,7 @@ use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Setup\SetupLink;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
+use SlimKiller\Updates\Updates;
 use Tests\Fakes\FrozenClock;
 
 function controlPanel(Paths $paths): App
@@ -127,4 +128,21 @@ it('moves /cp to /cp/', function (): void {
 
     expect($response->getStatusCode())->toBe(301)
         ->and($response->getHeaderLine('Location'))->toBe('/cp/');
+});
+
+it('tells the administrator on the dashboard when a newer Slim Killer is out', function (): void {
+    [$browser, $container, $clock] = installedPanel();
+    $paths = $container->get(Paths::class);
+    file_put_contents($paths->root('CHANGELOG.md'), "## [Unreleased]\n\n## [0.8.1] - 2026-11-24\n");
+    enrol($browser, $container, $clock);
+
+    expect($browser->body())->not->toContain('is out');
+
+    is_dir($paths->storage()) || mkdir($paths->storage(), 0755, true);
+    file_put_contents($paths->storage(Updates::FILE), '{"checked_at":"2026-11-24T18:00:00+00:00","latest":"0.9.0"}');
+    $browser->get('/cp/');
+
+    expect($browser->body())->toContain('Slim Killer v0.9.0 is out')
+        ->and($browser->body())->toContain('This website runs v0.8.1.')
+        ->and($browser->body())->toContain('href="' . Updates::CHANGELOG_URL . '"');
 });
