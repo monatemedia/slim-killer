@@ -9,8 +9,8 @@ use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Report;
+use SlimKiller\Doctor\ReportPrinter;
 use SlimKiller\Doctor\ReportStore;
-use SlimKiller\Doctor\Status;
 use SlimKiller\Doctor\WebProbe\WebTarget;
 use SlimKiller\Support\Hammer;
 
@@ -63,38 +63,6 @@ final class DoctorCommand implements Command
 
     private function render(Report $report, Output $output): void
     {
-        $output->line();
-        $output->line('Slim Killer doctor', 'bold');
-
-        foreach ($report->sections as $section) {
-            $output->line();
-            $output->line($section->title, 'yellow');
-
-            foreach ($section->results as $result) {
-                $label = $output->paint(str_pad('[' . $result->status->label() . ']', 7), $result->status->colour());
-                $detail = $result->detail !== '' ? ': ' . $result->detail : '';
-                $output->line('  ' . $label . ' ' . $result->title . $detail);
-
-                if ($result->hint !== '') {
-                    $output->line('          ' . $result->hint, 'grey');
-                }
-            }
-        }
-
-        $output->line();
-        $summary = sprintf(
-            '%d passed, %d %s, %d failed',
-            $report->count(Status::Pass),
-            $report->count(Status::Warn),
-            $report->count(Status::Warn) === 1 ? 'warning' : 'warnings',
-            $report->count(Status::Fail),
-        );
-
-        if ($report->passed()) {
-            $output->line('Ready for Slim Killer. ' . $summary . '.', 'green');
-        } else {
-            $output->line('Not ready yet. ' . $summary . '. Fix the FAIL lines above and run the doctor again.', 'red');
-        }
-        $output->line();
+        ReportPrinter::print($report, $output, 'Slim Killer doctor', 'Ready for Slim Killer.', 'Not ready yet. %s. Fix the FAIL lines above and run the doctor again.');
     }
 }
