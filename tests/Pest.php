@@ -162,14 +162,14 @@ require __DIR__ . '/Browser/panel.php';
  *
  * @return array{0: Alerts, 1: FakeMailer}
  */
-function testAlerts(Paths $paths, ?AppConfig $config = null, bool $accepts = true): array
+function testAlerts(Paths $paths, ?AppConfig $config = null, bool $accepts = true, ?SlimKiller\Mail\Mailer $fallback = null): array
 {
     $config ??= new AppConfig(name: 'Acme Tours', timezone: 'Africa/Johannesburg', mailFrom: 'website@example.com', visitReportTo: 'owner@example.com');
     $twig = new Twig(new FilesystemLoader(dirname(__DIR__) . '/templates'), ['strict_variables' => true, 'autoescape' => 'name']);
     $twig->addGlobal('site_name', $config->name);
     $mailer = new FakeMailer($accepts);
 
-    return [new Alerts($paths, new LetterWriter($twig, $config), $mailer, $config, SiteTime::named($config->timezone)), $mailer];
+    return [new Alerts($paths, new LetterWriter($twig, $config), $mailer, $config, SiteTime::named($config->timezone), $fallback), $mailer];
 }
 
 /** Settings for a test copy (APP_ENV=staging): the doctor's warnings stay warnings. */

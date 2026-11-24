@@ -175,3 +175,29 @@ it('sends a test alert with alerts:test', function (): void {
         ->and(subjects($mailer->sent))->toBe(['Acme Tours: a test alert'])
         ->and(stream_get_contents($stream))->toContain('Sent a test alert to owner@example.com');
 });
+
+// --- When the mailbox fails ---------------------------------------------------------
+
+it('still gets an alert out through the host\'s mail when the mailbox fails, and says why', function (): void {
+    $paths = new Paths(temporaryFolder());
+    $config = new AppConfig(name: 'Acme Tours', timezone: 'Africa/Johannesburg', mailFrom: 'website@example.com', alertsTo: 'edward@example.com', smtpHost: 'smtp.titan.email');
+    $fallback = new Tests\Fakes\FakeMailer();
+    [$alerts, $mailbox] = testAlerts($paths, $config, accepts: false, fallback: $fallback);
+
+    $alerts->jobFailed('visit-report', 'The mail server refused the report.', alertAt(0));
+    $alerts->jobFailed('visit-report', 'The mail server refused the report.', alertAt(60));
+
+    expect($mailbox->sent)->toBe([])
+        ->and(subjects($fallback->sent))->toBe(['Acme Tours: the morning visit report has stopped working'])
+        ->and($fallback->sent[0]->text)->toContain('Sent by the host\'s own mail, because email through smtp.titan.email isn\'t working: The fake mail server said no.')
+        ->and($fallback->sent[0]->html)->toContain('<strong>Sent by the host\'s own mail</strong>')
+        ->and($alerts->open())->toHaveCount(1);
+});
+
+it('says nothing about the host\'s mail when the mailbox works', function (): void {
+    [$alerts, $mailer] = testAlerts(new Paths(temporaryFolder()));
+
+    $alerts->test(alertAt(0));
+
+    expect($mailer->sent[0]->text)->not->toContain('host\'s own mail');
+});

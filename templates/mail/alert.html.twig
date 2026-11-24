@@ -1,6 +1,9 @@
 {% extends 'mail/layout.html.twig' %}
 
 {% block content %}
+{% if smtp_problem %}
+<p style="margin:0 0 20px;padding:12px 14px;border-left:4px solid #f99314;background:#fff6ea;font-size:14px;line-height:1.5;"><strong>Sent by the host's own mail</strong>, because email through {{ smtp_host }} isn't working: {{ smtp_problem }}<br>Until it's fixed, the visit report and the contact form can't send either. Check SMTP_PASSWORD in .env and the mailbox itself, then run hammer alerts:test.</p>
+{% endif %}
 {% if kind == 'fixed' %}
 <h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">Fixed: {{ what }} works again</h1>
 <p style="margin:0;font-size:15px;">It stopped on {{ since }} and worked again on {{ fixed }}.</p>

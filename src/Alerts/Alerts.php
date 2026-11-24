@@ -26,6 +26,10 @@ use SlimKiller\Visits\SiteTime;
  *   unchanged.
  *
  * Alerts go to ALERTS_TO, or VISIT_REPORT_TO when that is empty, from MAIL_FROM.
+ *
+ * When the site sends through its mailbox (SMTP) and that fails, an alert is not lost
+ * with it: it goes again through the host's own mail(), and says that email through the
+ * mailbox has stopped working, and why. (SmartSMTP does the same for WordPress.)
  */
 final readonly class Alerts
 {
@@ -50,6 +54,7 @@ final readonly class Alerts
         private Mailer $mailer,
         private AppConfig $config,
         private SiteTime $time,
+        private ?Mailer $fallback = null,
     ) {}
 
     /** Who alerts go to: ALERTS_TO, or VISIT_REPORT_TO; empty when neither is set. */
@@ -198,7 +203,7 @@ final readonly class Alerts
             'test' => 'a test alert',
             default => $what . ' has stopped working',
         };
-        $letter = $this->writer->write('alert', $this->recipient(), $subject, [
+        $details = [
             'kind' => $kind,
             'what' => $what,
             'since' => $this->when((string) ($entry['since'] ?? '')),
@@ -206,9 +211,22 @@ final readonly class Alerts
             'message' => (string) ($entry['message'] ?? ''),
             'next' => $next,
             'from_setting' => $this->config->alertsTo !== '' ? 'ALERTS_TO' : 'VISIT_REPORT_TO',
-        ]);
+            'smtp_host' => $this->config->smtpHost,
+            'smtp_problem' => '',
+        ];
+        if ($this->mailer->send($this->writer->write('alert', $this->recipient(), $subject, $details))) {
+            return true;
+        }
+        if ($this->fallback === null) {
+            return false;
+        }
 
-        return $this->mailer->send($letter);
+        // The mailbox refused or couldn't be reached: the host's own mail() carries the
+        // alert, and the alert says so.
+        $problem = $this->mailer->lastProblem();
+        $details['smtp_problem'] = $problem !== '' ? $problem : 'no reason given';
+
+        return $this->fallback->send($this->writer->write('alert', $this->recipient(), $subject, $details));
     }
 
     private function when(string $atom): string

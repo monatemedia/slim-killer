@@ -11,6 +11,17 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-25
+
+Nothing to run after updating.
+
+### Added
+
+- **Alerts get out when the mailbox fails.** When the site sends through SMTP and the
+  mailbox refuses or can't be reached, an alert goes again through the host's own
+  mail(), and starts with a note: email through the mailbox isn't working, and why.
+  Learned from SmartSMTP, which does the same for WordPress.
+
 ## [0.11.1] - 2026-11-25
 
 Nothing to run after updating.
