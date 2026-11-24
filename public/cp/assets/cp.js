@@ -403,8 +403,12 @@
     dontCount.hidden = false;
   }
 
-  // A Copy button on each command (.next-cmd). The clipboard API needs a secure page;
-  // older Safari (the iPhone 7's 15) also gets the hidden-textarea way.
+  // A copy button (an icon) on each command (.next-cmd). The clipboard API needs a secure
+  // page; older Safari (the iPhone 7's 15) also gets the hidden-textarea way. If the
+  // browser won't copy, the command is selected instead, ready for Ctrl+C.
+  var COPY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h8"></path></svg>';
+  var DONE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(text);
@@ -432,6 +436,14 @@
     });
   }
 
+  function selectText(element) {
+    var range = document.createRange();
+    range.selectNodeContents(element);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
   document.querySelectorAll('.next-cmd').forEach(function (code) {
     var box = document.createElement('div');
     box.className = 'cmd-box';
@@ -441,18 +453,29 @@
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-btn';
-    button.textContent = 'Copy';
+    button.innerHTML = COPY_ICON;
     button.setAttribute('aria-label', 'Copy the command');
+    button.title = 'Copy';
     box.appendChild(button);
 
+    var reset;
     button.addEventListener('click', function () {
+      window.clearTimeout(reset);
       copyText(code.textContent.trim()).then(function () {
-        button.textContent = 'Copied';
+        button.innerHTML = DONE_ICON;
+        button.classList.add('copied');
+        button.setAttribute('aria-label', 'Copied');
+        button.title = 'Copied';
       }, function () {
-        button.textContent = 'Select it';
+        selectText(code);
+        button.setAttribute('aria-label', 'Selected: press Ctrl+C to copy');
+        button.title = 'Selected: press Ctrl+C to copy';
       });
-      window.setTimeout(function () {
-        button.textContent = 'Copy';
+      reset = window.setTimeout(function () {
+        button.innerHTML = COPY_ICON;
+        button.classList.remove('copied');
+        button.setAttribute('aria-label', 'Copy the command');
+        button.title = 'Copy';
       }, 2000);
     });
   });

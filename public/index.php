@@ -406,8 +406,10 @@ $product = [
   ol.steps p { margin: 0 0 0.5rem; color: var(--muted); }
   ol.steps pre { margin: 0; background: var(--ink); color: #f5efe8; border-radius: 8px; padding: 0.6rem 0.9rem; font-family: var(--mono); font-size: 0.84rem; overflow-x: auto; }
   .cmd { position: relative; }
-  .cmd pre { padding-right: 5.2rem; }
-  .copy-btn { position: absolute; top: 0.45rem; right: 0.45rem; padding: 0.25rem 0.7rem; border: 1px solid #5a534c; border-radius: 6px; background: #2c2723; color: #f5efe8; font: inherit; font-size: 0.8rem; cursor: pointer; }
+  .cmd pre { padding-right: 3rem; }
+  .copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; border: 1px solid #5a534c; border-radius: 6px; background: #2c2723; color: #f5efe8; cursor: pointer; }
+  .copy-btn svg { display: block; }
+  .copy-btn.copied { color: #6fd08c; border-color: #6fd08c; }
   .copy-btn:hover { border-color: var(--orange); }
   .copy-area { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; }
 
@@ -796,9 +798,12 @@ git checkout <?= $e($version !== '' ? $version : 'main') ?></pre></li>
 </footer>
 
 <script>
-// A Copy button on each command in "Getting started". The clipboard API needs a secure
-// page; opened from a file, or on older Safari, the hidden-textarea way is used.
+// A copy button (an icon) on each command in "Getting started". The clipboard API needs
+// a secure page; opened from a file, or on older Safari, the hidden-textarea way is used.
+// If the browser won't copy, the commands are selected instead, ready for Ctrl+C.
 (function () {
+  var COPY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h8"></path></svg>';
+  var DONE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(text);
@@ -817,6 +822,13 @@ git checkout <?= $e($version !== '' ? $version : 'main') ?></pre></li>
       if (copied) { resolve(); } else { reject(new Error('copy refused')); }
     });
   }
+  function selectText(element) {
+    var range = document.createRange();
+    range.selectNodeContents(element);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
   document.querySelectorAll('ol.steps pre').forEach(function (pre) {
     var box = document.createElement('div');
     box.className = 'cmd';
@@ -825,16 +837,29 @@ git checkout <?= $e($version !== '' ? $version : 'main') ?></pre></li>
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-btn';
-    button.textContent = 'Copy';
+    button.innerHTML = COPY_ICON;
     button.setAttribute('aria-label', 'Copy the commands');
+    button.title = 'Copy';
     box.appendChild(button);
+    var reset;
     button.addEventListener('click', function () {
+      clearTimeout(reset);
       copyText(pre.textContent.trim()).then(function () {
-        button.textContent = 'Copied';
+        button.innerHTML = DONE_ICON;
+        button.classList.add('copied');
+        button.setAttribute('aria-label', 'Copied');
+        button.title = 'Copied';
       }, function () {
-        button.textContent = 'Select it';
+        selectText(pre);
+        button.setAttribute('aria-label', 'Selected: press Ctrl+C to copy');
+        button.title = 'Selected: press Ctrl+C to copy';
       });
-      setTimeout(function () { button.textContent = 'Copy'; }, 2000);
+      reset = setTimeout(function () {
+        button.innerHTML = COPY_ICON;
+        button.classList.remove('copied');
+        button.setAttribute('aria-label', 'Copy the commands');
+        button.title = 'Copy';
+      }, 2000);
     });
   });
 })();

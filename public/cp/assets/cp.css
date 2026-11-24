@@ -375,21 +375,26 @@ header.page-header {
 
 /* The Copy button sits over the right end of the command (cp.js adds it). */
 .cmd-box { position: relative; margin-top: 8px; }
-.cmd-box .next-cmd { margin-top: 0; padding-right: 72px; }
+.cmd-box .next-cmd { margin-top: 0; padding-right: 44px; }
 .copy-btn {
   position: absolute;
   top: 50%;
-  right: 6px;
+  right: 5px;
   transform: translateY(-50%);
-  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface, var(--bg));
   color: var(--text);
-  font: inherit;
-  font-size: 0.8rem;
   cursor: pointer;
 }
+.copy-btn svg { display: block; }
+.copy-btn.copied { color: #2e9e5b; border-color: #2e9e5b; }
 .copy-area { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; }
 
 .next-cmd {
