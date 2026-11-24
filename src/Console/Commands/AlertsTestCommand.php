@@ -8,6 +8,7 @@ use SlimKiller\Alerts\Alerts;
 use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
+use SlimKiller\Mail\Mailer;
 use SlimKiller\Support\Clock;
 
 /** `hammer alerts:test`: sends a test alert, to try the address and the mailbox before anything breaks. */
@@ -16,6 +17,7 @@ final readonly class AlertsTestCommand implements Command
     public function __construct(
         private Alerts $alerts,
         private Clock $clock,
+        private Mailer $mailer,
     ) {}
 
     public function name(): string
@@ -36,7 +38,8 @@ final readonly class AlertsTestCommand implements Command
             return 1;
         }
         if (! $this->alerts->test($this->clock->now())) {
-            $output->line('The host did not send the test alert. Check that MAIL_FROM is a mailbox on this website\'s domain.', 'red');
+            $problem = $this->mailer->lastProblem();
+            $output->line('The test alert was not sent' . ($problem !== '' ? ': ' . $problem : '. Check that MAIL_FROM is a mailbox on this website\'s domain.'), 'red');
 
             return 1;
         }

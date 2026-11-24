@@ -168,7 +168,7 @@ it('sends a test alert with alerts:test', function (): void {
     [$alerts, $mailer] = testAlerts(new Paths(temporaryFolder()));
     $stream = fopen('php://memory', 'w+');
 
-    $code = (new AlertsTestCommand($alerts, FrozenClock::at(ALERT_NOW)))->run(new Input('alerts:test'), new Output($stream, false));
+    $code = (new AlertsTestCommand($alerts, FrozenClock::at(ALERT_NOW), $mailer))->run(new Input('alerts:test'), new Output($stream, false));
     rewind($stream);
 
     expect($code)->toBe(0)
