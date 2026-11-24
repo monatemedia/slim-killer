@@ -55,4 +55,5 @@ echo json_encode(array(
     'disabled_functions' => $disabled,
     'jpeg_write' => $jpeg,
     'webp_read' => function_exists('imagecreatefromwebp') && ! empty($gd['WebP Support']),
+    'avif_read' => function_exists('imagecreatefromavif') && ! empty($gd['AVIF Support']),
 ));

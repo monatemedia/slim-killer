@@ -30,6 +30,9 @@ final class ImageSupportCheck implements PhpCheck
         if ($environment->readsWebp()) {
             $results[] = CheckResult::info('WebP photos can be uploaded too');
         }
+        if ($environment->readsAvif()) {
+            $results[] = CheckResult::info('AVIF photos can be uploaded too');
+        }
 
         return $results;
     }

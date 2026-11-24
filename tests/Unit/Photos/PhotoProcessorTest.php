@@ -54,6 +54,28 @@ it('refuses what is not a photo it can use', function (string $bytes, string $me
     'a GIF' => [base64_decode('R0lGODlhAQABAAAAACw='), 'not a photo'],
 ]);
 
+it('takes an AVIF photo where the host can read it, and makes it a JPEG', function (): void {
+    if (! PhotoProcessor::readsAvif() || ! function_exists('imageavif')) {
+        $this->markTestSkipped('This PHP\'s GD has no AVIF.');
+    }
+    $image = imagecreatetruecolor(300, 200);
+    imagefill($image, 0, 0, (int) imagecolorallocate($image, 200, 120, 40));
+    ob_start();
+    imageavif($image, null, 60);
+
+    $photo = (new PhotoProcessor())->process(photoFile((string) ob_get_clean(), 'avif'));
+
+    expect($photo->extension)->toBe('jpg')
+        ->and(photoSize($photo->bytes))->toBe([300, 200, 'image/jpeg']);
+});
+
+it('says how to make a JPEG from a HEIC photo, which GD cannot read', function (string $brand): void {
+    $heic = "\x00\x00\x00\x18ftyp" . $brand . "\x00\x00\x00\x00mif1" . $brand . str_repeat("\x00", 64);
+
+    expect(fn() => (new PhotoProcessor())->process(photoFile($heic, 'heic')))
+        ->toThrow(PhotoProblem::class, 'HEIC photos can\'t be used here yet. On a Mac, open it in Preview');
+})->with(['heic', 'heix', 'hevc']);
+
 it('refuses a file over 20 MB before reading it', function (): void {
     $path = photoFile('', 'jpg');
     $handle = fopen($path, 'r+');

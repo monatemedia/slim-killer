@@ -11,6 +11,21 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-24
+
+After updating, run `hammer web:install`, so the website serves the panel's new files.
+
+### Added
+
+- **AVIF photos can be uploaded** where the host's PHP reads AVIF (Hostinger's does).
+  Like every upload, they're turned the right way up, sized and saved again as JPEG,
+  dropping their location data. The setup page and `hammer doctor` say "AVIF photos can
+  be uploaded too" on hosts that can.
+- **HEIC photos (an iPhone's own format):** an iPhone already sends JPEG to the panel by
+  itself. A HEIC file uploaded from a computer is turned into a JPEG in the browser where
+  the browser reads HEIC (Safari 17 and later); elsewhere, and on the server, the panel
+  says how to export it as JPEG instead of "not a photo".
+
 ## [0.3.2] - 2026-11-24
 
 After updating, run `hammer web:install`, so the website serves the panel's new files.

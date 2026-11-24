@@ -34,4 +34,7 @@ interface Environment
 
     /** Can GD read WebP, so clients can upload WebP photos too? */
     public function readsWebp(): bool;
+
+    /** Can GD read AVIF, so clients can upload AVIF photos too? */
+    public function readsAvif(): bool;
 }

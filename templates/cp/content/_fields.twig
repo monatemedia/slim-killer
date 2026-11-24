@@ -89,12 +89,12 @@
           <input type="hidden" name="{{ name }}" value="{{ text }}" data-photo-name>
           <div class="photo-buttons">
             <label class="btn btn-quiet photo-upload">Upload a new photo
-              <input id="{{ id }}" type="file" name="upload[{{ path }}]" accept="image/jpeg,image/png,image/webp" class="visually-hidden" data-photo-upload{{ aria|raw }}>
+              <input id="{{ id }}" type="file" name="upload[{{ path }}]" accept="image/jpeg,image/png,image/webp,image/avif" class="visually-hidden" data-photo-upload{{ aria|raw }}>
             </label>
             <button type="button" class="btn btn-quiet" data-photo-choose hidden>Choose a photo</button>
           </div>
         </div>
-        <p class="field-help">A JPEG, PNG or WebP of up to 20 MB. A new photo is added to the website when you press Save.</p>
+        <p class="field-help">A JPEG, PNG, WebP or AVIF of up to 20 MB. A new photo is added to the website when you press Save.</p>
       {% elseif editor == 'tags' %}
         <input id="{{ id }}" name="{{ name }}" type="text" value="{{ value is iterable ? value|join(', ') : value }}"{{ aria|raw }}>
         <p class="field-help">Separate them with commas.</p>

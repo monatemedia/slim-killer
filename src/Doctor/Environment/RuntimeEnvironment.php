@@ -75,4 +75,9 @@ final class RuntimeEnvironment implements Environment
     {
         return function_exists('imagecreatefromwebp') && function_exists('gd_info') && ! empty(gd_info()['WebP Support']);
     }
+
+    public function readsAvif(): bool
+    {
+        return function_exists('imagecreatefromavif') && function_exists('gd_info') && ! empty(gd_info()['AVIF Support']);
+    }
 }

@@ -10,8 +10,8 @@ use GdImage;
 /**
  * Turns an uploaded file into a photo the site can use, or refuses it.
  *
- * Nothing the client uploaded is kept: the file must really be a JPEG, PNG or WebP
- * (its first bytes and its content agree), it is decoded by GD, turned the right way up
+ * Nothing the client uploaded is kept: the file must really be a JPEG, PNG, WebP or AVIF
+ * (its first bytes and its content agree; AVIF where the host's GD reads it), it is decoded by GD, turned the right way up
  * (a phone's EXIF orientation), made at most 2400 px on the long edge, and written out
  * again. That drops EXIF (GPS location included) and anything hidden in the file, such as
  * PHP code. Photos become JPEG at quality 85; a PNG with transparency stays PNG.
@@ -31,7 +31,17 @@ final class PhotoProcessor
         IMAGETYPE_JPEG => 'image/jpeg',
         IMAGETYPE_PNG => 'image/png',
         IMAGETYPE_WEBP => 'image/webp',
+        IMAGETYPE_AVIF => 'image/avif',
     ];
+
+    /**
+     * The major brands of a HEIC file (an iPhone's own format). GD can't read it, so it gets
+     * its own message. An iPhone sends JPEG to the panel by itself; HEIC arrives only when
+     * a file copied off a phone is uploaded from a computer.
+     */
+    private const array HEIC_BRANDS = ['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis'];
+
+    public const string HEIC_MESSAGE = 'HEIC photos can\'t be used here yet. On a Mac, open it in Preview and export it as JPEG; on Windows, open it in Photos and save a copy as JPEG.';
 
     public function process(string $file): ProcessedPhoto
     {
@@ -43,11 +53,17 @@ final class PhotoProcessor
             throw new PhotoProblem(sprintf('That photo is %.0f MB; the most is 20 MB. Use a smaller copy.', $size / 1024 / 1024));
         }
 
+        if ($this->isHeic($file)) {
+            throw new PhotoProblem(self::HEIC_MESSAGE);
+        }
         $info = @getimagesize($file);
         $type = is_array($info) ? $info[2] : null;
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file);
         if ($type === null || ! isset(self::TYPES[$type]) || $mime !== self::TYPES[$type]) {
-            throw new PhotoProblem('That file is not a photo the website can use. Use a JPEG, PNG or WebP photo.');
+            throw new PhotoProblem('That file is not a photo the website can use. Use a JPEG, PNG, WebP or AVIF photo.');
+        }
+        if ($type === IMAGETYPE_AVIF && ! self::readsAvif()) {
+            throw new PhotoProblem('This server can\'t read AVIF photos. Use a JPEG, PNG or WebP copy.');
         }
         [$width, $height] = $info;
         if ($width < 1 || $height < 1 || $width * $height > self::MAX_PIXELS) {
@@ -57,6 +73,7 @@ final class PhotoProcessor
         $image = match ($type) {
             IMAGETYPE_JPEG => @imagecreatefromjpeg($file),
             IMAGETYPE_PNG => @imagecreatefrompng($file),
+            IMAGETYPE_AVIF => @imagecreatefromavif($file),
             default => @imagecreatefromwebp($file),
         };
         if (! $image instanceof GdImage) {
@@ -73,6 +90,20 @@ final class PhotoProcessor
         $preview = $this->jpeg($this->fit($image, self::PREVIEW_EDGE), 75);
 
         return new ProcessedPhoto($bytes, $transparent ? 'png' : 'jpg', $preview, imagesx($image), imagesy($image));
+    }
+
+    /** Can this PHP's GD read AVIF? Not every build has it (it needs libavif). */
+    public static function readsAvif(): bool
+    {
+        return function_exists('imagecreatefromavif') && function_exists('gd_info') && ! empty(gd_info()['AVIF Support']);
+    }
+
+    /** A HEIC file starts with an "ftyp" box naming one of its brands. */
+    private function isHeic(string $file): bool
+    {
+        $head = (string) file_get_contents($file, false, null, 0, 12);
+
+        return strlen($head) === 12 && substr($head, 4, 4) === 'ftyp' && in_array(substr($head, 8, 4), self::HEIC_BRANDS, true);
     }
 
     /** Applies the EXIF orientation a phone writes instead of turning the pixels. */
