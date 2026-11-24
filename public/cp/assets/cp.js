@@ -403,4 +403,58 @@
     dontCount.hidden = false;
   }
 
+  // A Copy button on each command (.next-cmd). The clipboard API needs a secure page;
+  // older Safari (the iPhone 7's 15) also gets the hidden-textarea way.
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.className = 'copy-area';
+      document.body.appendChild(area);
+      area.select();
+      area.setSelectionRange(0, text.length);
+      var copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (e) {
+        copied = false;
+      }
+      document.body.removeChild(area);
+      if (copied) {
+        resolve();
+      } else {
+        reject(new Error('copy refused'));
+      }
+    });
+  }
+
+  document.querySelectorAll('.next-cmd').forEach(function (code) {
+    var box = document.createElement('div');
+    box.className = 'cmd-box';
+    code.parentNode.insertBefore(box, code);
+    box.appendChild(code);
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-btn';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy the command');
+    box.appendChild(button);
+
+    button.addEventListener('click', function () {
+      copyText(code.textContent.trim()).then(function () {
+        button.textContent = 'Copied';
+      }, function () {
+        button.textContent = 'Select it';
+      });
+      window.setTimeout(function () {
+        button.textContent = 'Copy';
+      }, 2000);
+    });
+  });
+
 })();

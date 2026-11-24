@@ -179,6 +179,7 @@ php hammer user:create --email=client@example.com --name="Client Name"
 php hammer user:reset --email=client@example.com
                                # lost phone or password: clear both, print a new welcome link
 php hammer migrate             # bring the database up to date
+php hammer setup:link          # a private link to the setup page, for one hour
 php hammer cron:run            # the one cron line, every minute: runs whatever is due (-v lists each job)
 php hammer visits              # what the visit counter counted in the last 7 days (--days=30)
 php hammer backup              # back up the database now, here and to Google Drive

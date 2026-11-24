@@ -26,6 +26,7 @@ use SlimKiller\Console\Commands\DeployRollbackCommand;
 use SlimKiller\Console\Commands\DoctorCommand;
 use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
+use SlimKiller\Console\Commands\SetupLinkCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
 use SlimKiller\Console\Commands\VisitsCommand;
@@ -131,6 +132,7 @@ return [
     'console.commands' => add([
         get(InstallCommand::class),
         get(DoctorCommand::class),
+        get(SetupLinkCommand::class),
         get(MigrateCommand::class),
         get(UserCreateCommand::class),
         get(UserResetCommand::class),

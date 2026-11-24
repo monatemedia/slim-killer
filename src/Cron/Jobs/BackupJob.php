@@ -9,6 +9,7 @@ use SlimKiller\Backups\BackupFailed;
 use SlimKiller\Backups\Backups;
 use SlimKiller\Cron\CronJob;
 use SlimKiller\Cron\JobFailed;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Visits\SiteTime;
 
 /**
@@ -23,6 +24,7 @@ final readonly class BackupJob implements CronJob
     public function __construct(
         private Backups $backups,
         private SiteTime $time,
+        private AppConfig $config,
     ) {}
 
     public function name(): string
@@ -37,6 +39,9 @@ final readonly class BackupJob implements CronJob
 
     public function run(DateTimeImmutable $now): string
     {
+        if ($this->config->backupsOff) {
+            return 'Backups are off (BACKUPS="off" in .env).';
+        }
         if ((int) $now->setTimezone($this->time->zone)->format('G') < self::FROM_HOUR) {
             return 'The day\'s backup is made after 0' . self::FROM_HOUR . ':00.';
         }

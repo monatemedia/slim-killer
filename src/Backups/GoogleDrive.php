@@ -96,6 +96,12 @@ final class GoogleDrive
         }
 
         $code = trim($landedOn);
+        if (str_contains($code, '<') || str_contains($code, '>')) {
+            throw new BackupFailed('Put the address the browser landed on in place of <the address>, between single quotes.');
+        }
+        if (str_contains($code, '/o/oauth2/')) {
+            throw new BackupFailed('That is the link you opened, not the address the browser landed on. After Continue, the address bar changes to one starting ' . self::REDIRECT . '?state=: copy that one.');
+        }
         if (str_contains($code, '?')) {
             parse_str((string) parse_url($code, PHP_URL_QUERY), $query);
             if (is_string($query['error'] ?? null)) {

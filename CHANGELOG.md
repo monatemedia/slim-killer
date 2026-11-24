@@ -11,6 +11,37 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-24
+
+Smaller fixes after connecting the first Google Drive. Nothing to run after updating.
+
+### Added
+
+- **Copy buttons** on the commands on the setup page, and on "Getting started" on the
+  Slim Killer page.
+- **Backups can be turned off** with `BACKUPS="off"`. Cron then makes none, and
+  `hammer doctor` says what's at stake instead of warning: the panel's accounts and the
+  visit history. Pages and photos are in GitHub either way.
+- **A row in the comparison table:** "If the database is lost".
+
+### Changed
+
+- **`hammer doctor` no longer hands out a setup page link** on every run. It ends with
+  "To see this report in a browser: hammer setup:link", and the new `hammer setup:link`
+  gives the private link (one hour, each new one replacing the last).
+
+### Fixed
+
+- **`hammer backup:connect` says plainly which address to copy:** an IMPORTANT note that
+  it's the one the browser landed on (`http://127.0.0.1:53682/?state=…`), not the link
+  that was opened. Pasting the opened link, or the `<the address>` placeholder, now gets
+  its own message instead of "There is no code".
+- **The doctor says "1 warning"**, not "1 warnings".
+
+## [0.3.0] - 2026-11-24
+
+Backups. After updating, see the wiki page "Backups" to connect the site's Google Drive.
+
 ### Added
 
 - **Backups.** Cron backs up the control panel's database every day after 02:00 (site
