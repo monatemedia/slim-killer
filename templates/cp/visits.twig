@@ -111,7 +111,9 @@
     <h2 class="card-title">Your own visits</h2>
     <p class="form-help">While you're signed in, nothing you do on your website is counted. To leave this browser out even when you're signed out (on a phone you check the website with, say), switch it off here. It's kept in this browser only.</p>
     {# Shown and kept up to date by cp.js; without JavaScript there is nothing to switch. #}
-    <button type="button" class="btn btn-quiet" data-dont-count hidden>Don't count this browser</button>
+    <div class="form-inline">
+      <button type="button" class="btn btn-quiet" data-dont-count hidden>Don't count this browser</button>
+    </div>
   </div>
 </section>
 {% endblock %}
