@@ -11,6 +11,15 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-11-24
+
+After updating, nothing to run: the template is read straight from the release.
+
+### Fixed
+
+- **"Don't count this browser" has room above it** on the Visits page, like the
+  dashboard's Sign out button, instead of touching the words above it.
+
 ## [0.10.1] - 2026-11-24
 
 After updating, run `hammer web:install` (it copies the panel's styles).
