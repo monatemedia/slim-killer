@@ -11,6 +11,22 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-24
+
+After updating, run `hammer shortcut` again on a server where plain `hammer` is not found
+after signing in.
+
+### Fixed
+
+- **The hammer shortcut now works as soon as you sign in over SSH.** `hammer shortcut`
+  put `~/bin` on the PATH only in `~/.bashrc`, which an SSH sign-in skips on hosts whose
+  `~/.profile` doesn't load it. It now also adds the line to the file sign-in reads
+  (`~/.bash_profile`, or `~/.profile` when there is none), unless that file loads
+  `~/.bashrc` already.
+- **The doctor no longer says the shortcut works when sign-in can't find it.** It says
+  which file is missing the line, and to run `hammer shortcut` again. Hints keep the
+  PHP's whole path until then.
+
 ## [0.8.0] - 2026-11-24
 
 After updating, set `APP_ENV` in `.env` (`production` on a live site; it is the default

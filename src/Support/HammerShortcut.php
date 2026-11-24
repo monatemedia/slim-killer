@@ -10,14 +10,18 @@ namespace SlimKiller\Support;
  * a shell finds as "php" isn't always the one Slim Killer needs.
  *
  * `hammer shortcut` writes ~/bin/hammer, a three-line script that runs this server's
- * hammer with the PHP it was started with, and adds ~/bin to the PATH in ~/.bashrc (one
- * marked line, added once). Only the hosting account's own files change.
+ * hammer with the PHP it was started with, and adds ~/bin to the PATH (one marked line,
+ * added once) in ~/.bashrc and in the file an SSH sign-in reads: ~/.bash_profile, or
+ * ~/.profile on hosts without one. Only the hosting account's own files change.
  */
 final readonly class HammerShortcut
 {
     public const string MARK = 'Written by Slim Killer (hammer shortcut)';
 
     public const string PATH_LINE = 'export PATH="$HOME/bin:$PATH"';
+
+    /** Bash reads the first of these that exists when you sign in over SSH. */
+    private const array SIGN_IN_FILES = ['.bash_profile', '.bash_login', '.profile'];
 
     public function __construct(
         private string $home,
@@ -40,10 +44,33 @@ final readonly class HammerShortcut
         return null;
     }
 
-    /** Is the shortcut there, and does it run this Slim Killer? */
+    /** Is the shortcut there, does it run this Slim Killer, and does signing in find it? */
     public static function installedFor(string $root): bool
     {
-        return self::forAccount($root)?->installed() ?? false;
+        $shortcut = self::forAccount($root);
+
+        return $shortcut !== null && $shortcut->installed() && $shortcut->foundAtSignIn();
+    }
+
+    /** The file bash reads when you sign in over SSH (~/.profile when there is none yet). */
+    public function signInFile(): string
+    {
+        foreach (self::SIGN_IN_FILES as $name) {
+            if (is_file($this->home . '/' . $name)) {
+                return $this->home . '/' . $name;
+            }
+        }
+
+        return $this->home . '/.profile';
+    }
+
+    /** Does signing in over SSH put ~/bin on the PATH, directly or by loading ~/.bashrc? */
+    public function foundAtSignIn(): bool
+    {
+        $signIn = self::read($this->signInFile());
+
+        return str_contains($signIn, self::PATH_LINE)
+            || (self::loadsBashrc($signIn) && str_contains(self::read($this->home . '/.bashrc'), self::PATH_LINE));
     }
 
     public function script(): string
@@ -85,18 +112,54 @@ final readonly class HammerShortcut
             $changed[] = "Wrote {$script}, which runs {$this->hammer()} with {$php}.";
         }
 
-        $bashrc = $this->home . '/.bashrc';
-        $current = is_file($bashrc) ? (string) file_get_contents($bashrc) : '';
-        if (! str_contains($current, self::PATH_LINE)) {
-            $prefix = $current === '' || str_ends_with($current, "\n") ? '' : "\n";
-            $line = $prefix . "\n# Added by Slim Killer (hammer shortcut): your own commands, in ~/bin.\n" . self::PATH_LINE . "\n";
-            if (file_put_contents($bashrc, $line, FILE_APPEND) === false) {
-                throw new \RuntimeException("Could not add ~/bin to the PATH in {$bashrc}.");
+        foreach ($this->pathFiles() as $file) {
+            if ($this->addPathLine($file)) {
+                $changed[] = "Added ~/bin to the PATH in {$file}.";
             }
-            $changed[] = "Added ~/bin to the PATH in {$bashrc}.";
         }
 
         return $changed;
+    }
+
+    /**
+     * ~/.bashrc for a shell opened inside a session, and the sign-in file for SSH, unless
+     * that file already loads ~/.bashrc.
+     *
+     * @return list<string>
+     */
+    private function pathFiles(): array
+    {
+        $bashrc = $this->home . '/.bashrc';
+        $signIn = $this->signInFile();
+
+        return self::loadsBashrc(self::read($signIn)) ? [$bashrc] : [$bashrc, $signIn];
+    }
+
+    /** Adds the PATH line to the end of a file, once; true when it was added. */
+    private function addPathLine(string $file): bool
+    {
+        $current = self::read($file);
+        if (str_contains($current, self::PATH_LINE)) {
+            return false;
+        }
+        $prefix = $current === '' || str_ends_with($current, "\n") ? '' : "\n";
+        $line = $prefix . "\n# Added by Slim Killer (hammer shortcut): your own commands, in ~/bin.\n" . self::PATH_LINE . "\n";
+        if (file_put_contents($file, $line, FILE_APPEND) === false) {
+            throw new \RuntimeException("Could not add ~/bin to the PATH in {$file}.");
+        }
+
+        return true;
+    }
+
+    /** Does this sign-in file run ~/.bashrc (". ~/.bashrc" or "source $HOME/.bashrc")? */
+    private static function loadsBashrc(string $text): bool
+    {
+        return preg_match('#^\s*(\.|source)\s+["\']?(~|\$HOME|\$\{HOME\})/\.bashrc\b#m', $text) === 1;
+    }
+
+    private static function read(string $file): string
+    {
+        return is_file($file) ? (string) file_get_contents($file) : '';
     }
 
     /**
