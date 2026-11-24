@@ -10,6 +10,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 // Hints name hammer commands with the PHP that is running now.
 SlimKiller\Support\Hammer::usePhp(PHP_BINARY);
+SlimKiller\Support\Hammer::useShortcut(SlimKiller\Support\HammerShortcut::installedFor(dirname(__DIR__)));
 
 /** @var Psr\Container\ContainerInterface $container */
 $container = require __DIR__ . '/container.php';

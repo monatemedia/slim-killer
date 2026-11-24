@@ -28,6 +28,7 @@ use SlimKiller\Console\Commands\DoctorCommand;
 use SlimKiller\Console\Commands\InstallCommand;
 use SlimKiller\Console\Commands\MigrateCommand;
 use SlimKiller\Console\Commands\SetupLinkCommand;
+use SlimKiller\Console\Commands\ShortcutCommand;
 use SlimKiller\Console\Commands\UserCreateCommand;
 use SlimKiller\Console\Commands\UserResetCommand;
 use SlimKiller\Console\Commands\VisitsCommand;
@@ -55,6 +56,7 @@ use SlimKiller\Doctor\Checks\LimitsCheck;
 use SlimKiller\Doctor\Checks\MailCheck;
 use SlimKiller\Doctor\Checks\PhpBinaryCheck;
 use SlimKiller\Doctor\Checks\PhpVersionCheck;
+use SlimKiller\Doctor\Checks\ShortcutCheck;
 use SlimKiller\Doctor\Checks\StorageCheck;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
@@ -142,6 +144,7 @@ return [
         get(InstallCommand::class),
         get(DoctorCommand::class),
         get(SetupLinkCommand::class),
+        get(ShortcutCommand::class),
         get(MigrateCommand::class),
         get(UserCreateCommand::class),
         get(UserResetCommand::class),
@@ -200,6 +203,7 @@ return [
         get(BackupsCheck::class),
         get(MailCheck::class),
         get(AlertsCheck::class),
+        get(ShortcutCheck::class),
     ]),
 
     Doctor::class => autowire()
