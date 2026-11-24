@@ -7,6 +7,7 @@ namespace SlimKiller\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\WebProbe\WebProbe;
 use SlimKiller\Doctor\WebProbe\WebTarget;
+use SlimKiller\Support\Hammer;
 
 /**
  * Runs every check and collects the results into a report:
@@ -43,7 +44,7 @@ final class Doctor
             $sections[] = new Section(self::WEBSITE_NOT_CHECKED, [CheckResult::warn(
                 'Website not checked',
                 'run again with --url and --webroot to check the website\'s PHP and web server',
-                'Example: php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html',
+                'Example: ' . Hammer::command('doctor --url=https://example.com --webroot=~/domains/example.com/public_html'),
             )]);
         } else {
             $outcome = $this->webProbe->probe($website);

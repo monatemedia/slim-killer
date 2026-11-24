@@ -50,7 +50,7 @@ it('emails once when a cron job fails twice in a row, and once when it works aga
         ->and($mailer->sent[0]->to)->toBe('owner@example.com')
         ->and($mailer->sent[0]->text)->toContain('Since: 24 November 2026, 02:15')
         ->and($mailer->sent[0]->text)->toContain('Backend Error')
-        ->and($mailer->sent[0]->text)->toContain('Run hammer backup on the server')
+        ->and($mailer->sent[0]->text)->toContain('Run php hammer backup on the server')
         ->and($mailer->sent[1]->text)->toContain('It stopped on 24 November 2026, 02:15 and worked again on 24 November 2026, 05:15.')
         ->and($alerts->open())->toBe([]);
 });

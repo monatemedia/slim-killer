@@ -17,7 +17,7 @@
 {% if not ready %}
 <section class="card"><div class="card-pad">
   <h2 class="card-title">The visit counter is not set up yet</h2>
-  <p class="form-help">Ask your web developer to run <code>php hammer migrate</code> on the server.</p>
+  <p class="form-help">Ask your web developer to run <code>{{ hammer('migrate') }}</code> on the server.</p>
 </div></section>
 {% elseif not counted %}
 <section class="card"><div class="card-pad">

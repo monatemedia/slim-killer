@@ -7,6 +7,7 @@ namespace SlimKiller\Backups;
 use DateTimeImmutable;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Folder;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Support\Paths;
 use SlimKiller\Visits\SiteTime;
 
@@ -75,13 +76,13 @@ final readonly class Backups
     public function checkNewest(): string
     {
         if (! $this->drive->isConnected()) {
-            $newest = $this->database->newestHere() ?? throw new BackupFailed('There is no backup yet. Run hammer backup to make one.');
+            $newest = $this->database->newestHere() ?? throw new BackupFailed('There is no backup yet. Run ' . Hammer::command('backup') . ' to make one.');
 
             return 'Restored ' . basename($newest) . ' from this server into a temporary copy: '
                 . $this->database->check($newest) . '. (Google Drive is not connected, so it was not checked.)';
         }
 
-        $newest = $this->drive->backups()[0] ?? throw new BackupFailed('There is no backup on Google Drive yet. Run hammer backup to make one.');
+        $newest = $this->drive->backups()[0] ?? throw new BackupFailed('There is no backup on Google Drive yet. Run ' . Hammer::command('backup') . ' to make one.');
         $backup = $this->fromDrive($newest);
         try {
             $summary = $this->database->check($backup);
@@ -162,7 +163,7 @@ final readonly class Backups
     {
         $name = basename($path);
         if (! $this->drive->isConnected()) {
-            return "Saved {$name} on this server only: Google Drive is not connected (hammer backup:connect).";
+            return "Saved {$name} on this server only: Google Drive is not connected (" . Hammer::command('backup:connect') . ').';
         }
 
         $locked = $this->temporary($name . BackupEncryption::SUFFIX);

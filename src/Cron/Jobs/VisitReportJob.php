@@ -12,6 +12,7 @@ use SlimKiller\Database\Database;
 use SlimKiller\Mail\LetterWriter;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Visits\SiteTime;
 use SlimKiller\Visits\VisitReport;
 
@@ -53,7 +54,7 @@ final readonly class VisitReportJob implements CronJob
             return 'No visit report: MAIL_FROM is empty.';
         }
         if (! Database::hasTable($this->pdo, 'visit_reports')) {
-            return 'The visit counter is not set up yet. Run hammer migrate.';
+            return 'The visit counter is not set up yet. Run ' . Hammer::command('migrate') . '.';
         }
         if ((int) $now->setTimezone($this->time->zone)->format('G') < self::FROM_HOUR) {
             return 'The visit report goes after 0' . self::FROM_HOUR . ':00.';

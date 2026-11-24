@@ -8,6 +8,9 @@ use SlimKiller\Console\Output;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+// Hints name hammer commands with the PHP that is running now.
+SlimKiller\Support\Hammer::usePhp(PHP_BINARY);
+
 /** @var Psr\Container\ContainerInterface $container */
 $container = require __DIR__ . '/container.php';
 

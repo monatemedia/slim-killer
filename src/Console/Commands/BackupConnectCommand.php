@@ -11,6 +11,7 @@ use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 
 /**
  * `hammer backup:connect`: lets backups go to the site's own Google Drive. Two steps,
@@ -61,7 +62,7 @@ final readonly class BackupConnectCommand implements Command
             $output->line();
             $output->line('3. Within a few minutes, run this with that address between the single quotes:');
             $output->line();
-            $output->line('   ' . $input->script . " backup:connect --code='<the address>'", 'cyan');
+            $output->line('   ' . Hammer::command("backup:connect --code='<the address>'"), 'cyan');
 
             return 0;
         }
@@ -75,9 +76,9 @@ final readonly class BackupConnectCommand implements Command
         }
         $output->line("Connected. Backups go to the folder \"{$this->config->backupFolder}\" in that Google Drive.", 'green');
         if (! $this->encryption->isSetUp()) {
-            $output->line('Backups are sent encrypted: run ' . $input->script . ' backup:key next, and save the key in your password manager.', 'yellow');
+            $output->line('Backups are sent encrypted: run ' . Hammer::command('backup:key') . ' next, and save the key in your password manager.', 'yellow');
         }
-        $output->line('Run ' . $input->script . ' backup to send the first one now, then ' . $input->script . ' backup:check to test-restore it.');
+        $output->line('Run ' . Hammer::command('backup') . ' to send the first one now, then ' . Hammer::command('backup:check') . ' to test-restore it.');
 
         return 0;
     }

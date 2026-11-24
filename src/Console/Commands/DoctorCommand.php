@@ -12,6 +12,7 @@ use SlimKiller\Doctor\Report;
 use SlimKiller\Doctor\ReportStore;
 use SlimKiller\Doctor\Status;
 use SlimKiller\Doctor\WebProbe\WebTarget;
+use SlimKiller\Support\Hammer;
 
 final class DoctorCommand implements Command
 {
@@ -37,7 +38,7 @@ final class DoctorCommand implements Command
 
         if (($url === null) !== ($webRoot === null)) {
             $output->line('Give both --url and --webroot, or neither.', 'red');
-            $output->line('  php hammer doctor --url=https://example.com --webroot=~/domains/example.com/public_html');
+            $output->line('  ' . Hammer::command('doctor --url=https://example.com --webroot=~/domains/example.com/public_html'));
 
             return 2;
         }
@@ -51,7 +52,7 @@ final class DoctorCommand implements Command
         if ($this->reports->save($report)) {
             // The link to see this report in a browser is its own command, so a routine
             // check doesn't hand out a new private link every time.
-            $output->line('To see this report in a browser: ' . $input->script . ' setup:link', 'grey');
+            $output->line('To see this report in a browser: ' . Hammer::command('setup:link'), 'grey');
             $output->line();
         } else {
             $output->line('The report could not be saved for the setup page. Is the storage folder writable?', 'red');

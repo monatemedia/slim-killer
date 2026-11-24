@@ -216,7 +216,7 @@ it('says when the visit counter is not set up yet', function (): void {
     $time = SiteTime::named('UTC');
     $job = new VisitsJob($pdo, new VisitLog($pdo), new VisitorCodes($pdo), $time, new AppConfig());
 
-    expect($job->run(at('2026-11-22T10:00:00Z')))->toBe('The visit counter is not set up yet. Run hammer migrate.');
+    expect($job->run(at('2026-11-22T10:00:00Z')))->toBe('The visit counter is not set up yet. Run php hammer migrate.');
 });
 
 it('shows the last days in hammer visits', function (): void {

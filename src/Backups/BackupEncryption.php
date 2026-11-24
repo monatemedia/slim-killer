@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SlimKiller\Backups;
 
+use SlimKiller\Support\Hammer;
+
 /**
  * Locks a backup before it leaves this server, so the copy on Google Drive is unreadable
  * without the site's BACKUP_KEY: the backups hold password hashes and two-factor
@@ -89,7 +91,7 @@ final readonly class BackupEncryption
     private function bytes(): string
     {
         if (! $this->isSetUp()) {
-            throw new BackupFailed('BACKUP_KEY in .env is empty or not 64 hexadecimal characters. Make one with: php hammer backup:key');
+            throw new BackupFailed('BACKUP_KEY in .env is empty or not 64 hexadecimal characters. Make one with: ' . Hammer::command('backup:key'));
         }
 
         return (string) hex2bin($this->key);

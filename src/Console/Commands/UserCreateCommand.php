@@ -15,6 +15,7 @@ use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 
 /**
  * Adds someone to the control panel and prints their welcome link, to send them. They
@@ -46,7 +47,7 @@ final class UserCreateCommand implements Command
 
         if ($input->option('email') === null || $name === '' || $role === null) {
             $output->line('Give an email address and a name, and optionally a role (owner, the default, or admin):', 'red');
-            $output->line('  php hammer user:create --email=client@example.com --name="Client Name" --role=owner');
+            $output->line('  ' . Hammer::command('user:create --email=client@example.com --name="Client Name" --role=owner'));
 
             return 2;
         }

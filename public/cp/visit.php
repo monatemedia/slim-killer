@@ -22,6 +22,7 @@ $root = dirname(dirname(__DIR__));
 
 try {
     require $root . '/vendor/autoload.php';
+    SlimKiller\Support\Hammer::usePhpFromHeartbeat($root . '/storage/' . SlimKiller\Cron\Heartbeat::FILE);
 
     /** @var Psr\Container\ContainerInterface $container */
     $container = require $root . '/bootstrap/container.php';

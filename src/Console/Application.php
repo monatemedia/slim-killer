@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SlimKiller\Console;
 
+use SlimKiller\Support\Hammer;
+
 /**
  * Finds the command named on the command line and runs it. With no command it lists
  * the commands; with an unknown one it says so and lists them.
@@ -53,7 +55,7 @@ final class Application
         // `php hammer artisan`: the same habit, one word later.
         if ($name === 'artisan') {
             $this->insult($output);
-            $output->line('Try `php hammer list`.');
+            $output->line('Try ' . Hammer::command('list') . '.');
 
             return 1;
         }

@@ -8,6 +8,7 @@ use SlimKiller\Http\HttpClient;
 use SlimKiller\Http\Response;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Folder;
+use SlimKiller\Support\Hammer;
 
 /**
  * The site's own Google Drive, through Google's web API: no program to install, since
@@ -92,7 +93,7 @@ final class GoogleDrive
     {
         $pending = $this->store->connecting();
         if ($pending === null) {
-            throw new BackupFailed('Run hammer backup:connect without --code first, to get the link.');
+            throw new BackupFailed('Run ' . Hammer::command('backup:connect') . ' without --code first, to get the link.');
         }
 
         $code = trim($landedOn);
@@ -105,10 +106,10 @@ final class GoogleDrive
         if (str_contains($code, '?')) {
             parse_str((string) parse_url($code, PHP_URL_QUERY), $query);
             if (is_string($query['error'] ?? null)) {
-                throw new BackupFailed("Google says: {$query['error']}. Run hammer backup:connect again and choose Allow.");
+                throw new BackupFailed("Google says: {$query['error']}. Run " . Hammer::command('backup:connect') . ' again and choose Allow.');
             }
             if (($query['state'] ?? null) !== $pending['state']) {
-                throw new BackupFailed('That address is from another link. Run hammer backup:connect again and use the newest link.');
+                throw new BackupFailed('That address is from another link. Run ' . Hammer::command('backup:connect') . ' again and use the newest link.');
             }
             $code = is_string($query['code'] ?? null) ? $query['code'] : '';
         }
@@ -288,7 +289,7 @@ final class GoogleDrive
             return $this->accessToken;
         }
         if (! $this->isConnected()) {
-            throw new BackupFailed('Google Drive is not connected. Run hammer backup:connect.');
+            throw new BackupFailed('Google Drive is not connected. Run ' . Hammer::command('backup:connect') . '.');
         }
 
         $response = $this->http->send('POST', self::TOKEN_URL, ['Content-Type' => self::FORM], http_build_query([
@@ -302,7 +303,7 @@ final class GoogleDrive
             return $this->accessToken = $data['access_token'];
         }
         if (($data['error'] ?? null) === 'invalid_grant') {
-            throw new BackupFailed('Google no longer accepts this website\'s connection: it was removed in the Google account, or the Google Cloud app is still in Testing. Run hammer backup:connect again.');
+            throw new BackupFailed('Google no longer accepts this website\'s connection: it was removed in the Google account, or the Google Cloud app is still in Testing. Run ' . Hammer::command('backup:connect') . ' again.');
         }
 
         throw new BackupFailed('Google did not answer the sign-in (' . $this->problem($response) . ').');

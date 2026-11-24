@@ -9,6 +9,7 @@ use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Publishing\WebRoot;
+use SlimKiller\Support\Hammer;
 
 /** Sets up the website folder (WEB_ROOT). Run again after updating Slim Killer. */
 final class WebInstallCommand implements Command
@@ -39,7 +40,7 @@ final class WebInstallCommand implements Command
             return 1;
         }
         if (! $this->webRoot->hasLiveRelease()) {
-            $output->line('Next: php hammer deploy:fetch, to put the website itself in place.', 'grey');
+            $output->line('Next: ' . Hammer::command('deploy:fetch') . ', to put the website itself in place.', 'grey');
         }
 
         return 0;

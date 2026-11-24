@@ -10,6 +10,7 @@ use SlimKiller\Mail\LetterWriter;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Support\Ago;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Support\Paths;
 use SlimKiller\Visits\SiteTime;
 
@@ -34,13 +35,13 @@ final readonly class Alerts
 
     public const int CRON_QUIET_AFTER_SECONDS = 900;
 
-    /** What each cron job is called in an email, and what to do when it fails. */
+    /** What each cron job is called in an email, and the hammer command that shows why it failed. */
     private const array JOBS = [
-        'backup' => ['the daily backup', 'Run hammer backup on the server to see why.'],
-        'deploy-fetch' => ['fetching new builds of the website', 'Run hammer deploy:fetch on the server to see why. An expired GitHub token is the usual cause.'],
-        'visit-report' => ['the morning visit report', 'Run hammer cron:run -v on the server to see why. Check that MAIL_FROM is a mailbox on this website\'s domain.'],
-        'visits' => ['adding up the day\'s visits', 'Run hammer cron:run -v on the server to see why.'],
-        'contact-form' => ['sending held contact messages', 'Run hammer cron:run -v on the server to see why.'],
+        'backup' => ['the daily backup', 'backup', ''],
+        'deploy-fetch' => ['fetching new builds of the website', 'deploy:fetch', ' An expired GitHub token is the usual cause.'],
+        'visit-report' => ['the morning visit report', 'cron:run -v', ' Check that MAIL_FROM is a mailbox on this website\'s domain.'],
+        'visits' => ['adding up the day\'s visits', 'cron:run -v', ''],
+        'contact-form' => ['sending held contact messages', 'cron:run -v', ''],
     ];
 
     public function __construct(
@@ -68,7 +69,8 @@ final readonly class Alerts
         if ($job === 'heartbeat') {
             return;
         }
-        [$what, $next] = self::JOBS[$job] ?? ["the cron job \"{$job}\"", 'Run hammer cron:run -v on the server to see why.'];
+        [$what, $command, $more] = self::JOBS[$job] ?? ["the cron job \"{$job}\"", 'cron:run -v', ''];
+        $next = 'Run ' . Hammer::command($command) . ' on the server to see why.' . $more;
         $state = $this->read();
         $entry = $state['job:' . $job] ?? ['what' => $what, 'since' => $now->format(DATE_ATOM), 'failures' => 0, 'threshold' => self::FAILURES_BEFORE_ALERT, 'alerted' => false];
         $entry['failures'] = (int) $entry['failures'] + 1;
@@ -106,7 +108,7 @@ final readonly class Alerts
             'threshold' => 1,
             'message' => 'Cron last ran ' . Ago::seconds($quiet) . ' ago. Backups, publishing and the morning report wait for it.',
         ];
-        $entry['alerted'] = $this->send('problem', $entry, 'Check the cron job in the host\'s control panel (on Hostinger: Advanced, Cron Jobs), then run hammer doctor.');
+        $entry['alerted'] = $this->send('problem', $entry, 'Check the cron job in the host\'s control panel (on Hostinger: Advanced, Cron Jobs), then run ' . Hammer::command('doctor') . '.');
         $state['cron'] = $entry;
         $this->write($state);
     }
@@ -166,7 +168,7 @@ final readonly class Alerts
         return $this->send('test', [
             'what' => 'a test alert',
             'since' => $now->format(DATE_ATOM),
-            'message' => 'Nothing is wrong. This is what an alert looks like, sent by hammer alerts:test.',
+            'message' => 'Nothing is wrong. This is what an alert looks like, sent by ' . Hammer::command('alerts:test') . '.',
         ], 'Nothing to do.');
     }
 
