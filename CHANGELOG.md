@@ -11,6 +11,23 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-24
+
+After updating, run `hammer migrate` (the visit counter learns a new kind) and
+`hammer web:install` (the 404 page is marked for the counter).
+
+### Added
+
+- **Pages not found in Visits.** When a visitor lands on the site's 404 page, the visit
+  counter counts it apart from the pages, with where the link was: a page of this site
+  ("/old-prices/ (from /services/)"), another site ("google.com"), or nothing when the
+  address was typed. A "Pages not found" list shows it on the Visits page and in the
+  daily email, so broken links and old WordPress addresses can be fixed or redirected.
+  - `cp/not-found.php` puts a small marker in the 404 page; `visits.js` sees it.
+  - These were counted as pages before, so old visits may still list a missing
+    address under Pages.
+  - `hammer visits:sample` makes up a few pages not found too.
+
 ## [0.9.0] - 2026-11-24
 
 After updating, run `hammer web:install` (the dashboard has a new style) and

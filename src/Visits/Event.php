@@ -33,7 +33,11 @@ final readonly class Event
         public EventKind $kind,
         /** The page, like "/services/", without the query. */
         public string $path,
-        /** For a tap, the button ("WhatsApp: WhatsApp Edward"); for a form, its name. */
+        /**
+         * For a tap, the button ("WhatsApp: WhatsApp Edward"); for a form, its name; for a
+         * page not found, where its link was: "/services/" on this site, or another site's
+         * address.
+         */
         public string $label,
         /** Where the visit came from: "google", "facebook", a website's address, or "" when it says nothing. */
         public string $source,
@@ -67,7 +71,11 @@ final readonly class Event
         return new self(
             $kind,
             $path,
-            $kind === EventKind::Page ? '' : self::text($data, 'l', 80),
+            match ($kind) {
+                EventKind::Page => '',
+                EventKind::Missing => self::linkedFrom(self::text($data, 'r', 500), self::bare($siteHost)),
+                default => self::text($data, 'l', 80),
+            },
             $source,
             $medium,
             $campaign,
@@ -108,6 +116,21 @@ final readonly class Event
         }
 
         return [$host, 'referral', ''];
+    }
+
+    /** The page a broken link was on: its path on this site, or the other site's address. */
+    private static function linkedFrom(string $referrer, string $siteHost): string
+    {
+        $host = self::bare((string) parse_url($referrer, PHP_URL_HOST));
+        if ($host === '') {
+            return '';
+        }
+        if ($host !== $siteHost) {
+            return $host;
+        }
+        $path = (string) parse_url($referrer, PHP_URL_PATH);
+
+        return mb_substr($path === '' ? '/' : $path, 0, 120);
     }
 
     /** "google." matches google.com and google.co.za; "t.co" matches t.co and its subdomains only. */

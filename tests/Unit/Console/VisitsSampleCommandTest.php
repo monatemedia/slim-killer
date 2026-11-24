@@ -50,5 +50,5 @@ it('uses the pages of the site the copy is pointed at, and not its 404 page or f
 
     [, , $pdo] = sampleVisits('https://slim-killer.test', ['--days=30'], null, $addresses);
 
-    expect($pdo->query('SELECT DISTINCT path FROM visit_events ORDER BY path')->fetchAll(PDO::FETCH_COLUMN))->toBe(['/', '/tours/etosha/']);
+    expect($pdo->query("SELECT DISTINCT path FROM visit_events WHERE kind <> 'missing' ORDER BY path")->fetchAll(PDO::FETCH_COLUMN))->toBe(['/', '/tours/etosha/']);
 });

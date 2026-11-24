@@ -34,6 +34,9 @@ final class WebRoot
 
     public const string MARKER = 'Written by Slim Killer (hammer web:install)';
 
+    /** Put into the 404 page by cp/not-found.php, for visits.js to find. */
+    public const string NOT_FOUND_MARK = '<meta name="slim-killer" content="not-found">';
+
     public function __construct(
         private readonly Releases $releases,
         private readonly Paths $paths,
@@ -207,11 +210,11 @@ final class WebRoot
             "header('Content-Type: text/html; charset=utf-8');",
             "header('Cache-Control: no-store');",
             "\$page = dirname(__DIR__) . '/404.html';",
-            'if (is_file($page)) {',
-            '    readfile($page);',
-            '} else {',
-            "    echo '<!DOCTYPE html><title>Page not found</title><h1>Page not found</h1>';",
-            '}',
+            "\$html = is_file(\$page) ? (string) file_get_contents(\$page) : '<!DOCTYPE html><title>Page not found</title><h1>Page not found</h1>';",
+            '// Tells visits.js to count a page not found, rather than a page.',
+            "\$mark = '" . self::NOT_FOUND_MARK . "';",
+            "\$marked = preg_replace('#</head>#i', \$mark . '\$0', \$html, 1, \$count);",
+            'echo is_string($marked) && $count === 1 ? $marked : $html . $mark;',
             '',
         ]);
     }
