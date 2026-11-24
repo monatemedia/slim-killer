@@ -11,6 +11,21 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-25
+
+Nothing to run after updating.
+
+### Fixed
+
+- **The panel refuses to save to another site's repository.** On a developer's
+  computer, where `CONTENT_DIR` points at a site's checkout, the panel reads which GitHub
+  repository that checkout came from. When `GITHUB_REPOSITORY` names another, every save
+  is refused, before anything reaches GitHub, and says which two differ. (Found
+  23 November 2026: a local `.env` pointed at one site's content and another site's
+  repository.) On a host, the content comes from the build fetched from
+  `GITHUB_REPOSITORY` itself, so the two can't differ.
+- **The doctor says where saves go**, and fails when they would go to another site.
+
 ## [0.11.0] - 2026-11-25
 
 Nothing to run on a host after updating: `site:check` runs on your own computer.

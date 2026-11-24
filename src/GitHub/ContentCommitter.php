@@ -27,9 +27,14 @@ final class ContentCommitter
 
     private const int ATTEMPTS = 3;
 
+    /**
+     * @param string|null $contentRepository the repository the panel's content came from,
+     *        when it is known (a developer's working copy, see ContentOrigin)
+     */
     public function __construct(
         private readonly HttpClient $http,
         private readonly GitHubSettings $settings,
+        private readonly ?string $contentRepository = null,
     ) {}
 
     /**
@@ -43,6 +48,12 @@ final class ContentCommitter
     {
         if (! $this->settings->isComplete()) {
             return SaveResult::failed('Saving is not set up for this website yet. Ask Monate Media to finish the setup.');
+        }
+        if ($this->contentRepository !== null && ! ContentOrigin::same($this->contentRepository, $this->settings->repository)) {
+            return SaveResult::failed(
+                "Not saved: this content comes from {$this->contentRepository}, but saves go to {$this->settings->repository} "
+                . '(GITHUB_REPOSITORY in .env). Point CONTENT_DIR and GITHUB_REPOSITORY at the same site.',
+            );
         }
         $path = $this->settings->path($contentPath);
 

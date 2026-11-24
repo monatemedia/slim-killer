@@ -59,12 +59,15 @@ use SlimKiller\Doctor\Checks\MailCheck;
 use SlimKiller\Doctor\Checks\ModeCheck;
 use SlimKiller\Doctor\Checks\PhpBinaryCheck;
 use SlimKiller\Doctor\Checks\PhpVersionCheck;
+use SlimKiller\Doctor\Checks\SavingCheck;
 use SlimKiller\Doctor\Checks\ShortcutCheck;
 use SlimKiller\Doctor\Checks\StorageCheck;
 use SlimKiller\Doctor\Checks\UpdatesCheck;
 use SlimKiller\Doctor\Doctor;
 use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\Environment\RuntimeEnvironment;
+use SlimKiller\GitHub\ContentCommitter;
+use SlimKiller\GitHub\ContentOrigin;
 use SlimKiller\GitHub\GitHubSettings;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\CurlHttpClient;
@@ -132,6 +135,11 @@ return [
         $config->githubToken,
         $config->githubContentFolder,
     )),
+    // On a developer's computer, the repository the content came from: a save to another
+    // repository is refused (ContentOrigin). On a host the content comes from the build.
+    'content.repository' => factory(static fn(AppConfig $config, ContentLocation $location): ?string => $config->contentDir !== '' ? ContentOrigin::repositoryOf($location->contentDir) : null),
+    ContentCommitter::class => autowire()->constructorParameter('contentRepository', get('content.repository')),
+    SavingCheck::class => autowire()->constructorParameter('contentRepository', get('content.repository')),
 
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
@@ -213,6 +221,7 @@ return [
         get(StorageCheck::class),
         get(GitHubReachableCheck::class),
         get(UpdatesCheck::class),
+        get(SavingCheck::class),
         get(CronCheck::class),
         get(BackupsCheck::class),
         get(MailCheck::class),
