@@ -573,7 +573,30 @@ $product = [
   </div>
 </section>
 
-<section id="woocommerce" class="alt">
+<section id="moving" class="alt">
+  <div class="wrap">
+    <h2>Moving from WordPress without losing search traffic</h2>
+    <p class="sub">A fair worry. When a site loses its Google traffic after a move, broken old addresses are usually why. Slim Killer is built so they don't break.</p>
+    <div class="card">
+      <ul class="reasons">
+        <li><strong>Old addresses keep working.</strong> Each old WordPress address is listed once in the site's <code>slim-killer.json</code> and becomes a permanent (301) redirect in <code>.htaccess</code>, in one step to the new page. The web server answers it before PHP starts. On WordPress, a redirect plugin usually runs PHP and a database query on every visit, and a change of plugin or permalinks can leave redirects pointing at other redirects.</li>
+        <li><strong>One address for every page.</strong> With or without <code>www</code>, with or without the closing slash: each lands on the one address, in one 301. Search engines never find the same page twice.</li>
+        <li><strong>Missing pages say so.</strong> An address that no longer exists answers with a real 404 status and the site's own page. Visits lists every page not found, with where its link was, so an old address you missed shows up within days and gets its redirect.</li>
+        <li><strong>What search engines read, on every page.</strong> A sitemap, a <code>robots.txt</code>, a canonical address and a description on every page, share cards, and schema.org data for the business and every price, built from the content. On WordPress that's Yoast or Rank Math, and settings to get right.</li>
+        <li><strong>AI search reads it too.</strong> ChatGPT, Perplexity, Claude and Google's AI answers read plain HTML without running JavaScript, and plain HTML is all a Slim Killer page is. <code>robots.txt</code> names them as welcome. An <code>llms.txt</code>, built from the content, comes free; few AI tools read it yet, so we don't count on it for visits.</li>
+        <li><strong>Faster pages.</strong> Pre-built pages with no plugins show fast on a phone, and speed is part of how Google ranks.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <strong>On the day:</strong> list every address the old site had (its sitemap and
+      Search Console have them), add the old ones to <code>slim-killer.json</code>, launch,
+      and submit the new sitemap in Search Console.
+      <a href="<?= $wiki ?>/Starting-a-client-project">Starting a client project</a> has each step.
+    </div>
+  </div>
+</section>
+
+<section id="woocommerce">
   <div class="wrap">
     <h2>Why we don't build WooCommerce shops</h2>
     <p class="sub">A shop holds money and people's details. Shared hosting was built for neither, and WooCommerce makes both harder to protect.</p>
@@ -598,7 +621,7 @@ $product = [
   </div>
 </section>
 
-<section id="features">
+<section id="features" class="alt">
   <div class="wrap">
     <h2>What comes in the box</h2>
     <p class="sub">First-party only: what you get from the project itself, before any plugin, package or paid service. Slim Killer sits between the two on purpose: WordPress's ease for the client, Laravel's tooling for the developer.</p>
@@ -615,6 +638,8 @@ $product = [
           <tr><td>Database migrations</td><td>None. Each plugin manages its own tables</td><td class="us">Plain SQL migrations, <code>hammer migrate</code></td><td>Migrations</td></tr>
           <tr><td>Form protection</td><td>Depends on each plugin</td><td class="us">CSRF tokens in the panel; origin checks and bot traps on public forms</td><td>CSRF tokens on every form</td></tr>
           <tr><td>Security headers</td><td>None by default</td><td class="us">A strict Content Security Policy on every panel page</td><td>None by default</td></tr>
+          <tr><td>Search engines and AI search</td><td>A plugin (Yoast or Rank Math) for the sitemap, descriptions and schema.org</td><td class="us">In the site's layout, built from content: sitemap, <code>robots.txt</code>, canonical addresses, share cards, schema.org for the business and its prices, and <code>llms.txt</code></td><td>Packages (Spatie's laravel-sitemap), and the rest by hand</td></tr>
+          <tr><td>Old addresses after a move</td><td>A redirect plugin, run in PHP on every visit</td><td class="us">Listed once; single 301s the web server sends before PHP starts, and pages not found counted in Visits</td><td>Routes or middleware, in PHP</td></tr>
           <tr><td>Photos</td><td>JPEG in several sizes; WebP or AVIF need a plugin</td><td class="us">AVIF first, WebP next, JPEG as the last fallback, sized for each screen; location data removed</td><td>None</td></tr>
           <tr><td>Two-factor sign-in</td><td>A plugin</td><td class="us">Required for everyone, with recovery codes and breached passwords refused</td><td>In the starter kits</td></tr>
           <tr><td>Password storage</td><td>bcrypt, since 6.8 (phpass before)</td><td class="us">Argon2id<a href="#argon" class="star" aria-label="See the note on Argon2id">*</a>, the first choice of OWASP's guidance</td><td>bcrypt by default; Argon2id is one setting</td></tr>
@@ -638,7 +663,7 @@ $product = [
   </div>
 </section>
 
-<section id="security" class="alt">
+<section id="security">
   <div class="wrap">
     <h2>Security, by having less</h2>
     <p class="sub">Most of a site's security comes from what isn't there.</p>
@@ -650,7 +675,7 @@ $product = [
   </div>
 </section>
 
-<section>
+<section class="alt">
   <div class="wrap">
     <h2>Eighteen rules, in three parts</h2>
     <p class="sub">Slim Killer is built by the rules of the two courses before it, and six of its own. Rule 7 is the gate: it decides where rules 8 to 12 are worth their weight.</p>
@@ -692,7 +717,7 @@ $product = [
   </div>
 </section>
 
-<section id="proof" class="alt">
+<section id="proof">
   <div class="wrap">
     <h2>What is proved, rather than promised</h2>
     <p class="sub">Before a line of product code, two spikes ran on a real, entry-level shared hosting plan. These are their own words.</p>
@@ -723,7 +748,7 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 
 <?php if ($roadmap !== []): ?>
-<section>
+<section class="alt">
   <div class="wrap">
     <h2>The roadmap</h2>
     <p class="sub">Read straight from the README, so it is never out of date. Built in the open.</p>
@@ -736,7 +761,7 @@ GET /_site/ directly     HTTP 403                <i># old builds stay private</i
 </section>
 <?php endif; ?>
 
-<section id="start" class="alt">
+<section id="start">
   <div class="wrap">
     <h2>Getting started</h2>
     <p class="sub">You need PHP <?= $e($minPhp) ?>, Composer and SSH on the host. The <a href="<?= $wiki ?>/Installing-on-a-new-host">installation guide</a> has every step, with the exact commands for shared hosting.</p>

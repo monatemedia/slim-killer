@@ -11,6 +11,16 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+### Changed
+
+- **The public page answers "will I lose my search traffic?"** A new section, "Moving
+  from WordPress without losing search traffic": old addresses as single 301s the web
+  server sends, one address per page, real 404s and Pages not found, what search engines
+  and AI search read, and faster pages. "What comes in the box" gets two rows: search
+  engines and AI search, and old addresses after a move.
+- **Starting a client project, step 5** says where to find the old addresses and how to
+  catch the ones missed.
+
 ## [0.10.2] - 2026-11-24
 
 After updating, nothing to run: the template is read straight from the release.
