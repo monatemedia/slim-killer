@@ -108,6 +108,13 @@ it('fails when GD cannot write JPEG, since uploads are saved as JPEG', function 
     expect($result->status->value)->toBe('fail')->and($result->detail)->toContain('JPEG');
 });
 
+it('mentions AVIF uploads when GD can read AVIF', function (): void {
+    $results = (new ImageSupportCheck())->check(environment(['webp_read' => true, 'avif_read' => true]));
+
+    expect(statuses($results))->toBe(['pass', 'info', 'info'])
+        ->and($results[2]->title)->toBe('AVIF photos can be uploaded too');
+});
+
 it('mentions WebP uploads when GD can read WebP', function (): void {
     expect(statuses((new ImageSupportCheck())->check(environment(['webp_read' => true]))))->toBe(['pass', 'info']);
 });

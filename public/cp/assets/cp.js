@@ -172,10 +172,25 @@
 
     parts.upload.addEventListener('change', function () {
       var chosen = parts.upload.files && parts.upload.files[0];
-      if (chosen) {
+      photoMessage(field, '');
+      if (!chosen) {
+        return;
+      }
+      if (!isHeic(chosen)) {
         showPhoto(parts, URL.createObjectURL(chosen), 'New photo, added when you press Save');
         askForDescription(field);
+        return;
       }
+      heicToJpeg(chosen).then(function (jpeg) {
+        var files = new DataTransfer();
+        files.items.add(jpeg);
+        parts.upload.files = files.files;
+        showPhoto(parts, URL.createObjectURL(jpeg), 'New photo, added when you press Save');
+        askForDescription(field);
+      }, function () {
+        parts.upload.value = '';
+        photoMessage(field, HEIC_MESSAGE);
+      });
     });
 
     if (picker && typeof picker.showModal === 'function') {
@@ -186,6 +201,66 @@
       });
     }
   });
+
+  // HEIC, an iPhone's own format. An iPhone sends JPEG to the panel by itself; HEIC only
+  // comes from a file copied off a phone onto a computer. Safari 17 and later read HEIC,
+  // so there it becomes a JPEG in the browser (dropping its location data too); other
+  // browsers can't read it, and say how to make a JPEG. The server says the same.
+  var HEIC_MESSAGE = 'HEIC photos can\'t be used here yet. On a Mac, open it in Preview and export it as JPEG; on Windows, open it in Photos and save a copy as JPEG.';
+
+  function isHeic(file) {
+    return /^image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+  }
+
+  function heicToJpeg(file) {
+    return new Promise(function (resolve, reject) {
+      if (typeof DataTransfer !== 'function') {
+        reject(new Error('no DataTransfer'));
+        return;
+      }
+      var url = URL.createObjectURL(file);
+      var image = new Image();
+      image.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        var context = canvas.getContext('2d');
+        if (!context || !canvas.width || !canvas.height) {
+          URL.revokeObjectURL(url);
+          reject(new Error('no canvas'));
+          return;
+        }
+        context.drawImage(image, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(function (blob) {
+          if (!blob) {
+            reject(new Error('no JPEG'));
+            return;
+          }
+          resolve(new File([blob], file.name.replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.92);
+      };
+      image.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('this browser cannot read HEIC'));
+      };
+      image.src = url;
+    });
+  }
+
+  // A message under a photo field, read out as it appears; empty removes it.
+  function photoMessage(field, text) {
+    var message = field.querySelector('[data-photo-message]');
+    if (!message) {
+      message = document.createElement('p');
+      message.className = 'field-error';
+      message.setAttribute('role', 'alert');
+      message.setAttribute('data-photo-message', '');
+      field.appendChild(message);
+    }
+    message.textContent = text;
+    message.hidden = text === '';
+  }
 
   // The photo changed, so its description belongs to the old one: clear it (keeping it
   // as a faint "Was: ..." to retype if it still fits), point at the box and say why it

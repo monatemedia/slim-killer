@@ -25,6 +25,7 @@ final readonly class SnapshotEnvironment implements Environment
         private array $disabledFunctions = [],
         private bool $canWriteJpeg = false,
         private bool $readsWebp = false,
+        private bool $readsAvif = false,
     ) {}
 
     /**
@@ -56,6 +57,7 @@ final readonly class SnapshotEnvironment implements Environment
             disabledFunctions: $strings($data['disabled_functions'] ?? []),
             canWriteJpeg: ($data['jpeg_write'] ?? false) === true,
             readsWebp: ($data['webp_read'] ?? false) === true,
+            readsAvif: ($data['avif_read'] ?? false) === true,
         );
     }
 
@@ -107,5 +109,10 @@ final readonly class SnapshotEnvironment implements Environment
     public function readsWebp(): bool
     {
         return $this->readsWebp;
+    }
+
+    public function readsAvif(): bool
+    {
+        return $this->readsAvif;
     }
 }

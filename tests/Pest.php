@@ -43,6 +43,7 @@ function environment(array $overrides = [], string $label = 'Command line'): Sna
         'disabled_functions' => [],
         'jpeg_write' => true,
         'webp_read' => false,
+        'avif_read' => false,
     ];
 
     return SnapshotEnvironment::fromProbe(array_replace($defaults, $overrides), $label);
