@@ -15,4 +15,7 @@ enum EventKind: string
 
     /** A form was sent (the site's contact form fires a "form-sent" event). */
     case Form = 'form';
+
+    /** A page that does not exist: the site's 404 page was shown (cp/not-found.php marks it). */
+    case Missing = 'missing';
 }

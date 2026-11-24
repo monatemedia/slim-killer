@@ -242,3 +242,48 @@ it('uses UTC for an unknown time zone', function (): void {
     expect(SiteTime::named('Mars/Olympus')->zone->getName())->toBe('UTC')
         ->and(SiteTime::named('Africa/Johannesburg')->day(at('2026-11-22T22:30:00Z')))->toBe('2026-11-23');
 });
+
+it('counts a page not found apart from the pages, with where its link was', function (): void {
+    [$counter, $pdo, $log, $codes, $time] = visitCounter();
+    $missing = fn(string $path, string $from): array => beacon(['k' => 'missing', 'p' => $path, 'r' => $from]);
+
+    $counter->count(...[...beacon(['p' => '/services/']), at('2026-11-21T08:00:00Z')]);
+    $counter->count(...[...$missing('/old-prices/', 'https://www.example.com/services/?ref=menu'), at('2026-11-21T08:01:00Z')]);
+    $counter->count(...[...$missing('/old-prices/', 'https://example.com/services/'), at('2026-11-21T08:02:00Z')]);
+    $counter->count(...[...$missing('/wp-login.php', 'https://www.google.co.za/'), at('2026-11-21T08:03:00Z')]);
+    $counter->count(...[...$missing('/typed-wrong/', ''), at('2026-11-21T08:04:00Z')]);
+    (new VisitsJob($pdo, $log, $codes, $time, new AppConfig()))->run(at('2026-11-22T10:00:00Z'));
+
+    $lists = array_column((new VisitReport($log))->lists('2026-11-21', '2026-11-21'), 'rows', 'heading');
+
+    expect($lists['Pages'])->toBe([['name' => '/services/', 'events' => 1]])
+        ->and($lists['Pages not found'])->toBe([
+            ['name' => '/old-prices/ (from /services/)', 'events' => 2],
+            ['name' => '/typed-wrong/', 'events' => 1],
+            ['name' => '/wp-login.php (from google.co.za)', 'events' => 1],
+        ])
+        ->and(array_keys($lists))->toBe(['Where visitors came from', 'Pages', 'Pages not found', 'Devices'])
+        ->and($log->summary('2026-11-21', '2026-11-21')['pages'])->toBe(1);
+});
+
+it('keeps the events counted before pages not found, and accepts the new kind', function (): void {
+    $folder = temporaryFolder();
+    $all = glob(dirname(__DIR__, 3) . '/database/migrations/*.sql') ?: [];
+    foreach ($all as $file) {
+        if (! str_starts_with(basename($file), '0005')) {
+            copy($file, $folder . '/' . basename($file));
+        }
+    }
+    $pdo = new PDO('sqlite::memory:');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    (new SlimKiller\Database\Migrator($pdo, $folder))->migrate();
+    $pdo->exec("INSERT INTO visit_events (at, day, visitor, kind, path, source, device) VALUES (1, '2026-11-20', 'v1', 'page', '/', 'direct', 'phone')");
+
+    copy(dirname(__DIR__, 3) . '/database/migrations/0005_pages_not_found.sql', $folder . '/0005_pages_not_found.sql');
+    $ran = (new SlimKiller\Database\Migrator($pdo, $folder))->migrate();
+    $pdo->exec("INSERT INTO visit_events (at, day, visitor, kind, path, source, device) VALUES (2, '2026-11-20', 'v1', 'missing', '/old/', 'direct', 'phone')");
+
+    expect($ran)->toBe(['0005_pages_not_found'])
+        ->and($pdo->query('SELECT kind || path FROM visit_events ORDER BY id')->fetchAll(PDO::FETCH_COLUMN))->toBe(['page/', 'missing/old/'])
+        ->and($pdo->query("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'visit_events'")->fetchAll(PDO::FETCH_COLUMN))->toBe(['visit_events_by_visitor']);
+});

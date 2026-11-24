@@ -97,8 +97,12 @@ it('answers missing pages with the live 404 page, or a plain one before the firs
     expect($webRoot->hasLiveRelease())->toBeFalse()
         ->and($run())->toContain('<h1>Page not found</h1>');
 
+    file_put_contents($web . '/404.html', '<html><head><title>Lost</title></HEAD><body>This Trail Doesn\'t Exist</body></html>');
+    expect($run())->toBe('<html><head><title>Lost</title>' . WebRoot::NOT_FOUND_MARK . '</HEAD><body>This Trail Doesn\'t Exist</body></html>');
+
+    // A page without a head still tells visits.js.
     file_put_contents($web . '/404.html', 'This Trail Doesn\'t Exist');
-    expect($run())->toBe('This Trail Doesn\'t Exist');
+    expect($run())->toBe('This Trail Doesn\'t Exist' . WebRoot::NOT_FOUND_MARK);
 });
 
 it('asks search engines not to list a test copy, and only then', function (): void {

@@ -52,7 +52,7 @@ final readonly class VisitReport
     }
 
     /**
-     * Where visitors came from, pages, buttons, forms and devices, for the days from
+     * Where visitors came from, pages, pages not found, buttons, forms and devices, for the days from
      * $first to $last. Lists with nothing in them are left out.
      *
      * @return list<array{heading: string, rows: list<array{name: string, events: int}>}>
@@ -62,6 +62,7 @@ final readonly class VisitReport
         $lists = [
             'Where visitors came from' => $this->log->top(null, TopBy::Source, $first, $last),
             'Pages' => $this->log->top(EventKind::Page, TopBy::Page, $first, $last),
+            'Pages not found' => $this->log->top(EventKind::Missing, TopBy::PageAndLink, $first, $last),
             'Buttons tapped' => $this->log->top(EventKind::Tap, TopBy::Label, $first, $last),
             'Forms sent' => $this->log->top(EventKind::Form, TopBy::Label, $first, $last),
             'Devices' => $this->log->top(null, TopBy::Device, $first, $last),

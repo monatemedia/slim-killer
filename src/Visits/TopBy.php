@@ -12,6 +12,9 @@ enum TopBy
     case Source;
     case Device;
 
+    /** A page not found, with where its link was: "/old-page/ (from /services/)". */
+    case PageAndLink;
+
     /** The column in visit_days. Fixed names only: never anything a visitor sent. */
     public function column(): string
     {
@@ -20,6 +23,7 @@ enum TopBy
             self::Label => 'label',
             self::Source => "source || CASE WHEN medium = '' THEN '' ELSE ' / ' || medium END",
             self::Device => 'device',
+            self::PageAndLink => "path || CASE WHEN label = '' THEN '' ELSE ' (from ' || label || ')' END",
         };
     }
 }

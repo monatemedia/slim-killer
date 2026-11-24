@@ -5,10 +5,11 @@
  *
  *     <script src="/cp/assets/visits.js" defer></script>
  *
- * It counts pages opened, taps on WhatsApp, email and phone links (and on anything
- * marked data-count="Name"), and forms sent (a "form-sent" event, as the contact form
- * fires). Each event goes to /cp/visit.php. It sets no cookies and stores nothing in
- * the browser.
+ * It counts pages opened, pages not found (the 404 page, as cp/not-found.php marks
+ * it), taps on WhatsApp, email and phone links (and on anything marked
+ * data-count="Name"), and forms sent (a "form-sent" event, as the contact form fires).
+ * Each event goes to /cp/visit.php. It sets no cookies and stores nothing in the
+ * browser.
  *
  * It counts nothing when the browser asks not to be tracked (Do Not Track or Global
  * Privacy Control), or when the visitor switched "Site statistics" off in the site's
@@ -72,6 +73,8 @@
   var script = document.currentScript;
   var endpoint = (script && script.getAttribute('data-endpoint')) || '/cp/visit.php';
   var params = new URLSearchParams(window.location.search);
+  // The site's 404 page, as cp/not-found.php sends it: a page not found, not a page.
+  var missing = !!document.querySelector('meta[name="slim-killer"][content="not-found"]');
 
   function send(kind, label) {
     if (switchedOff()) {
@@ -80,7 +83,7 @@
     var body = JSON.stringify({
       k: kind,
       p: window.location.pathname,
-      r: kind === 'page' ? document.referrer : '',
+      r: kind === 'page' || kind === 'missing' ? document.referrer : '',
       s: params.get('utm_source') || '',
       m: params.get('utm_medium') || '',
       c: params.get('utm_campaign') || '',
@@ -101,7 +104,7 @@
     return (element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 50);
   }
 
-  send('page');
+  send(missing ? 'missing' : 'page');
 
   document.addEventListener('click', function (event) {
     var target = event.target;

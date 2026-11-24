@@ -129,6 +129,14 @@ final class VisitsSampleCommand implements Command
         return 0;
     }
 
+    /** Pages not found, the kind a site moved from WordPress gets: old addresses, and links to them. */
+    private const array MISSING = [
+        ['k' => 'missing', 'p' => '/old-prices/', 'r' => 'https://slim-killer.test/services/'],
+        ['k' => 'missing', 'p' => '/wp-content/uploads/brochure.pdf', 'r' => 'https://www.google.com/'],
+        ['k' => 'missing', 'p' => '/2019/05/our-first-year/', 'r' => 'https://www.facebook.com/'],
+        ['k' => 'missing', 'p' => '/contact-us/', 'r' => ''],
+    ];
+
     /** One made-up visitor: a source, a device, a few pages, maybe a tap or a form. Returns how many events. */
     private function visit(string $day, DateTimeImmutable $at): int
     {
@@ -141,6 +149,9 @@ final class VisitsSampleCommand implements Command
         $pages = random_int(1, 100) <= 60 ? 1 : random_int(2, 4);
         for ($p = 0; $p < $pages; $p++) {
             $count += $this->record(['k' => 'page', 'p' => self::pick($this->pages), ...($p === 0 ? $origin : [])], $userAgent, $visitor, $day, $at);
+        }
+        if (random_int(1, 100) <= 4) {
+            $count += $this->record(self::MISSING[array_rand(self::MISSING)], $userAgent, $visitor, $day, $at);
         }
         if (random_int(1, 100) <= 14) {
             $count += $this->record(['k' => 'tap', 'p' => '/', 'l' => random_int(1, 4) === 1 ? 'Email' : 'WhatsApp: WhatsApp us'], $userAgent, $visitor, $day, $at);
