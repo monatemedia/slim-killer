@@ -69,7 +69,18 @@ final readonly class AppConfig
         public string $smtpUser = '',
         /** That mailbox's password. A secret: only in .env. */
         public string $smtpPassword = '',
+        /** Where this runs: local, staging or production (APP_ENV). */
+        public AppEnv $env = AppEnv::Production,
+        /** APP_ENV as written, for the doctor to name one it doesn't know. */
+        public string $envSetting = '',
+        /** Was the mode read from the older LOCAL_WEBSITE or HIDE_FROM_SEARCH? */
+        public bool $envFromOldSettings = false,
     ) {}
+
+    public function isLocal(): bool
+    {
+        return $this->env === AppEnv::Local;
+    }
 
     /** @param array<mixed> $environment Usually $_ENV, after phpdotenv has loaded .env. */
     public static function fromEnvironment(array $environment): self
@@ -82,6 +93,15 @@ final readonly class AppConfig
             ? trim($environment[$key])
             : $default;
 
+        $yes = static fn(string $key): bool => in_array(strtolower($text($key)), ['1', 'true', 'yes', 'on'], true);
+        $env = AppEnv::fromSetting($text('APP_ENV'));
+        $fromOld = false;
+        if ($env === null && $text('APP_ENV') === '') {
+            $fromOld = $yes('LOCAL_WEBSITE') || $yes('HIDE_FROM_SEARCH');
+            $env = $yes('LOCAL_WEBSITE') ? AppEnv::Local : ($yes('HIDE_FROM_SEARCH') ? AppEnv::Staging : AppEnv::Production);
+        }
+        $env ??= AppEnv::Production;
+
         return new self(
             is_string($url) ? rtrim($url, '/') : '',
             is_string($name) && trim($name) !== '' ? trim($name) : self::DEFAULT_NAME,
@@ -93,7 +113,7 @@ final readonly class AppConfig
             $text('GITHUB_CONTENT_FOLDER', 'content'),
             $text('WEB_ROOT'),
             $text('WEBHOOK_SECRET'),
-            in_array(strtolower($text('HIDE_FROM_SEARCH')), ['1', 'true', 'yes', 'on'], true),
+            $env === AppEnv::Staging || $yes('HIDE_FROM_SEARCH'),
             $text('TIMEZONE', 'UTC'),
             $text('MAIL_FROM'),
             $text('VISIT_REPORT_TO'),
@@ -109,6 +129,9 @@ final readonly class AppConfig
             ctype_digit($text('SMTP_PORT')) && (int) $text('SMTP_PORT') > 0 ? (int) $text('SMTP_PORT') : 465,
             $text('SMTP_USER', $text('MAIL_FROM')),
             is_string($environment['SMTP_PASSWORD'] ?? null) ? $environment['SMTP_PASSWORD'] : '',
+            $env,
+            $text('APP_ENV'),
+            $fromOld,
         );
     }
 

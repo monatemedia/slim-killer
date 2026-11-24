@@ -11,6 +11,7 @@ use SlimKiller\Content\PageAddresses;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Http\ControlPanel\Form;
 use SlimKiller\Http\Session\Session;
+use SlimKiller\Support\AppConfig;
 
 /**
  * /cp/me?path=/about/: asked by the website bar, which only loads in a browser that
@@ -26,6 +27,7 @@ final class MeAction
     public function __construct(
         private readonly UserRepository $users,
         private readonly PageAddresses $addresses,
+        private readonly AppConfig $config,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -48,6 +50,7 @@ final class MeAction
             'dashboard' => $base . '/',
             'visits' => $base . '/visits',
             'preferences' => $base . '/preferences',
+            'env' => $this->config->env->value,
         ]);
     }
 

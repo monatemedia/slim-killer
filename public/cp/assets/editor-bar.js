@@ -84,6 +84,9 @@
     who.appendChild(element('strong', {}, me.name || 'you'));
     menu.appendChild(who);
     menu.appendChild(element('p', { 'class': 'note' }, 'Your visits aren\'t counted.'));
+    if (me.env === 'staging') {
+      menu.appendChild(element('p', { 'class': 'note' }, 'Staging: a test copy, hidden from search engines.'));
+    }
 
     if (me.edit) {
       menu.appendChild(element('a', { href: me.edit, 'class': 'link primary' }, 'Edit this page'));

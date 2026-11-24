@@ -937,3 +937,17 @@ fieldset.choices legend { padding: 0; margin-bottom: 4px; }
 .choice input { width: 20px; height: 20px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--orange); }
 .choice span { color: var(--text-muted); font-size: 0.95rem; }
 .choice strong { color: var(--text); }
+
+/* ---------- Where this runs: "Staging" or "Local" beside the logo (APP_ENV) ---------- */
+.env-badge {
+  display: inline-block;
+  margin-right: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f99314;
+  color: #202529;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}

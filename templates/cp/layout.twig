@@ -20,6 +20,9 @@
         <span class="logo"><img src="{{ base }}/assets/logo.svg" alt=""></span>
         <span class="brand-name"><span>Slim</span> <span class="accent">Killer</span></span>
       </a>
+      {% if app_env != 'production' %}
+        <span class="env-badge" title="{{ app_env == 'staging' ? 'A test copy of the website, hidden from search engines' : 'A developer\'s own computer' }}">{{ app_env|capitalize }}</span>
+      {% endif %}
       {# Shown by cp.js: without JavaScript the panel follows the phone's own setting. #}
       <button type="button" class="theme-switch" data-theme-switch hidden aria-label="Switch between light and dark">
         <svg class="icon-moon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M20.7 14.6A8.5 8.5 0 0 1 9.4 3.3a.7.7 0 0 0-.9-.9A10 10 0 1 0 21.6 15.5a.7.7 0 0 0-.9-.9Z"/></svg>

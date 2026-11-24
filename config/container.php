@@ -54,6 +54,7 @@ use SlimKiller\Doctor\Checks\GitHubReachableCheck;
 use SlimKiller\Doctor\Checks\ImageSupportCheck;
 use SlimKiller\Doctor\Checks\LimitsCheck;
 use SlimKiller\Doctor\Checks\MailCheck;
+use SlimKiller\Doctor\Checks\ModeCheck;
 use SlimKiller\Doctor\Checks\PhpBinaryCheck;
 use SlimKiller\Doctor\Checks\PhpVersionCheck;
 use SlimKiller\Doctor\Checks\ShortcutCheck;
@@ -67,6 +68,7 @@ use SlimKiller\Http\CurlHttpClient;
 use SlimKiller\Http\HttpClient;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Mail\PhpMailer;
+use SlimKiller\Mail\SavedMailer;
 use SlimKiller\Mail\SmtpMailer;
 use SlimKiller\Mail\SocketSmtpConnection;
 use SlimKiller\Publishing\Progress;
@@ -75,6 +77,7 @@ use SlimKiller\Publishing\Releases;
 use SlimKiller\Publishing\WebRoot;
 use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\AppEnv;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\EnvFile;
 use SlimKiller\Support\Hammer;
@@ -98,9 +101,12 @@ return [
     Clock::class => get(SystemClock::class),
     HttpClient::class => get(CurlHttpClient::class),
     // Mail goes through the website's own mailbox when SMTP_HOST is set, so it passes DMARC.
-    Mailer::class => factory(static fn(AppConfig $config, Clock $clock): Mailer => $config->smtpHost !== ''
-        ? new SmtpMailer(new SocketSmtpConnection(), $config, $clock)
-        : new PhpMailer()),
+    // On a developer's computer (APP_ENV=local) it is saved to storage/mail instead of sent.
+    Mailer::class => factory(static fn(AppConfig $config, Clock $clock, Paths $paths): Mailer => match (true) {
+        $config->isLocal() => new SavedMailer($paths->storage('mail'), $clock),
+        $config->smtpHost !== '' => new SmtpMailer(new SocketSmtpConnection(), $config, $clock),
+        default => new PhpMailer(),
+    }),
     BreachedPasswords::class => get(PwnedPasswords::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
@@ -125,7 +131,7 @@ return [
 
     // --- Publishing --------------------------------------------------------------
     Releases::class => factory(static fn(AppConfig $config, Paths $paths): Releases => Releases::from($config, $paths)),
-    WebRoot::class => factory(static fn(Releases $releases, Paths $paths, AppConfig $config): WebRoot => new WebRoot($releases, $paths, $config->hideFromSearch, $config->url)),
+    WebRoot::class => factory(static fn(Releases $releases, Paths $paths, AppConfig $config): WebRoot => new WebRoot($releases, $paths, $config->hideFromSearch || $config->env === AppEnv::Staging, $config->url)),
     AfterResponse::class => get(ShutdownAfterResponse::class),
     PublishLog::class => factory(static fn(Paths $paths): PublishLog => new PublishLog($paths->storage('publishing.json'))),
     Progress::class => autowire()->constructorParameter('cacheFile', factory(static fn(Paths $paths): string => $paths->storage('cache/build-status.json'))),
@@ -196,6 +202,7 @@ return [
 
     // Checks about the server itself. These run once, from the command line.
     'doctor.host_checks' => add([
+        get(ModeCheck::class),
         get(PhpBinaryCheck::class),
         get(StorageCheck::class),
         get(GitHubReachableCheck::class),
@@ -225,6 +232,7 @@ return [
         ]);
         $twig->addGlobal('base', ControlPanel::BASE_PATH);
         $twig->addGlobal('site_name', $config->name);
+        $twig->addGlobal('app_env', $config->env->value);
 
         // hammer('doctor') gives the whole command, with the PHP that runs hammer on this server.
         $twig->addFunction(new TwigFunction('hammer', static fn(string $arguments = ''): string => Hammer::command($arguments)));

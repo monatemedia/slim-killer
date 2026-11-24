@@ -28,7 +28,7 @@ declare(strict_types=1);
  * numbers that cannot change are measurements from spikes S1 and S2, and say so.
  *
  * On a client's host the domain root serves the client's Astro site, never this page.
- * Locally, LOCAL_WEBSITE=1 in .env does the same on Herd (see below).
+ * Locally, APP_ENV="local" in .env does the same on Herd (see below).
  */
 
 // On Herd (nginx), a path with no file behind it falls through to this script. Hand
@@ -42,7 +42,7 @@ if (PHP_SAPI !== 'cli' && is_string($requestPath) && str_starts_with($requestPat
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Local development only: LOCAL_WEBSITE=1 in .env makes https://slim-killer.test
+// Local development only: APP_ENV="local" in .env makes https://slim-killer.test
 // behave like a client's host, with the built site of CONTENT_DIR at the root
 // (../site/dist beside that content folder) and the panel at /cp. Then the panel's
 // "Web address" links and the website bar can be tried on this machine. Only when
@@ -60,7 +60,9 @@ if (PHP_SAPI !== 'cli' && is_string($requestPath) && is_file(dirname(__DIR__) . 
     $local = (string) preg_replace('#^https?://#', '', $env['APP_URL'] ?? '');
     $isLocal = str_ends_with(rtrim($local, '/'), '.test') || str_starts_with($local, 'localhost');
     $contentDir = $env['CONTENT_DIR'] ?? '';
-    if (in_array(strtolower($env['LOCAL_WEBSITE'] ?? ''), ['1', 'true', 'yes'], true) && $isLocal && $contentDir !== '') {
+    $localMode = strtolower($env['APP_ENV'] ?? '') === 'local'
+        || (($env['APP_ENV'] ?? '') === '' && in_array(strtolower($env['LOCAL_WEBSITE'] ?? ''), ['1', 'true', 'yes'], true));
+    if ($localMode && $isLocal && $contentDir !== '') {
         $base = preg_match('#^([a-zA-Z]:)?[/\\\\]#', $contentDir) === 1 ? $contentDir : dirname(__DIR__) . '/' . $contentDir;
         $dist = realpath($base . '/../site/dist');
         if ($dist !== false) {

@@ -11,6 +11,7 @@ use SlimKiller\Doctor\Environment\Environment;
 use SlimKiller\Doctor\HostCheck;
 use SlimKiller\Doctor\Requirements;
 use SlimKiller\Support\Ago;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
 
@@ -25,9 +26,17 @@ final class CronCheck implements HostCheck
         private readonly Paths $paths,
         private readonly Clock $clock,
         private readonly Environment $commandLine,
+        private readonly AppConfig $config,
     ) {}
 
     public function check(): array
+    {
+        // As strict as the place it runs in (APP_ENV): informs locally, fails in production.
+        return array_map(fn(CheckResult $result): CheckResult => $result->weighed($this->config->env), $this->results());
+    }
+
+    /** @return list<CheckResult> */
+    private function results(): array
     {
         $line = $this->cronLine();
         $file = $this->paths->storage(Heartbeat::FILE);

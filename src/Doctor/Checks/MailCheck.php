@@ -9,6 +9,7 @@ use SlimKiller\Doctor\HostCheck;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Mail\SmtpMailer;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\AppEnv;
 
 /**
  * How email leaves this website. Through its own mailbox (SMTP), the doctor signs in to
@@ -34,6 +35,13 @@ final readonly class MailCheck implements HostCheck
             return [];
         }
 
-        return [CheckResult::info('Email goes through the host\'s mail()', 'it isn\'t DKIM-signed for this website\'s domain, so it fails DMARC. Set SMTP_HOST to send through the site\'s own mailbox (see the wiki page Email)')];
+        if ($this->config->isLocal()) {
+            return [CheckResult::info('Email is saved, not sent', 'on this computer (APP_ENV=local) each email is written to storage/mail, to look at')];
+        }
+        $detail = 'it isn\'t DKIM-signed for this website\'s domain, so it fails DMARC. Set SMTP_HOST to send through the site\'s own mailbox (see the wiki page Email)';
+
+        return [$this->config->env === AppEnv::Production
+            ? CheckResult::warn('Email goes through the host\'s mail()', $detail)
+            : CheckResult::info('Email goes through the host\'s mail()', $detail)];
     }
 }
