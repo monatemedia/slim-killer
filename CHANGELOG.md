@@ -11,9 +11,21 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-24
+
+After updating, run `hammer web:install`, so the website serves the panel's new files.
+
+### Changed
+
+- **The copy buttons are icons:** two overlapping sheets, which turn into a tick once
+  copied. If the browser won't copy, the command is selected instead, ready for Ctrl+C.
+  Screen readers hear "Copy the command", then "Copied".
+
 ## [0.3.1] - 2026-11-24
 
-Smaller fixes after connecting the first Google Drive. Nothing to run after updating.
+Smaller fixes after connecting the first Google Drive. After updating, run
+`hammer web:install`: the panel's files in the web root (the copy buttons) are only
+updated by it.
 
 ### Added
 
