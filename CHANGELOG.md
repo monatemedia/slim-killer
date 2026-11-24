@@ -11,6 +11,10 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-11-25
+
+After updating, run `hammer web:install` (it copies the website bar's script).
+
 ### Changed
 
 - **The public page answers "will I lose my search traffic?"** A new section, "Moving
@@ -20,6 +24,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
   engines and AI search, and old addresses after a move.
 - **Starting a client project, step 5** says where to find the old addresses and how to
   catch the ones missed.
+
+### Fixed
+
+- **The website bar starts above a site's floating button**, instead of on top of it.
+  A site marks its own corner button (a round WhatsApp button, say) with
+  `data-website-bar-above`; until someone drags the bar elsewhere, it sits 12 pixels
+  above it. A place it was dragged to still wins.
 
 ## [0.10.2] - 2026-11-24
 
