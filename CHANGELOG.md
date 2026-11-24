@@ -11,6 +11,26 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-24
+
+After updating, set `APP_ENV` in `.env` (`production` on a live site; it is the default
+when empty), remove `LOCAL_WEBSITE` and `HIDE_FROM_SEARCH`, and run `hammer web:install`
+and `hammer doctor`.
+
+### Added
+
+- **`APP_ENV`: local, staging or production**, one setting for where Slim Killer runs.
+  - **local:** the built site at the root of a `.test` or localhost address (as
+    `LOCAL_WEBSITE` did), email saved to `storage/mail` as `.eml` files instead of sent,
+    and the doctor only informs.
+  - **staging:** hidden from search engines (as `HIDE_FROM_SEARCH` did), "Staging"
+    beside the panel's logo and in the website bar's menu, and the doctor warns.
+  - **production:** the live website. The doctor fails, not warns, when cron hasn't run,
+    backups aren't reaching Google Drive, or there's nobody to alert, and it warns when
+    email goes through the host's `mail()`.
+  - The doctor's report starts with the mode. `LOCAL_WEBSITE` and `HIDE_FROM_SEARCH`
+    still work while `APP_ENV` is empty, and the doctor says to move to `APP_ENV`.
+
 ## [0.7.0] - 2026-11-24
 
 After updating, run `php hammer shortcut` once on the server (with the PHP's whole path if

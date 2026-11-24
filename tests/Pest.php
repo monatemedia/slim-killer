@@ -19,6 +19,7 @@ use SlimKiller\Doctor\Requirements;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Mail\LetterWriter;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\AppEnv;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\Paths;
 use SlimKiller\Visits\SiteTime;
@@ -169,4 +170,10 @@ function testAlerts(Paths $paths, ?AppConfig $config = null, bool $accepts = tru
     $mailer = new FakeMailer($accepts);
 
     return [new Alerts($paths, new LetterWriter($twig, $config), $mailer, $config, SiteTime::named($config->timezone)), $mailer];
+}
+
+/** Settings for a test copy (APP_ENV=staging): the doctor's warnings stay warnings. */
+function stagingConfig(): AppConfig
+{
+    return new AppConfig(env: AppEnv::Staging);
 }

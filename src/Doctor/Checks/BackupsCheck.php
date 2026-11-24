@@ -35,6 +35,13 @@ final readonly class BackupsCheck implements HostCheck
 
     public function check(): array
     {
+        // As strict as the place it runs in (APP_ENV): informs locally, fails in production.
+        return array_map(fn(CheckResult $result): CheckResult => $result->weighed($this->config->env), $this->results());
+    }
+
+    /** @return list<CheckResult> */
+    private function results(): array
+    {
         if ($this->config->backupsOff) {
             return [CheckResult::info('Backups are off', 'BACKUPS="off": losing the database would lose the panel\'s accounts and the visit history. Pages and photos are safe in GitHub')];
         }

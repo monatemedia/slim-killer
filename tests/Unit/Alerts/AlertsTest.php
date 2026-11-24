@@ -147,7 +147,7 @@ it('keeps the problem for the doctor when there is nobody to email', function ()
     $alerts->jobFailed('backup', 'No space left.', alertAt(0));
     $alerts->jobFailed('backup', 'No space left.', alertAt(60));
 
-    $results = (new AlertsCheck($alerts))->check();
+    $results = (new AlertsCheck($alerts, stagingConfig()))->check();
 
     expect($mailer->sent)->toBe([])
         ->and(statuses($results))->toBe(['warn', 'warn'])
@@ -158,7 +158,7 @@ it('keeps the problem for the doctor when there is nobody to email', function ()
 it('tells the doctor where alerts go when all is well', function (): void {
     [$alerts] = testAlerts(new Paths(temporaryFolder()));
 
-    [$result] = (new AlertsCheck($alerts))->check();
+    [$result] = (new AlertsCheck($alerts, stagingConfig()))->check();
 
     expect($result->status->value)->toBe('pass')
         ->and($result->detail)->toBe('go to owner@example.com, and nothing has stopped working');

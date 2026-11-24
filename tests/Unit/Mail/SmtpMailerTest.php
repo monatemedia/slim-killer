@@ -7,6 +7,7 @@ use SlimKiller\Mail\Letter;
 use SlimKiller\Mail\PhpMailer;
 use SlimKiller\Mail\SmtpMailer;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\AppEnv;
 use Tests\Fakes\FakeSmtpConnection;
 use Tests\Fakes\FrozenClock;
 
@@ -104,7 +105,7 @@ it('doubles a dot at the start of a line, so the server does not take it as the 
 it('tells the doctor how email leaves the website', function (): void {
     $through = (new MailCheck(smtpMailer(new FakeSmtpConnection(['220 ready', '250 hello', '334 u', '334 p', '235 ok', '221 bye'])), smtpConfig()))->check();
     $refused = (new MailCheck(smtpMailer(new FakeSmtpConnection(['220 ready', '250 hello', '334 u', '334 p', '535 no'])), smtpConfig()))->check();
-    $host = (new MailCheck(new PhpMailer(), new AppConfig(mailFrom: 'website@example.com')))->check();
+    $host = (new MailCheck(new PhpMailer(), new AppConfig(mailFrom: 'website@example.com', env: AppEnv::Staging)))->check();
 
     expect($through[0]->status->value)->toBe('pass')
         ->and($through[0]->title)->toBe('Email goes through smtp.example.com')

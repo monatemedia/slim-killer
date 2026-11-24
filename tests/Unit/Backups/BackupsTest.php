@@ -435,7 +435,7 @@ it('tells the doctor how backups stand', function (bool $setUp, bool $connected,
         }
     }
 
-    [$result] = (new BackupsCheck($backups, $drive, $encryption, $time, FrozenClock::at('2026-11-24T10:00:00+00:00'), new AppConfig()))->check();
+    [$result] = (new BackupsCheck($backups, $drive, $encryption, $time, FrozenClock::at('2026-11-24T10:00:00+00:00'), stagingConfig()))->check();
 
     expect($result->status->value)->toBe($status)
         ->and($result->title)->toBe($title);

@@ -53,7 +53,7 @@ it('notes that cron:run ran, which the doctor accepts', function (): void {
     $now = new DateTimeImmutable(CRON_NOW);
 
     $message = (new HeartbeatJob(new Heartbeat($paths)))->run($now);
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-21T12:00:40+00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-21T12:00:40+00:00'), environment(), stagingConfig()))->check();
 
     expect($message)->toBe('Noted that cron ran.')
         ->and($result->status->value)->toBe('pass');

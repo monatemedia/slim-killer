@@ -58,7 +58,7 @@ it('fails, naming the host, when the connection is blocked', function (): void {
 
 it('gives the exact cron line before cron has ever run', function (): void {
     $paths = new Paths(temporaryFolder());
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09 01:00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09 01:00:00'), environment(), stagingConfig()))->check();
 
     expect($result->status->value)->toBe('warn')
         ->and($result->hint)->toBe('/opt/alt/php84/usr/bin/php ' . $paths->root('hammer') . ' cron:run');
@@ -68,7 +68,7 @@ it('passes when cron ran within the last few minutes', function (): void {
     $paths = new Paths(temporaryFolder());
     writeHeartbeat($paths, '2026-11-09T01:00:00+00:00');
 
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:42+00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:42+00:00'), environment(), stagingConfig()))->check();
 
     expect($result->status->value)->toBe('pass')->and($result->detail)->toContain('42 seconds');
 });
@@ -77,7 +77,7 @@ it('warns when cron has gone quiet', function (): void {
     $paths = new Paths(temporaryFolder());
     writeHeartbeat($paths, '2026-11-09T01:00:00+00:00');
 
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T03:00:00+00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T03:00:00+00:00'), environment(), stagingConfig()))->check();
 
     expect($result->status->value)->toBe('warn')->and($result->detail)->toContain('2 hours');
 });
@@ -86,7 +86,7 @@ it('asks for the cron:run line when cron runs the older one', function (?string 
     $paths = new Paths(temporaryFolder());
     writeHeartbeat($paths, '2026-11-09T01:00:00+00:00', command: $command);
 
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:30+00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:30+00:00'), environment(), stagingConfig()))->check();
 
     expect($result->status->value)->toBe('warn')
         ->and($result->title)->toBe('Cron runs the older line')
@@ -101,7 +101,7 @@ it('fails when cron runs an old PHP', function (): void {
     $paths = new Paths(temporaryFolder());
     writeHeartbeat($paths, '2026-11-09T01:00:00+00:00', '8.3.36');
 
-    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:30+00:00'), environment()))->check();
+    [$result] = (new CronCheck($paths, FrozenClock::at('2026-11-09T01:00:30+00:00'), environment(), stagingConfig()))->check();
 
     expect($result->status->value)->toBe('fail')->and($result->detail)->toContain('8.3.36');
 });

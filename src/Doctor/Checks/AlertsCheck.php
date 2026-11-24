@@ -7,6 +7,7 @@ namespace SlimKiller\Doctor\Checks;
 use SlimKiller\Alerts\Alerts;
 use SlimKiller\Doctor\CheckResult;
 use SlimKiller\Doctor\HostCheck;
+use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Hammer;
 
 /**
@@ -16,6 +17,7 @@ final readonly class AlertsCheck implements HostCheck
 {
     public function __construct(
         private Alerts $alerts,
+        private AppConfig $config,
     ) {}
 
     public function check(): array
@@ -26,7 +28,8 @@ final readonly class AlertsCheck implements HostCheck
         }
 
         if (! $this->alerts->canSend()) {
-            $results[] = CheckResult::warn('Alerts go nowhere', 'ALERTS_TO (or VISIT_REPORT_TO) and MAIL_FROM are needed to email when something stops working', 'Set them in .env, then run ' . Hammer::command('alerts:test') . '.');
+            $results[] = CheckResult::warn('Alerts go nowhere', 'ALERTS_TO (or VISIT_REPORT_TO) and MAIL_FROM are needed to email when something stops working', 'Set them in .env, then run ' . Hammer::command('alerts:test') . '.')
+                ->weighed($this->config->env);
         } elseif ($results === []) {
             $results[] = CheckResult::pass('Alerts', 'go to ' . $this->alerts->recipient() . ', and nothing has stopped working');
         }
