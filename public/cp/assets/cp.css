@@ -915,7 +915,7 @@ footer.page-footer {
 .today-counts { margin: 0; color: var(--text-muted); }
 .today-counts strong { color: var(--text); font-size: 1.15rem; }
 
-.visit-lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 24px; }
+.visit-lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin: 24px 0; }
 .visit-lists .card + .card { margin-top: 0; }
 @media (max-width: 520px) { .visit-lists { grid-template-columns: 1fr; } }
 

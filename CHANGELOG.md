@@ -11,6 +11,15 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-24
+
+After updating, run `hammer web:install` (it copies the panel's styles).
+
+### Fixed
+
+- **The Visits page keeps its gap before "Your own visits".** The lists of pages,
+  buttons and devices sat right on top of it.
+
 ## [0.10.0] - 2026-11-24
 
 After updating, run `hammer migrate` (the visit counter learns a new kind) and
