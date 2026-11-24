@@ -15,6 +15,7 @@ use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Database\Migrator;
 use SlimKiller\Support\EnvFile;
+use SlimKiller\Support\Hammer;
 
 /**
  * First-time setup on a new host: .env, the database, and the first user, who gets a
@@ -47,7 +48,7 @@ final class InstallCommand implements Command
 
         if ($url === '' || $name === '' || $input->option('email') === null) {
             $output->line('Give the website\'s address, and your email address and name:', 'red');
-            $output->line('  php hammer install --url=https://example.com --email=you@example.com --name="Your Name"');
+            $output->line('  ' . Hammer::command('install --url=https://example.com --email=you@example.com --name="Your Name"'));
 
             return 2;
         }
@@ -78,7 +79,7 @@ final class InstallCommand implements Command
         $output->line($ran === [] ? 'The database is up to date.' : 'Created the database (' . implode(', ', $ran) . ').', 'green');
 
         if ($this->users->any()) {
-            $output->line('This site is already installed. Add people with: php hammer user:create', 'yellow');
+            $output->line('This site is already installed. Add people with: ' . Hammer::command('user:create'), 'yellow');
 
             return 1;
         }
@@ -91,7 +92,7 @@ final class InstallCommand implements Command
         $output->line('Installed. Finish setting up your account in the browser (link works for 72 hours):', 'bold');
         $output->line('  ' . $url . WelcomeLinks::pathFor($token));
         $output->line();
-        $output->line('Then run php hammer doctor: it checks this server and gives the cron line to add.');
+        $output->line('Then run ' . Hammer::command('doctor') . ': it checks this server and gives the cron line to add.');
         $output->line();
 
         return 0;

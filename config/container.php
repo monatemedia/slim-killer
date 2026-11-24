@@ -75,6 +75,7 @@ use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
 use SlimKiller\Support\EnvFile;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Support\Paths;
 use SlimKiller\Support\ShutdownAfterResponse;
 use SlimKiller\Support\SystemClock;
@@ -220,6 +221,9 @@ return [
         ]);
         $twig->addGlobal('base', ControlPanel::BASE_PATH);
         $twig->addGlobal('site_name', $config->name);
+
+        // hammer('doctor') gives the whole command, with the PHP that runs hammer on this server.
+        $twig->addFunction(new TwigFunction('hammer', static fn(string $arguments = ''): string => Hammer::command($arguments)));
 
         // asset('cp.css') gives the file's address with its change time on the end,
         // so a browser fetches the file again after it changes, not an old copy.

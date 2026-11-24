@@ -53,7 +53,7 @@ it('saves the report and points to setup:link, without handing out a link itself
 
     expect($code)->toBe(0)
         ->and($output)->not->toContain('token=')
-        ->and($output)->toContain('To see this report in a browser: hammer setup:link')
+        ->and($output)->toContain('To see this report in a browser: php hammer setup:link')
         ->and($output)->toContain('1 passed, 1 warning, 0 failed')
         ->and($paths->storage(SetupLink::FILE))->not->toBeFile()
         ->and((new ReportStore($paths, $clock))->latest()?->report->sections)->toHaveCount(3);
@@ -76,5 +76,5 @@ it('says to run the doctor first when there is no report for the setup page', fu
     [, $output] = runSetupLink(new Paths(temporaryFolder()), ['--url=https://example.com/']);
 
     expect($output)->toContain('https://example.com/cp/setup?token=')
-        ->and($output)->toContain('Run hammer doctor first');
+        ->and($output)->toContain('Run php hammer doctor first');
 });

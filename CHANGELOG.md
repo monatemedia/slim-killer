@@ -11,6 +11,16 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-24
+
+### Fixed
+
+- **Every hint names the whole command.** The doctor, other hammer commands, alert emails
+  and the panel's setup page said "Run hammer backup", which a shell doesn't know. They
+  now say it with the PHP that runs hammer on that server, like
+  `/opt/alt/php84/usr/bin/php hammer backup`: the PHP hammer was started with, or, in the
+  panel and the website, the one cron last ran with.
+
 ## [0.6.0] - 2026-11-24
 
 After updating, set `SMTP_HOST`, `SMTP_PORT` and `SMTP_PASSWORD` to send through the

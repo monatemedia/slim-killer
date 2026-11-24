@@ -13,6 +13,7 @@ use SlimKiller\Content\PageAddresses;
 use SlimKiller\Database\Database;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\Clock;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Visits\Event;
 use SlimKiller\Visits\SiteTime;
 use SlimKiller\Visits\VisitLog;
@@ -81,7 +82,7 @@ final class VisitsSampleCommand implements Command
             return 1;
         }
         if (! Database::hasTable($this->pdo, 'visit_events')) {
-            $output->line('The visit counter is not set up yet. Run hammer migrate first.', 'red');
+            $output->line('The visit counter is not set up yet. Run ' . Hammer::command('migrate') . ' first.', 'red');
 
             return 1;
         }

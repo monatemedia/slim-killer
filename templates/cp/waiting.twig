@@ -8,11 +8,11 @@
     {% if link_refused %}
       <h1>This setup link has expired.</h1>
       <p>A setup link works for one hour, and each run of the doctor replaces the last one.</p>
-      <p>For a new link, run <code>php hammer doctor</code> on the server.</p>
+      <p>For a new link, run <code>{{ hammer('setup:link') }}</code> on the server.</p>
     {% else %}
       <h1>This control panel is being set up.</h1>
       <p>There is nothing to see here yet.</p>
-      <p>Setting it up? Run <code>php hammer doctor</code> on the server, then <code>php hammer setup:link</code> for a private link to the setup page.</p>
+      <p>Setting it up? Run <code>{{ hammer('doctor') }}</code> on the server, then <code>{{ hammer('setup:link') }}</code> for a private link to the setup page.</p>
     {% endif %}
   </div>
 </section>

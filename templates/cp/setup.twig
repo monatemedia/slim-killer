@@ -55,7 +55,7 @@
         <div>
           <p class="row-title">Not checked yet</p>
           <p class="row-detail">Cron, the PHP for the command line and outgoing connections can only be checked from the server.</p>
-          <p class="row-hint">Run <code>php hammer doctor</code> on the server, then <code>php hammer setup:link</code> for a new link.</p>
+          <p class="row-hint">Run <code>{{ hammer('doctor') }}</code> on the server, then <code>{{ hammer('setup:link') }}</code> for a new link.</p>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
       <div class="step-num">1</div>
       <h3>Fix anything marked FAIL</h3>
       <p>Each one says how. Then run the doctor again:</p>
-      <code class="next-cmd">php hammer doctor</code>
+      <code class="next-cmd">{{ hammer('doctor') }}</code>
     </article>
 
     <article class="step">
@@ -89,14 +89,14 @@
         <div class="step-num">3</div>
         <h3>Sign in to the control panel</h3>
         <p>Slim Killer is installed. Open the welcome link <code>hammer install</code> printed, or <a href="{{ base }}/sign-in">sign in</a> if you already have. Lost the link? Ask for a new one:</p>
-        <code class="next-cmd">php hammer user:reset --email=…</code>
+        <code class="next-cmd">{{ hammer('user:reset --email=…') }}</code>
       </article>
     {% else %}
       <article class="step">
         <div class="step-num">3</div>
         <h3>Install, and create your account</h3>
         <p>It prints a welcome link. Open it to choose a password and set up two-factor.</p>
-        <code class="next-cmd">php hammer install --url=… --email=… --name=…</code>
+        <code class="next-cmd">{{ hammer('install --url=… --email=… --name=…') }}</code>
       </article>
     {% endif %}
 

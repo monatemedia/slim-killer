@@ -125,7 +125,7 @@ it('makes one backup a day, on this server only while Google Drive is not connec
     $first = $backups->daily(new DateTimeImmutable(BACKUP_NOW));
     $again = $backups->daily(minutesAfter(BACKUP_NOW, 60));
 
-    expect($first)->toBe('Saved backup-2026-11-24-0215.sqlite.gz on this server only: Google Drive is not connected (hammer backup:connect).')
+    expect($first)->toBe('Saved backup-2026-11-24-0215.sqlite.gz on this server only: Google Drive is not connected (php hammer backup:connect).')
         ->and($again)->toBe('Already backed up today (backup-2026-11-24-0215.sqlite.gz).')
         ->and($google->http->requested)->toBe([]);
 });

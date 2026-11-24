@@ -11,6 +11,7 @@ use SlimKiller\Doctor\ReportStore;
 use SlimKiller\Setup\SetupLink;
 use SlimKiller\Setup\SetupLinkNotSaved;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 
 /**
  * `hammer setup:link`: a private link to the control panel's setup page, which shows the
@@ -49,7 +50,7 @@ final readonly class SetupLinkCommand implements Command
         $output->line('Setup page (private, works for one hour):', 'bold');
         $output->line($url !== '' ? '  ' . rtrim($url, '/') . $path : '  ' . $path . '   (add it to your website\'s address)');
         if ($this->reports->latest() === null) {
-            $output->line('The doctor hasn\'t run yet, so the page has no report to show. Run ' . $input->script . ' doctor first.', 'yellow');
+            $output->line('The doctor hasn\'t run yet, so the page has no report to show. Run ' . Hammer::command('doctor') . ' first.', 'yellow');
         }
 
         return 0;

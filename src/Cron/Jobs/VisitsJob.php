@@ -9,6 +9,7 @@ use PDO;
 use SlimKiller\Cron\CronJob;
 use SlimKiller\Database\Database;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 use SlimKiller\Visits\SiteTime;
 use SlimKiller\Visits\VisitLog;
 use SlimKiller\Visits\VisitorCodes;
@@ -43,7 +44,7 @@ final readonly class VisitsJob implements CronJob
     public function run(DateTimeImmutable $now): string
     {
         if (! Database::hasTable($this->pdo, 'visit_events')) {
-            return 'The visit counter is not set up yet. Run hammer migrate.';
+            return 'The visit counter is not set up yet. Run ' . Hammer::command('migrate') . '.';
         }
 
         $today = $this->time->day($now);

@@ -11,6 +11,7 @@ use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Support\AppConfig;
+use SlimKiller\Support\Hammer;
 
 /**
  * For "I lost my phone" and "I forgot my password": clears the password, two-factor
@@ -41,7 +42,7 @@ final class UserResetCommand implements Command
 
         if ($user === null) {
             $output->line('No user with that email address. Usage:', 'red');
-            $output->line('  php hammer user:reset --email=client@example.com');
+            $output->line('  ' . Hammer::command('user:reset --email=client@example.com'));
 
             return 1;
         }

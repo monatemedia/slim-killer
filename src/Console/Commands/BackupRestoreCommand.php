@@ -10,6 +10,7 @@ use SlimKiller\Console\Command;
 use SlimKiller\Console\Input;
 use SlimKiller\Console\Output;
 use SlimKiller\Support\Clock;
+use SlimKiller\Support\Hammer;
 
 /**
  * `hammer backup:restore`: lists the backups. `hammer backup:restore <name> --yes`
@@ -43,7 +44,7 @@ final readonly class BackupRestoreCommand implements Command
             if (! $input->flag('yes')) {
                 $output->line("This replaces the live database with {$name}. Everything since that backup is lost:", 'yellow');
                 $output->line('people added, passwords changed, visits counted. The database as it is now is kept first.');
-                $output->line('To go ahead, run: ' . $input->script . " backup:restore {$name} --yes", 'cyan');
+                $output->line('To go ahead, run: ' . Hammer::command("backup:restore {$name} --yes"), 'cyan');
 
                 return 1;
             }
@@ -77,7 +78,7 @@ final readonly class BackupRestoreCommand implements Command
             }
         }
         $output->line();
-        $output->line('To put one back: ' . $input->script . ' backup:restore <name> --yes', 'cyan');
+        $output->line('To put one back: ' . Hammer::command('backup:restore <name> --yes'), 'cyan');
 
         return 0;
     }
