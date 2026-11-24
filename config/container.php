@@ -10,6 +10,7 @@ use function DI\get;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\Psr7\Factory\ResponseFactory;
+use SlimKiller\Alerts\Alerts;
 use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\PwnedPasswords;
 use SlimKiller\Backups\BackupEncryption;
@@ -113,6 +114,8 @@ return [
         $config->smtpHost !== '' => new SmtpMailer(new SocketSmtpConnection(), $config, $clock),
         default => new PhpMailer(),
     }),
+    // When the mailbox (SMTP) fails, an alert still goes out through the host's mail().
+    Alerts::class => autowire()->constructorParameter('fallback', factory(static fn(AppConfig $config): ?Mailer => ! $config->isLocal() && $config->smtpHost !== '' ? new PhpMailer() : null)),
     BreachedPasswords::class => get(PwnedPasswords::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),
