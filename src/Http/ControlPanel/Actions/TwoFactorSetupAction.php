@@ -73,12 +73,11 @@ final class TwoFactorSetupAction
         $codes = $this->recoveryCodes->replace($user->id);
         $ip = Form::ip($request);
         $this->audit->record('two_factor_enabled', $user->id, $ip);
-        $this->signIn->complete($session, $user, $ip);
 
-        return $this->view->render($response, 'cp/recovery-codes.twig', [
+        return $this->signIn->complete($session, $user, $request, $this->view->render($response, 'cp/recovery-codes.twig', [
             'codes' => $codes,
             'account' => $user->email,
             'site' => $request->getUri()->getHost(),
-        ]);
+        ]));
     }
 }

@@ -239,6 +239,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [x] Email through the site's own mailbox (SMTP), signed with DKIM, so DMARC can be strict
 - [x] Daily encrypted backups to the site's own Google Drive, with a test restore
 - [x] Alerts by email when a job fails, cron goes quiet or a build fails
+- [x] An email when an account signs in from a new browser, or with a recovery code
 - [ ] Choose when the visit report comes: daily, weekly or monthly, at an hour
 - [ ] Panel self-update
 - [ ] First client site live on its own hosting (already moved to Astro 7)

@@ -56,7 +56,8 @@ final class TwoFactorAction
         }
 
         $ip = Form::ip($request);
-        if (! $this->accepts($user, $user->totpSecret, Form::field($request, 'code'), $ip)) {
+        $code = Form::field($request, 'code');
+        if (! $this->accepts($user, $user->totpSecret, $code, $ip)) {
             $this->throttle->fail($key);
             $this->audit->record('two_factor_failed', $user->id, $ip);
 
@@ -64,9 +65,8 @@ final class TwoFactorAction
         }
 
         $this->throttle->clear($key);
-        $this->signIn->complete($session, $user, $ip);
 
-        return Form::redirect($response, '/');
+        return $this->signIn->complete($session, $user, $request, Form::redirect($response, '/'), RecoveryCodes::looksLikeOne($code));
     }
 
     private function accepts(User $user, string $secret, string $code, string $ip): bool

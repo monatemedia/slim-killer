@@ -35,7 +35,7 @@ declare(strict_types=1);
 // the control panel's paths to its own front controller, as public/cp/.htaccess does
 // on Apache and LiteSpeed. On a client's host this file is never served.
 $requestPath = parse_url(is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '/', PHP_URL_PATH);
-if (PHP_SAPI !== 'cli' && is_string($requestPath) && str_starts_with($requestPath, '/cp/')) {
+if (PHP_SAPI !== 'cli' && is_string($requestPath) && ($requestPath === '/cp' || str_starts_with($requestPath, '/cp/'))) {
     require __DIR__ . '/cp/index.php';
 
     return;

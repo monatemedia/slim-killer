@@ -6,6 +6,7 @@ namespace SlimKiller\Http\ControlPanel;
 
 use Psr\Container\ContainerInterface;
 use Slim\App;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use SlimKiller\Http\ControlPanel\Actions\BuildReadyAction;
@@ -79,7 +80,8 @@ final class ControlPanel
         $app->addBodyParsingMiddleware();
         $app->add(SessionMiddleware::class);
         $app->addRoutingMiddleware();
-        $app->addErrorMiddleware($showErrorDetails, $logErrors, $logErrors);
+        $errors = $app->addErrorMiddleware($showErrorDetails, $logErrors, $logErrors);
+        $errors->setErrorHandler(HttpNotFoundException::class, new NotFound($app->getResponseFactory(), $errors->getDefaultErrorHandler()));
         $app->add(SecurityHeaders::class);
 
         return $app;

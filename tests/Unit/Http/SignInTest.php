@@ -185,3 +185,32 @@ it('still lets a password be set when the breach check cannot be made', function
 
     expect($saved->getHeaderLine('Location'))->toBe('/cp/two-factor/setup');
 });
+
+it('sends a mistyped panel address, like /cp/login, to the dashboard', function (string $path): void {
+    [$browser, $container] = installedPanel();
+    welcomeLink($container);
+
+    $response = $browser->get($path);
+
+    expect($response->getStatusCode())->toBe(302)
+        ->and($response->getHeaderLine('Location'))->toBe('/cp/')
+        ->and($browser->get('/cp/')->getHeaderLine('Location'))->toBe('/cp/sign-in');
+})->with(['/cp/login', '/cp/admin', '/cp/content/x/y/z']);
+
+it('still answers a missing file, or a form sent to a wrong address, with a 404', function (): void {
+    [$browser, $container] = installedPanel();
+    welcomeLink($container);
+
+    expect($browser->get('/cp/assets/old.css')->getStatusCode())->toBe(404)
+        ->and($browser->post('/cp/login', [])->getStatusCode())->toBe(404);
+});
+
+it('takes the logo on the sign-in page to the website, and elsewhere to the dashboard', function (): void {
+    [$browser, $container, $clock] = installedPanel();
+    welcomeLink($container);
+    $browser->get('/cp/sign-in');
+    expect($browser->body())->toContain('<a class="brand" href="/">');
+
+    $browser->get('/cp/welcome');
+    expect($browser->body())->not->toContain('<a class="brand" href="/">');
+});
