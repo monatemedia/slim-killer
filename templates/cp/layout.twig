@@ -16,7 +16,8 @@
 
   <header class="page-header">
     <div class="header-row">
-      <a class="brand" href="{{ base }}/">
+      {# The dashboard, or on the sign-in page, the website itself (block brand_link). #}
+      <a class="brand" href="{% block brand_link %}{{ base }}/{% endblock %}">
         <span class="logo"><img src="{{ base }}/assets/logo.svg" alt=""></span>
         <span class="brand-name"><span>Slim</span> <span class="accent">Killer</span></span>
       </a>

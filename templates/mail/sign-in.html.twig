@@ -1,0 +1,33 @@
+{% extends 'mail/layout.html.twig' %}
+
+{% block content %}
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">{{ recovery ? 'A recovery code was used to sign in' : 'A new sign-in to your account' }}</h1>
+<p style="margin:0 0 16px;font-size:15px;">Hello {{ name }},</p>
+{% if recovery %}
+<p style="margin:0 0 16px;font-size:15px;">Your account ({{ email }}) signed in to the control panel with a recovery code, instead of a code from the authenticator app on your phone. <strong>{{ codes_left }} recovery {{ codes_left == 1 ? 'code is' : 'codes are' }} left.</strong></p>
+{% else %}
+<p style="margin:0 0 16px;font-size:15px;">Your account ({{ email }}) signed in to the control panel from a browser it hasn't used before.</p>
+{% endif %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;width:110px;vertical-align:top;">When</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ when }}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">Browser</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ browser }}{% if recovery and new_browser %} (new for your account){% endif %}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">IP address</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ ip }}</td>
+  </tr>
+</table>
+{% if recovery %}
+<p style="margin:20px 0 0;font-size:15px;">If you've lost your phone, ask whoever looks after this website to reset your account, so you can set up the authenticator app again and get new recovery codes.</p>
+{% else %}
+<p style="margin:20px 0 0;font-size:15px;">If this was you, there's nothing to do.</p>
+{% endif %}
+<p style="margin:16px 0 0;padding:12px 14px;border-left:4px solid #f99314;background:#fff6ea;font-size:14px;line-height:1.5;"><strong>If it wasn't you</strong>, someone has your password and a code: ask whoever looks after this website to reset your account straight away. On the server, that's: <code>{{ reset }}</code></p>
+{% endblock %}
+
+{% block why %}You get this because this is your account on the website's control panel. Slim Killer emails you when your account signs in from a new browser, or with a recovery code.{% endblock %}

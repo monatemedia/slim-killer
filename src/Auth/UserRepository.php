@@ -72,13 +72,16 @@ final class UserRepository
         $this->pdo->prepare('UPDATE users SET totp_last_counter = ? WHERE id = ?')->execute([$counter, $id]);
     }
 
-    /** Back to the start: no password, no two-factor, no recovery codes, signed out everywhere. */
+    /** Back to the start: no password, no two-factor, no recovery codes, no known browsers, signed out everywhere. */
     public function resetCredentials(int $id): void
     {
         $this->pdo->prepare('UPDATE users SET password_hash = NULL, totp_secret = NULL, totp_last_counter = NULL WHERE id = ?')
             ->execute([$id]);
         $this->pdo->prepare('DELETE FROM recovery_codes WHERE user_id = ?')->execute([$id]);
         $this->pdo->prepare('DELETE FROM sessions WHERE user_id = ?')->execute([$id]);
+        // Their browsers are forgotten too: after setting up again, a sign-in from any
+        // other browser is emailed.
+        $this->pdo->prepare('DELETE FROM known_browsers WHERE user_id = ?')->execute([$id]);
     }
 
     /** @param list<scalar> $parameters */

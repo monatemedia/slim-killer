@@ -1,0 +1,25 @@
+{% extends 'mail/layout.txt.twig' %}
+
+{% block content %}
+Hello {{ name }},
+
+{% if recovery %}
+Your account ({{ email }}) signed in to the control panel with a recovery code, instead of a code from the authenticator app on your phone. {{ codes_left }} recovery {{ codes_left == 1 ? 'code is' : 'codes are' }} left.
+{% else %}
+Your account ({{ email }}) signed in to the control panel from a browser it hasn't used before.
+{% endif %}
+
+When: {{ when }}
+Browser: {{ browser }}{% if recovery and new_browser %} (new for your account){% endif %}
+IP address: {{ ip }}
+
+{% if recovery %}
+If you've lost your phone, ask whoever looks after this website to reset your account, so you can set up the authenticator app again and get new recovery codes.
+{% else %}
+If this was you, there's nothing to do.
+{% endif %}
+
+If it wasn't you, someone has your password and a code: ask whoever looks after this website to reset your account straight away. On the server, that's: {{ reset }}
+{% endblock %}
+
+{% block why %}You get this because this is your account on the website's control panel. Slim Killer emails you when your account signs in from a new browser, or with a recovery code.{% endblock %}

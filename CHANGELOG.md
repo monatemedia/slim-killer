@@ -11,6 +11,39 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-25
+
+After updating, run `hammer migrate` (one new table: the browsers each person has signed
+in from).
+
+### Added
+
+- **An email when an account signs in from a new browser.** It goes to that person
+  only, with when, which browser ("Chrome on Windows") and the IP address, and what to
+  do if it wasn't them: ask for `hammer user:reset`. The browser an account was set up
+  in is never emailed about, and signing out and in again from a known browser stays
+  quiet. A browser is known by a random value in its own cookie (`sk_browser`, 400 days,
+  only a hash kept on the server), so a cleared or private browser counts as new.
+- **An email every time a recovery code is used**, even from a known browser, with how
+  many codes are left: a recovery code means the phone wasn't used.
+- The emails go after the page has loaded, so signing in isn't kept waiting. No
+  `MAIL_FROM`, no email.
+
+### Changed
+
+- **`hammer user:reset` also forgets the person's browsers**, so after they set up
+  again, a sign-in from anywhere else is emailed.
+- **The logo on the sign-in page leads to the website**, not back to the sign-in page.
+  Everywhere else it still leads to the dashboard.
+
+### Fixed
+
+- **A mistyped panel address goes to the dashboard**, or to the sign-in page when
+  signed out, instead of a bare "404 Not Found": `/cp/login`, `/cp/admin` and the like.
+  A missing file, or a form sent to a wrong address, still gets a 404.
+- **`/cp` without the slash** opens the panel on a developer's computer too (Herd). On a
+  client's host it already did.
+
 ## [0.12.0] - 2026-11-25
 
 Nothing to run after updating.
