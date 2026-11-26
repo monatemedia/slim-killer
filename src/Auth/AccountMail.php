@@ -13,7 +13,7 @@ use SlimKiller\Visits\SiteTime;
 /**
  * The emails about someone's own account: their welcome link when they are added or
  * reset from the People page, a "Forgot your password?" link, and a note when their
- * password changes. Each goes to that person only. Without MAIL_FROM, none is sent.
+ * password or two-factor changes. Each goes to that person only. Without MAIL_FROM, none is sent.
  */
 final readonly class AccountMail
 {
@@ -53,6 +53,18 @@ final readonly class AccountMail
     public function passwordChanged(User $person, string $browser, string $ip, DateTimeImmutable $at): bool
     {
         return $this->send('password-changed', $person, 'your password was changed', [
+            'browser' => $browser,
+            'ip' => $ip,
+            'when' => $at->setTimezone($this->time->zone)->format('j F Y, H:i'),
+            'preview' => 'If this was you, there is nothing to do.',
+        ]);
+    }
+
+    /** @param 'codes'|'app' $what new recovery codes, or two-factor set up again */
+    public function twoFactorChanged(User $person, string $what, string $browser, string $ip, DateTimeImmutable $at): bool
+    {
+        return $this->send('two-factor-changed', $person, $what === 'app' ? 'two-factor was set up again' : 'you have new recovery codes', [
+            'what' => $what,
             'browser' => $browser,
             'ip' => $ip,
             'when' => $at->setTimezone($this->time->zone)->format('j F Y, H:i'),

@@ -12,7 +12,9 @@ use SlimKiller\Auth\BrowserName;
 use SlimKiller\Auth\NewPassword;
 use SlimKiller\Auth\PasswordHasher;
 use SlimKiller\Auth\PasswordPolicy;
+use SlimKiller\Auth\RecoveryCodes;
 use SlimKiller\Auth\SignInThrottle;
+use SlimKiller\Auth\Totp;
 use SlimKiller\Auth\User;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Auth\WebsiteBar;
@@ -25,7 +27,7 @@ use SlimKiller\Support\Clock;
 
 /**
  * /cp/preferences: each person's own choices. Whether they see the website bar on the
- * website, and their password.
+ * website, their password, and their two-factor (new recovery codes, or a new app).
  *
  * Changing the password asks for the current one first, so a browser left signed in
  * can't be used to take the account. Every other device is then signed out, and the
@@ -45,6 +47,8 @@ final class PreferencesAction
         private readonly AuditLog $audit,
         private readonly AfterResponse $afterResponse,
         private readonly Clock $clock,
+        private readonly Totp $totp,
+        private readonly RecoveryCodes $recoveryCodes,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -54,6 +58,10 @@ final class PreferencesAction
 
         if ($request->getMethod() === 'POST' && Form::field($request, 'form') === 'password') {
             return $this->changePassword($request, $response, $session, $user);
+        }
+
+        if ($request->getMethod() === 'POST' && Form::field($request, 'form') === 'two-factor') {
+            return $this->changeTwoFactor($request, $response, $session, $user);
         }
 
         if ($request->getMethod() === 'POST') {
@@ -66,6 +74,7 @@ final class PreferencesAction
         return $this->page($response, $session, $user, null, 200, match (Form::query($request, 'saved')) {
             '1' => 'bar',
             'password' => 'password',
+            'two-factor' => 'two-factor',
             default => null,
         });
     }
@@ -104,14 +113,65 @@ final class PreferencesAction
         return Form::redirect($response, '/preferences?saved=password');
     }
 
-    /** @param 'bar'|'password'|null $saved */
-    private function page(ResponseInterface $response, Session $session, User $user, ?string $passwordError, int $status = 200, ?string $saved = null): ResponseInterface
+    /**
+     * New recovery codes, or two-factor set up again with a new app. Both need the
+     * password and a code from the app in use now, so neither a stolen password nor a
+     * browser left signed in is enough. A lost phone needs a reset (People page) instead.
+     */
+    private function changeTwoFactor(ServerRequestInterface $request, ResponseInterface $response, Session $session, User $user): ResponseInterface
+    {
+        $key = 'two-factor:' . $user->id;
+        $wait = $this->throttle->waitFor([$key => self::MAX_PASSWORD_ATTEMPTS]);
+        if ($wait > 0) {
+            return $this->page($response, $session, $user, null, 429, null, 'Too many attempts. Try again in ' . Form::minutes($wait) . '.');
+        }
+
+        $ip = Form::ip($request);
+        $passwordRight = $user->passwordHash !== null && $this->hasher->verify(Form::field($request, 'two_factor_password'), $user->passwordHash);
+        $counter = $user->totpSecret === null ? null : $this->totp->match($user->totpSecret, Form::field($request, 'code'), $user->totpLastCounter);
+        if (! $passwordRight || $counter === null) {
+            $this->throttle->fail($key);
+            $this->audit->record('two_factor_change_failed', $user->id, $ip);
+
+            return $this->page($response, $session, $user, null, 422, null, $passwordRight
+                ? 'That code is not right. Type the newest code from the app you use now.'
+                : 'That isn\'t your current password.');
+        }
+
+        $this->throttle->clear($key);
+        $this->users->recordTotpCounter($user->id, $counter);
+
+        if (Form::field($request, 'task') === 'app') {
+            $session->set(TwoFactorChangeAction::SECRET, Totp::newSecret());
+            $session->set(TwoFactorChangeAction::CONFIRMED_AT, $this->clock->now()->getTimestamp());
+
+            return Form::redirect($response, '/two-factor/change');
+        }
+
+        $codes = $this->recoveryCodes->replace($user->id);
+        $this->audit->record('recovery_codes_replaced', $user->id, $ip);
+        $browser = BrowserName::from($request->getHeaderLine('User-Agent'));
+        $at = $this->clock->now();
+        $this->afterResponse->run(fn(): bool => $this->mail->twoFactorChanged($user, 'codes', $browser, $ip, $at));
+
+        return $this->view->render($response, 'cp/recovery-codes.twig', [
+            'codes' => $codes,
+            'account' => $user->email,
+            'site' => $request->getUri()->getHost(),
+            'continue' => '/preferences',
+        ]);
+    }
+
+    /** @param 'bar'|'password'|'two-factor'|null $saved */
+    private function page(ResponseInterface $response, Session $session, User $user, ?string $passwordError, int $status = 200, ?string $saved = null, ?string $twoFactorError = null): ResponseInterface
     {
         return $this->view->render($response, 'cp/preferences.twig', [
             'website_bar' => $user->websiteBar->value,
             'email' => $user->email,
             'saved' => $saved,
             'password_error' => $passwordError,
+            'two_factor_error' => $twoFactorError,
+            'codes_left' => $this->recoveryCodes->remaining($user->id),
             'min_length' => PasswordPolicy::MIN_LENGTH,
             'csrf' => $session->csrfToken(),
         ], $status);

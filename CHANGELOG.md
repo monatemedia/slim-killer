@@ -11,6 +11,24 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-26
+
+Nothing to run after updating.
+
+### Added
+
+- **Two-factor on Preferences**, for anyone who fears their codes were seen. Both need
+  the password and a code from the app in use now:
+  - **Make new recovery codes.** All the old ones stop working; the new ones are shown
+    once, with Download.
+  - **Set up two-factor again**, for a new phone or a setup key or QR code that may have
+    been seen. The new app is scanned and proved with a code within ten minutes, and only
+    then does the old one stop working. New recovery codes come with it, and the
+    person's other devices are signed out.
+
+  Either way the person gets an email, and the audit log notes it. A lost phone still
+  needs a reset from the People page, so a password alone can never replace two-factor.
+
 ## [0.14.0] - 2026-11-26
 
 After updating, run `hammer migrate` (two new tables: password history and "Forgot your

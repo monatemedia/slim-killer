@@ -15,6 +15,8 @@
 
 {% if saved == 'bar' %}
   <p class="read-only-note" role="status">Saved. This browser knows already; on your other devices, open the control panel once.</p>
+{% elseif saved == 'two-factor' %}
+  <p class="read-only-note" role="status">Two-factor is set up again. Codes from the old app no longer work, and you're signed out on your other devices. Delete the old entry from the old app.</p>
 {% elseif saved == 'password' %}
   <p class="read-only-note" role="status">Your password is changed. You're signed out on your other devices, and an email is on its way to say so.</p>
 {% endif %}
@@ -51,6 +53,28 @@
       {{ fields.password('password', 'New password', 'new-password') }}
       {{ fields.password('password_confirmation', 'The same new password again', 'new-password') }}
       <div><button type="submit" class="btn">Change password</button></div>
+    </div>
+  </div>
+</form>
+
+<form method="post" action="{{ base }}/preferences" class="card" id="two-factor" novalidate>
+  <div class="card-pad">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="form" value="two-factor">
+    <h2 class="card-title">Two-factor</h2>
+    <p class="form-help">On, with {{ codes_left }} recovery {{ codes_left == 1 ? 'code' : 'codes' }} left. If someone may have seen your recovery codes, make new ones. For a new phone, or if your setup key or QR code may have been seen, set up two-factor again.</p>
+    <p class="form-help">Lost your phone? Ask whoever set up your account to reset it.</p>
+    {% if two_factor_error %}<p class="form-error" role="alert">{{ two_factor_error }}</p>{% endif %}
+    <div class="form form-spaced">
+      {{ fields.password('two_factor_password', 'Your password', 'off', false, true) }}
+      <div class="field">
+        <label for="code">A code from your authenticator app</label>
+        <input id="code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" class="code-input">
+      </div>
+      <div class="form-buttons">
+        <button type="submit" name="task" value="codes" class="btn btn-quiet">Make new recovery codes</button>
+        <button type="submit" name="task" value="app" class="btn btn-quiet">Set up two-factor again</button>
+      </div>
     </div>
   </div>
 </form>

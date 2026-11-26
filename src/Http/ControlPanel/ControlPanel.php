@@ -26,6 +26,7 @@ use SlimKiller\Http\ControlPanel\Actions\SetupAction;
 use SlimKiller\Http\ControlPanel\Actions\SignInAction;
 use SlimKiller\Http\ControlPanel\Actions\SignOutAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorAction;
+use SlimKiller\Http\ControlPanel\Actions\TwoFactorChangeAction;
 use SlimKiller\Http\ControlPanel\Actions\TwoFactorSetupAction;
 use SlimKiller\Http\ControlPanel\Actions\VisitsAction;
 use SlimKiller\Http\ControlPanel\Actions\WelcomeAction;
@@ -75,6 +76,7 @@ final class ControlPanel
         $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
         $app->get('/visits', VisitsAction::class)->add(SignedIn::class);
         $app->map(['GET', 'POST'], '/preferences', PreferencesAction::class)->add(SignedIn::class);
+        $app->map(['GET', 'POST'], '/two-factor/change', TwoFactorChangeAction::class)->add(SignedIn::class);
         $app->map(['GET', 'POST'], '/people', PeopleAction::class)->add(SignedIn::class);
         $app->map(['GET', 'POST'], '/people/{id:[0-9]+}/{task:reset|remove}', PersonAction::class)->add(SignedIn::class);
 
