@@ -1,0 +1,21 @@
+{% extends 'mail/layout.txt.twig' %}
+
+{% block content %}
+Hello {{ name }},
+
+{% if what == 'app' %}
+Two-factor sign-in for your account ({{ email }}) was set up again, with a new authenticator app or phone. Codes from the old one no longer work, the old recovery codes no longer work either, and you're signed out on your other devices.
+{% else %}
+Your account ({{ email }}) has new recovery codes. The old ones no longer work.
+{% endif %}
+
+When: {{ when }}
+Browser: {{ browser }}
+IP address: {{ ip }}
+
+If this was you, there's nothing to do.
+
+If it wasn't you, ask whoever looks after this website to reset your account straight away.
+{% endblock %}
+
+{% block why %}You get this because this is your account on the website's control panel. Slim Killer emails you whenever its two-factor changes.{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'mail/layout.html.twig' %}
+
+{% block content %}
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">{{ what == 'app' ? 'Two-factor was set up again' : 'You have new recovery codes' }}</h1>
+<p style="margin:0 0 16px;font-size:15px;">Hello {{ name }},</p>
+{% if what == 'app' %}
+<p style="margin:0 0 16px;font-size:15px;">Two-factor sign-in for your account ({{ email }}) was set up again, with a new authenticator app or phone. Codes from the old one no longer work, the old recovery codes no longer work either, and you're signed out on your other devices.</p>
+{% else %}
+<p style="margin:0 0 16px;font-size:15px;">Your account ({{ email }}) has new recovery codes. The old ones no longer work.</p>
+{% endif %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;width:110px;vertical-align:top;">When</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ when }}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">Browser</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ browser }}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;color:#5b6168;vertical-align:top;">IP address</td>
+    <td style="padding:6px 0;border-top:1px solid #e6e3df;">{{ ip }}</td>
+  </tr>
+</table>
+<p style="margin:20px 0 0;font-size:15px;">If this was you, there's nothing to do.</p>
+<p style="margin:16px 0 0;padding:12px 14px;border-left:4px solid #f99314;background:#fff6ea;font-size:14px;line-height:1.5;"><strong>If it wasn't you</strong>, ask whoever looks after this website to reset your account straight away.</p>
+{% endblock %}
+
+{% block why %}You get this because this is your account on the website's control panel. Slim Killer emails you whenever its two-factor changes.{% endblock %}

@@ -22,20 +22,25 @@
     });
   });
 
-  // A password field that should start empty (data-start-empty): the current password
-  // on Preferences, which browsers fill in by themselves. Emptied once the browser has
-  // had its turn, unless the person has already started typing.
+  // A password field that should start empty (data-start-empty): on Preferences, where
+  // browsers fill in the saved password by themselves. Emptied while the browser has its
+  // turn (it can be a second or two), unless the person has started typing. Filling in
+  // fires "input" too, so only keys and pasting count as typing.
   document.querySelectorAll('[data-start-empty]').forEach(function (input) {
     var typed = false;
-    input.addEventListener('input', function () { typed = true; });
+    var mark = function () { typed = true; };
+    input.addEventListener('keydown', mark);
+    input.addEventListener('paste', mark);
+    input.addEventListener('drop', mark);
     var empty = function () {
-      if (!typed) {
+      if (!typed && input.value !== '') {
         input.value = '';
       }
     };
     empty();
-    window.setTimeout(empty, 100);
-    window.setTimeout(empty, 600);
+    [50, 200, 500, 1000, 2000, 3000].forEach(function (wait) {
+      window.setTimeout(empty, wait);
+    });
   });
 
   // Save the recovery codes as a text file. Made in the browser: the codes are not
