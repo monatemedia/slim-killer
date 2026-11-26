@@ -1,0 +1,21 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}Welcome link for {{ name }}{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › <a href="{{ base }}/people">People</a> › {{ name }}</nav>
+
+<section class="card narrow">
+  <div class="card-pad">
+    <h1 class="form-title">{{ reset ? name ~ '\'s account is reset' : name ~ ' is added' }}</h1>
+    {% if emailed %}
+      <p class="form-lede">A welcome link is on its way to <strong>{{ email }}</strong>. It works for {{ hours }} hours, once.</p>
+    {% else %}
+      <p class="form-lede">The email to <strong>{{ email }}</strong> couldn't be sent, so send them this link yourself. It works for {{ hours }} hours, once.</p>
+    {% endif %}
+    <p class="form-help">If the email doesn't arrive, send them this link another way, like WhatsApp. It's shown only now.</p>
+    <code class="next-cmd welcome-link" data-copy-label="Copy the link">{{ link }}</code>
+    <p class="form-help"><a href="{{ base }}/people">Back to People</a></p>
+  </div>
+</section>
+{% endblock %}

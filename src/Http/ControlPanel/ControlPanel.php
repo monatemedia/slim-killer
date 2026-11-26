@@ -14,10 +14,14 @@ use SlimKiller\Http\ControlPanel\Actions\Content\CollectionsAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntriesAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\EntryAction;
 use SlimKiller\Http\ControlPanel\Actions\Content\PhotoPreviewAction;
+use SlimKiller\Http\ControlPanel\Actions\ForgotPasswordAction;
 use SlimKiller\Http\ControlPanel\Actions\HomeAction;
 use SlimKiller\Http\ControlPanel\Actions\MeAction;
+use SlimKiller\Http\ControlPanel\Actions\PeopleAction;
+use SlimKiller\Http\ControlPanel\Actions\PersonAction;
 use SlimKiller\Http\ControlPanel\Actions\PreferencesAction;
 use SlimKiller\Http\ControlPanel\Actions\PublishingAction;
+use SlimKiller\Http\ControlPanel\Actions\ResetPasswordAction;
 use SlimKiller\Http\ControlPanel\Actions\SetupAction;
 use SlimKiller\Http\ControlPanel\Actions\SignInAction;
 use SlimKiller\Http\ControlPanel\Actions\SignOutAction;
@@ -54,6 +58,8 @@ final class ControlPanel
         $app->map(['GET', 'POST'], '/two-factor/setup', TwoFactorSetupAction::class);
         $app->map(['GET', 'POST'], '/welcome', WelcomeAction::class);
         $app->post('/sign-out', SignOutAction::class);
+        $app->map(['GET', 'POST'], '/forgot-password', ForgotPasswordAction::class);
+        $app->map(['GET', 'POST'], '/reset-password', ResetPasswordAction::class);
         $app->get('/setup', SetupAction::class);
 
         // Called by the site's workflow when a build is ready. Signed, not signed in.
@@ -69,6 +75,8 @@ final class ControlPanel
         $app->get('/publishing', PublishingAction::class)->add(SignedIn::class);
         $app->get('/visits', VisitsAction::class)->add(SignedIn::class);
         $app->map(['GET', 'POST'], '/preferences', PreferencesAction::class)->add(SignedIn::class);
+        $app->map(['GET', 'POST'], '/people', PeopleAction::class)->add(SignedIn::class);
+        $app->map(['GET', 'POST'], '/people/{id:[0-9]+}/{task:reset|remove}', PersonAction::class)->add(SignedIn::class);
 
         // For the website bar: JSON, saying who is signed in (or that nobody is).
         $app->get('/me', MeAction::class);

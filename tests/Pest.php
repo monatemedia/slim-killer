@@ -18,6 +18,8 @@ use SlimKiller\Doctor\Environment\SnapshotEnvironment;
 use SlimKiller\Doctor\Requirements;
 use SlimKiller\Http\ControlPanel\ControlPanel;
 use SlimKiller\Mail\LetterWriter;
+use SlimKiller\Mail\Mailer;
+use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\AppConfig;
 use SlimKiller\Support\AppEnv;
 use SlimKiller\Support\Clock;
@@ -26,6 +28,7 @@ use SlimKiller\Visits\SiteTime;
 use Tests\Fakes\Browser;
 use Tests\Fakes\FakeBreachedPasswords;
 use Tests\Fakes\FakeMailer;
+use Tests\Fakes\RecordingAfterResponse;
 use Tests\Fakes\SteppingClock;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -126,17 +129,17 @@ function installedPanel(array $definitions = []): array
     return [new Browser(ControlPanel::create($container, showErrorDetails: true, logErrors: false)), $container, $clock];
 }
 
-function welcomeLink(ContainerInterface $container, string $email = 'edward@example.com'): string
+function welcomeLink(ContainerInterface $container, string $email = 'edward@example.com', string $name = 'Edward', Role $role = Role::Admin): string
 {
-    $user = $container->get(UserRepository::class)->create(EmailAddress::from($email), 'Edward', Role::Admin);
+    $user = $container->get(UserRepository::class)->create(EmailAddress::from($email), $name, $role);
 
     return WelcomeLinks::pathFor($container->get(WelcomeLinks::class)->issue($user->id));
 }
 
 /** Takes a new user from the welcome link to signed in. Returns the secret and recovery codes. */
-function enrol(Browser $browser, ContainerInterface $container, SteppingClock $clock): array
+function enrol(Browser $browser, ContainerInterface $container, SteppingClock $clock, string $email = 'edward@example.com', string $name = 'Edward', Role $role = Role::Admin): array
 {
-    $browser->get(welcomeLink($container));
+    $browser->get(welcomeLink($container, $email, $name, $role));
     $browser->get('/cp/welcome');
     $browser->post('/cp/welcome', ['password' => PASSWORD, 'password_confirmation' => PASSWORD]);
     $browser->get('/cp/two-factor/setup');
@@ -147,6 +150,49 @@ function enrol(Browser $browser, ContainerInterface $container, SteppingClock $c
     $browser->get('/cp/');
 
     return [$secret, $codes[1]];
+}
+
+/** A panel whose emails are kept, and whose after-the-page work waits to be run. */
+function alertingPanel(): array
+{
+    $mailer = new FakeMailer();
+    $after = new RecordingAfterResponse();
+    [$browser, $container, $clock] = installedPanel([
+        AppConfig::class => new AppConfig(name: 'Acme Tours', timezone: 'Africa/Johannesburg', mailFrom: 'website@example.com'),
+        Mailer::class => $mailer,
+        AfterResponse::class => $after,
+    ]);
+
+    return [$browser, $container, $clock, $mailer, $after];
+}
+
+/** Signs in from a browser with the password and a code, then runs what waited for the page to go. */
+function signInFrom(Browser $browser, string $code, RecordingAfterResponse $after): int
+{
+    $browser->post('/cp/sign-out', []);
+    $browser->get('/cp/sign-in');
+    $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => PASSWORD]);
+    $browser->get('/cp/two-factor');
+    $status = $browser->post('/cp/two-factor', ['code' => $code])->getStatusCode();
+    runAfter($after);
+
+    return $status;
+}
+
+/** Runs what waited for the page to go, like sending an email. */
+function runAfter(RecordingAfterResponse $after): void
+{
+    foreach ($after->work as $work) {
+        $work();
+    }
+    $after->work = [];
+}
+
+function freshCode(string $secret, SteppingClock $clock): string
+{
+    $clock->advance(30);
+
+    return (new Totp($clock))->codeAt($secret, $clock->now()->getTimestamp());
 }
 
 require __DIR__ . '/photos.php';

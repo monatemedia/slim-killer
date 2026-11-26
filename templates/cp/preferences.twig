@@ -1,4 +1,5 @@
 {% extends 'cp/layout.twig' %}
+{% import 'cp/_fields.twig' as fields %}
 
 {% block body_attrs %} data-editor-bar="{{ website_bar }}"{% endblock %}
 
@@ -12,8 +13,10 @@
   <p>Your own choices. They don't change anything for anyone else.</p>
 </section>
 
-{% if saved %}
+{% if saved == 'bar' %}
   <p class="read-only-note" role="status">Saved. This browser knows already; on your other devices, open the control panel once.</p>
+{% elseif saved == 'password' %}
+  <p class="read-only-note" role="status">Your password is changed. You're signed out on your other devices, and an email is on its way to say so.</p>
 {% endif %}
 
 <form method="post" action="{{ base }}/preferences" class="card">
@@ -33,6 +36,22 @@
       <p class="form-help">Either way, while you're signed in your own visits aren't counted.</p>
     </fieldset>
     <button type="submit" class="btn">Save</button>
+  </div>
+</form>
+
+<form method="post" action="{{ base }}/preferences" class="card" id="your-password" novalidate>
+  <div class="card-pad">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="form" value="password">
+    <h2 class="card-title">Your password</h2>
+    <p class="form-help">Use at least {{ min_length }} characters, and not one of your last three passwords. Changing it signs you out on your other devices.</p>
+    {% if password_error %}<p class="form-error" role="alert">{{ password_error }}</p>{% endif %}
+    <div class="form form-spaced">
+      {{ fields.password('current_password', 'Current password', 'off', false, true) }}
+      {{ fields.password('password', 'New password', 'new-password') }}
+      {{ fields.password('password_confirmation', 'The same new password again', 'new-password') }}
+      <div><button type="submit" class="btn">Change password</button></div>
+    </div>
   </div>
 </form>
 {% endblock %}

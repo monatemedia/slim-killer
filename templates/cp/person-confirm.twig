@@ -1,0 +1,24 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}{{ task == 'remove' ? 'Remove' : 'Reset' }} {{ name }}{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › <a href="{{ base }}/people">People</a> › {{ name }}</nav>
+
+<section class="card narrow">
+  <div class="card-pad">
+    {% if task == 'remove' %}
+      <h1 class="form-title">Remove {{ name }}?</h1>
+      <p class="form-lede">{{ name }} ({{ email }}) won't be able to sign in any more, and is signed out at once. What they changed on the website stays. You can add them again later; they'd start with a new welcome link.</p>
+    {% else %}
+      <h1 class="form-title">Reset {{ name }}'s account?</h1>
+      <p class="form-lede">For a forgotten password or a lost phone. {{ name }}'s password, two-factor and recovery codes stop working, they're signed out everywhere, and they get a new welcome link by email to set up again.</p>
+    {% endif %}
+    <form method="post" action="{{ base }}/people/{{ id }}/{{ task }}" class="form-inline">
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <button type="submit" class="btn">{{ task == 'remove' ? 'Remove ' ~ name : 'Reset and send the link' }}</button>
+      <a class="btn btn-quiet" href="{{ base }}/people">Cancel</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

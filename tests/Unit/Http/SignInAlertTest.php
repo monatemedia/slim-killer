@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use SlimKiller\Auth\AuditLog;
 use SlimKiller\Auth\BrowserName;
-use SlimKiller\Auth\Totp;
 use SlimKiller\Auth\UserRepository;
 use SlimKiller\Mail\Mailer;
 use SlimKiller\Support\AfterResponse;
@@ -12,44 +11,6 @@ use SlimKiller\Support\AppConfig;
 use Tests\Fakes\Browser;
 use Tests\Fakes\FakeMailer;
 use Tests\Fakes\RecordingAfterResponse;
-use Tests\Fakes\SteppingClock;
-
-/** A panel whose emails are kept, and whose after-the-page work waits to be run. */
-function alertingPanel(): array
-{
-    $mailer = new FakeMailer();
-    $after = new RecordingAfterResponse();
-    [$browser, $container, $clock] = installedPanel([
-        AppConfig::class => new AppConfig(name: 'Acme Tours', timezone: 'Africa/Johannesburg', mailFrom: 'website@example.com'),
-        Mailer::class => $mailer,
-        AfterResponse::class => $after,
-    ]);
-
-    return [$browser, $container, $clock, $mailer, $after];
-}
-
-/** Signs in from a browser with the password and a code, then runs what waited for the page to go. */
-function signInFrom(Browser $browser, string $code, RecordingAfterResponse $after): int
-{
-    $browser->post('/cp/sign-out', []);
-    $browser->get('/cp/sign-in');
-    $browser->post('/cp/sign-in', ['email' => 'edward@example.com', 'password' => PASSWORD]);
-    $browser->get('/cp/two-factor');
-    $status = $browser->post('/cp/two-factor', ['code' => $code])->getStatusCode();
-    foreach ($after->work as $work) {
-        $work();
-    }
-    $after->work = [];
-
-    return $status;
-}
-
-function freshCode(string $secret, SteppingClock $clock): string
-{
-    $clock->advance(30);
-
-    return (new Totp($clock))->codeAt($secret, $clock->now()->getTimestamp());
-}
 
 it('sends no email for the browser an account was set up in, nor when it signs in there again', function (): void {
     [$browser, $container, $clock, $mailer, $after] = alertingPanel();

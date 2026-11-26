@@ -1,0 +1,19 @@
+{% extends 'mail/layout.txt.twig' %}
+
+{% block content %}
+Hello {{ name }},
+
+{% if reset %}
+{{ by }} reset your account on the website's control panel. Your old password and two-factor no longer work.
+{% else %}
+{{ by }} added you to the website's control panel, so you can change the words and photos on your website.
+{% endif %}
+
+Open this link within {{ hours }} hours to choose a password and set up two-factor sign-in with your phone:
+
+{{ link }}
+
+The link works once. If it has expired, ask {{ by }} for a new one.
+{% endblock %}
+
+{% block why %}You get this because {{ by }} {{ reset ? 'reset' : 'added' }} your account ({{ email }}) on this website's control panel.{% endblock %}

@@ -31,4 +31,20 @@ final readonly class User
     {
         return $this->totpSecret !== null;
     }
+
+    /**
+     * Can this person add, reset or remove that one from the People page? Administrators
+     * can for anyone, site owners for site owners. Nobody for themself: their own
+     * password is on Preferences.
+     */
+    public function canManage(self $other): bool
+    {
+        return $other->id !== $this->id && $this->canAdd($other->role);
+    }
+
+    /** Can this person add someone with that role? */
+    public function canAdd(Role $role): bool
+    {
+        return $this->role === Role::Admin || $role === Role::Owner;
+    }
 }
