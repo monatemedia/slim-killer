@@ -20,6 +20,10 @@ final readonly class User
         public ?string $totpSecret,
         public ?int $totpLastCounter,
         public WebsiteBar $websiteBar = WebsiteBar::Show,
+        /** When the visit report comes, cron-style (ReportSchedule); empty: never. */
+        public string $visitReport = '',
+        /** Emailed when something stops working (Alerts)? */
+        public bool $alerts = false,
     ) {}
 
     public function hasPassword(): bool

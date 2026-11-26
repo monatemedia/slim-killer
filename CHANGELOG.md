@@ -11,6 +11,33 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-26
+
+After updating, run `hammer migrate` (each person's email choices, with defaults by role).
+
+### Added
+
+- **Each person chooses their emails, in Preferences:**
+  - **The visit report:** never, every day, every week on a day, or every month on a date
+    (or the last day), at an hour in the site's time zone. Preferences shows when the
+    next one comes. A daily report covers the day before against the 7-day average; a
+    weekly one the 7 days before against the 4 weeks before; a monthly one the month
+    before against the month before that. Each goes once per period, and cron tries again
+    if the host refuses it.
+  - **Alerts:** "Email me when something stops working".
+
+  Defaults by role: a site owner starts with the report weekly, Monday 07:00, and no
+  alerts; an administrator with alerts and no report. People already on a site get the
+  same when `hammer migrate` runs.
+
+### Changed
+
+- **`VISIT_REPORT_TO` and `ALERTS_TO` are the fallback** while nobody has chosen the
+  report or alerts in Preferences. On a site with only an administrator, the morning
+  report still goes to `VISIT_REPORT_TO` as before, and alerts go to the administrator.
+- The visit report job runs every 15 minutes, so a report chosen for 07:00 comes soon
+  after 07:00.
+
 ## [0.15.0] - 2026-11-26
 
 Nothing to run after updating.

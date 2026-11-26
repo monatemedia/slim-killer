@@ -28,10 +28,10 @@ final readonly class AlertsCheck implements HostCheck
         }
 
         if (! $this->alerts->canSend()) {
-            $results[] = CheckResult::warn('Alerts go nowhere', 'ALERTS_TO (or VISIT_REPORT_TO) and MAIL_FROM are needed to email when something stops working', 'Set them in .env, then run ' . Hammer::command('alerts:test') . '.')
+            $results[] = CheckResult::warn('Alerts go nowhere', 'nobody chose them in Preferences, and ALERTS_TO (or VISIT_REPORT_TO) and MAIL_FROM are needed to email when something stops working', 'Turn them on in Preferences, or set them in .env, then run ' . Hammer::command('alerts:test') . '.')
                 ->weighed($this->config->env);
         } elseif ($results === []) {
-            $results[] = CheckResult::pass('Alerts', 'go to ' . $this->alerts->recipient() . ', and nothing has stopped working');
+            $results[] = CheckResult::pass('Alerts', 'go to ' . $this->alerts->recipientList() . ', and nothing has stopped working');
         }
 
         return $results;

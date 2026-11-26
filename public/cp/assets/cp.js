@@ -43,6 +43,20 @@
     });
   });
 
+  // Preferences, the visit report: show only the choices that go with how often it comes
+  // (a day for weekly, a date for monthly, an hour unless never). Without JavaScript
+  // every choice shows, and those that don't apply are ignored.
+  var frequency = document.querySelector('[data-report-frequency]');
+  if (frequency) {
+    var showChoices = function () {
+      document.querySelectorAll('[data-report-for]').forEach(function (field) {
+        field.hidden = field.getAttribute('data-report-for').split(' ').indexOf(frequency.value) === -1;
+      });
+    };
+    frequency.addEventListener('change', showChoices);
+    showChoices();
+  }
+
   // Save the recovery codes as a text file. Made in the browser: the codes are not
   // kept anywhere on the server, only their hashes.
   var download = document.querySelector('[data-download-codes]');

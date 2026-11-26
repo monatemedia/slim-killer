@@ -1,12 +1,12 @@
 {% extends 'mail/layout.html.twig' %}
 
 {% block content %}
-<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">Visits on {{ date }}</h1>
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;">{{ title|default('Visits on ' ~ date) }}</h1>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
   <tr style="color:#5b6168;font-size:13px;">
     <td style="padding:4px 0;"></td>
-    <td align="right" style="padding:4px 0;">That day</td>
-    <td align="right" style="padding:4px 0;">7-day average</td>
+    <td align="right" style="padding:4px 0;">{{ column_now|default('That day') }}</td>
+    <td align="right" style="padding:4px 0;">{{ column_before|default('7-day average') }}</td>
   </tr>
   {% for measure in measures %}
   <tr>
@@ -28,8 +28,8 @@
 </table>
 {% endfor %}
 {% if lists is empty %}
-<p style="margin:24px 0 0;color:#5b6168;">Nobody was counted that day.</p>
+<p style="margin:24px 0 0;color:#5b6168;">{{ nobody|default('Nobody was counted that day.') }}</p>
 {% endif %}
 {% endblock %}
 
-{% block why %}You get this every morning because your address is VISIT_REPORT_TO in this website's settings. Counted by Slim Killer's visit counter: no cookies, no internet addresses.{% endblock %}
+{% block why %}{% if frequency is defined %}You get this {{ {'daily': 'every day', 'weekly': 'every week', 'monthly': 'every month'}[frequency] }} because you chose it in Preferences in the website's control panel, where you can change when it comes or stop it. Counted by Slim Killer's visit counter: no cookies, no internet addresses.{% else %}You get this every morning because your address is VISIT_REPORT_TO in this website's settings. Counted by Slim Killer's visit counter: no cookies, no internet addresses.{% endif %}{% endblock %}

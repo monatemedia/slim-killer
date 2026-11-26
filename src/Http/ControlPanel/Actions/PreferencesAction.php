@@ -24,10 +24,13 @@ use SlimKiller\Http\ControlPanel\View;
 use SlimKiller\Http\Session\Session;
 use SlimKiller\Support\AfterResponse;
 use SlimKiller\Support\Clock;
+use SlimKiller\Visits\ReportSchedule;
+use SlimKiller\Visits\SiteTime;
 
 /**
  * /cp/preferences: each person's own choices. Whether they see the website bar on the
- * website, their password, and their two-factor (new recovery codes, or a new app).
+ * website, which emails they get (the visit report, and alerts when something stops
+ * working), their password, and their two-factor (new recovery codes, or a new app).
  *
  * Changing the password asks for the current one first, so a browser left signed in
  * can't be used to take the account. Every other device is then signed out, and the
@@ -49,6 +52,7 @@ final class PreferencesAction
         private readonly Clock $clock,
         private readonly Totp $totp,
         private readonly RecoveryCodes $recoveryCodes,
+        private readonly SiteTime $time,
     ) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -58,6 +62,18 @@ final class PreferencesAction
 
         if ($request->getMethod() === 'POST' && Form::field($request, 'form') === 'password') {
             return $this->changePassword($request, $response, $session, $user);
+        }
+
+        if ($request->getMethod() === 'POST' && Form::field($request, 'form') === 'emails') {
+            $schedule = ReportSchedule::fromChoices(
+                Form::field($request, 'frequency'),
+                (int) Form::field($request, 'hour'),
+                (int) Form::field($request, 'weekday'),
+                (int) Form::field($request, 'date'),
+            );
+            $this->users->setEmails($user->id, $schedule->cron(), Form::field($request, 'alerts') === '1');
+
+            return Form::redirect($response, '/preferences?saved=emails#emails');
         }
 
         if ($request->getMethod() === 'POST' && Form::field($request, 'form') === 'two-factor') {
@@ -75,6 +91,7 @@ final class PreferencesAction
             '1' => 'bar',
             'password' => 'password',
             'two-factor' => 'two-factor',
+            'emails' => 'emails',
             default => null,
         });
     }
@@ -162,10 +179,24 @@ final class PreferencesAction
         ]);
     }
 
-    /** @param 'bar'|'password'|'two-factor'|null $saved */
+    /** @param 'bar'|'password'|'two-factor'|'emails'|null $saved */
     private function page(ResponseInterface $response, Session $session, User $user, ?string $passwordError, int $status = 200, ?string $saved = null, ?string $twoFactorError = null): ResponseInterface
     {
+        $schedule = ReportSchedule::fromCron($user->visitReport);
+        $next = $schedule->nextDue($this->clock->now()->setTimezone($this->time->zone));
+
         return $this->view->render($response, 'cp/preferences.twig', [
+            'report' => [
+                'frequency' => $schedule->frequency,
+                'hour' => $schedule->hour,
+                'weekday' => $schedule->weekday,
+                'date' => $schedule->date,
+                'describe' => $schedule->describe(),
+                'next' => $next?->format('l j F, H:i'),
+            ],
+            'weekdays' => ReportSchedule::WEEKDAYS,
+            'last_date' => ReportSchedule::LAST_DATE,
+            'alerts' => $user->alerts,
             'website_bar' => $user->websiteBar->value,
             'email' => $user->email,
             'saved' => $saved,
