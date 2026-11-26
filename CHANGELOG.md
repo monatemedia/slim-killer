@@ -11,6 +11,13 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+### Changed
+
+- **The public page is up to date with v0.13.0 to v0.16.0:** the comparison table gains
+  rows for people and roles, a forgotten password, sign-in from a new browser and
+  alerts when something breaks; two-factor, visitor statistics and the security section
+  say what the panel now does.
+
 ## [0.16.0] - 2026-11-26
 
 After updating, run `hammer migrate` (each person's email choices, with defaults by role).
