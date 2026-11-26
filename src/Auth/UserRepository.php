@@ -84,6 +84,49 @@ final class UserRepository
         $this->pdo->prepare('DELETE FROM known_browsers WHERE user_id = ?')->execute([$id]);
     }
 
+    /** @return list<User> Everyone, administrators first, then by name. */
+    public function all(): array
+    {
+        $statement = $this->pdo->query("SELECT * FROM users ORDER BY role = 'admin' DESC, name COLLATE NOCASE, id");
+        $users = [];
+        foreach ($statement === false ? [] : $statement->fetchAll() as $row) {
+            if (is_array($row)) {
+                $users[] = self::fromRow($row);
+            }
+        }
+
+        return $users;
+    }
+
+    /** @return array<int, int> When each person last signed in (a Unix timestamp), by user id. */
+    public function lastSignIns(): array
+    {
+        $statement = $this->pdo->query("SELECT user_id, MAX(at) FROM audit_log WHERE event = 'sign_in' AND user_id IS NOT NULL GROUP BY user_id");
+        $last = [];
+        foreach ($statement === false ? [] : $statement->fetchAll(PDO::FETCH_NUM) as $row) {
+            $last[(int) $row[0]] = (int) $row[1];
+        }
+
+        return $last;
+    }
+
+    /** Signs the person out everywhere but this session's cookie (when one is given). */
+    public function signOutEverywhere(int $id, ?string $exceptToken = null): void
+    {
+        // Sessions are stored under a hash of their cookie (SessionStore).
+        $this->pdo->prepare('DELETE FROM sessions WHERE user_id = ? AND id <> ?')
+            ->execute([$id, $exceptToken === null ? '' : hash('sha256', $exceptToken)]);
+    }
+
+    /** Gone: their sessions, browsers, codes and links with them. The audit log keeps what they did. */
+    public function delete(int $id): void
+    {
+        foreach (['sessions', 'known_browsers', 'recovery_codes', 'welcome_links', 'password_resets', 'password_history'] as $table) {
+            $this->pdo->prepare("DELETE FROM {$table} WHERE user_id = ?")->execute([$id]);
+        }
+        $this->pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$id]);
+    }
+
     /** @param list<scalar> $parameters */
     private function one(string $sql, array $parameters): ?User
     {
@@ -91,10 +134,12 @@ final class UserRepository
         $statement->execute($parameters);
         $row = $statement->fetch();
 
-        if (! is_array($row)) {
-            return null;
-        }
+        return is_array($row) ? self::fromRow($row) : null;
+    }
 
+    /** @param array<mixed> $row */
+    private static function fromRow(array $row): User
+    {
         return new User(
             (int) $row['id'],
             (string) $row['email'],

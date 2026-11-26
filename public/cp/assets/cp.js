@@ -22,6 +22,22 @@
     });
   });
 
+  // A password field that should start empty (data-start-empty): the current password
+  // on Preferences, which browsers fill in by themselves. Emptied once the browser has
+  // had its turn, unless the person has already started typing.
+  document.querySelectorAll('[data-start-empty]').forEach(function (input) {
+    var typed = false;
+    input.addEventListener('input', function () { typed = true; });
+    var empty = function () {
+      if (!typed) {
+        input.value = '';
+      }
+    };
+    empty();
+    window.setTimeout(empty, 100);
+    window.setTimeout(empty, 600);
+  });
+
   // Save the recovery codes as a text file. Made in the browser: the codes are not
   // kept anywhere on the server, only their hashes.
   var download = document.querySelector('[data-download-codes]');
@@ -528,8 +544,9 @@
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-btn';
+    var label = code.getAttribute('data-copy-label') || 'Copy the command';
     button.innerHTML = COPY_ICON;
-    button.setAttribute('aria-label', 'Copy the command');
+    button.setAttribute('aria-label', label);
     button.title = 'Copy';
     box.appendChild(button);
 
@@ -549,7 +566,7 @@
       reset = window.setTimeout(function () {
         button.innerHTML = COPY_ICON;
         button.classList.remove('copied');
-        button.setAttribute('aria-label', 'Copy the command');
+        button.setAttribute('aria-label', label);
         button.title = 'Copy';
       }, 2000);
     });

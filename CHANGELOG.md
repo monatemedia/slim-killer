@@ -11,6 +11,34 @@ see "Versioning" in `README.md`). Work that has not been released yet sits under
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-26
+
+After updating, run `hammer migrate` (two new tables: password history and "Forgot your
+password?" links).
+
+### Added
+
+- **People, in the panel.** A new page lists everyone who can use the control panel,
+  when they last signed in, or whether their welcome link is still waiting. From it:
+  - **Add someone.** They get a welcome link by email, to choose their own password and
+    set up two-factor, as with `hammer user:create`. The link is also shown once on the
+    page, to send another way if the email doesn't arrive.
+  - **Reset someone** (a forgotten password, a lost phone), as with `hammer user:reset`,
+    with a new welcome link sent the same way.
+  - **Remove someone.** The account goes; the audit log keeps what they did.
+
+  Administrators can do this for anyone, site owners for site owners. Nobody resets or
+  removes themself, so a site always keeps an administrator. Each step asks first.
+- **Change your own password** on Preferences, after typing the current one. Your other
+  devices are signed out, and you get an email saying the password changed.
+- **"Forgot your password?"** on the sign-in page emails a link to choose a new one,
+  valid for an hour, once. The code from the authenticator app is still asked
+  afterwards, so an email alone never signs anyone in. The page answers the same
+  whether or not an address has an account, and sends at most three links an hour to
+  one address.
+- **A new password can't be any of your last three**, however it is set: a welcome
+  link, a forgot-password link, or Preferences. A reset doesn't clear this.
+
 ## [0.13.0] - 2026-11-25
 
 After updating, run `hammer migrate` (one new table: the browsers each person has signed

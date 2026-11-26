@@ -1,0 +1,78 @@
+{% extends 'cp/layout.twig' %}
+
+{% block title %}People{% endblock %}
+
+{% block main %}
+<nav class="crumbs" aria-label="You are here"><a href="{{ base }}/">Dashboard</a> › People</nav>
+
+<section class="hero">
+  <h1>People</h1>
+  <p>Everyone who can use this control panel. Each person has their own password and two-factor.</p>
+</section>
+
+{% if removed %}
+  <p class="read-only-note" role="status">{{ removed }} can no longer sign in.</p>
+{% endif %}
+
+<section class="card">
+  <div class="card-pad">
+    <ul class="people-list">
+      {% for person in people %}
+        <li class="person">
+          <div>
+            <p class="row-title">{{ person.name }}{% if person.me %} (you){% endif %}</p>
+            <p class="row-detail">{{ person.email }} · {{ person.role|capitalize }}</p>
+            <p class="row-detail">{{ person.state }}</p>
+          </div>
+          {% if person.can_manage %}
+            <div class="person-buttons">
+              <a class="btn btn-quiet" href="{{ base }}/people/{{ person.id }}/reset">Reset</a>
+              <a class="btn btn-quiet" href="{{ base }}/people/{{ person.id }}/remove">Remove</a>
+            </div>
+          {% elseif person.me %}
+            <div class="person-buttons">
+              <a class="btn btn-quiet" href="{{ base }}/preferences#your-password">Your password</a>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<form method="post" action="{{ base }}/people" class="card" novalidate>
+  <div class="card-pad">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <h2 class="card-title">Add someone</h2>
+    <p class="form-help">They get an email with a welcome link, to choose their own password and set up two-factor. You never see their password.</p>
+    {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+    <div class="form form-spaced">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" name="name" value="{{ fields.name }}" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" type="email" name="email" value="{{ fields.email }}" autocomplete="off">
+    </div>
+    {% if can_add_admin %}
+      <fieldset class="choices">
+        <legend>What they can do</legend>
+        <label class="choice">
+          <input type="radio" name="role" value="owner"{{ fields.role != 'admin' ? ' checked' }}>
+          <span><strong>Site owner</strong><br>Changes the words and photos, sees Visits, and adds or resets other site owners.</span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="role" value="admin"{{ fields.role == 'admin' ? ' checked' }}>
+          <span><strong>Administrator</strong><br>Everything a site owner can do, for everyone, and hears about updates.</span>
+        </label>
+      </fieldset>
+    {% else %}
+      <input type="hidden" name="role" value="owner">
+      <p class="form-help">They'll be a site owner, like you.</p>
+    {% endif %}
+    <div><button type="submit" class="btn">Add and send the welcome link</button></div>
+    </div>
+  </div>
+</form>
+{% endblock %}

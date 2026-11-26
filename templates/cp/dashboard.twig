@@ -33,11 +33,16 @@
   <span class="tile-meta">See how many people came to your website, where they came from and what they did.</span>
 </a>
 
+<a class="tile tile-wide" href="{{ base }}/people">
+  <span class="tile-title">People</span>
+  <span class="tile-meta">Who can use this control panel. Add someone, or reset an account.</span>
+</a>
+
 <section class="card">
   <div class="card-pad">
     <h2 class="card-title">Your account</h2>
     <p class="form-help">Two-factor sign-in is on. You have {{ codes_left }} recovery {{ codes_left == 1 ? 'code' : 'codes' }} left.</p>
-    <p class="form-help"><a href="{{ base }}/preferences">Preferences</a>: whether you see the website bar on your website.</p>
+    <p class="form-help"><a href="{{ base }}/preferences">Preferences</a>: your password, and whether you see the website bar on your website.</p>
     <form method="post" action="{{ base }}/sign-out" class="form-inline">
       <input type="hidden" name="_csrf" value="{{ csrf }}">
       <button type="submit" class="btn btn-quiet">Sign out</button>

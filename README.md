@@ -240,6 +240,7 @@ They run in WebKit (Safari's engine) by default; `vendor/bin/pest --testsuite=Br
 - [x] Daily encrypted backups to the site's own Google Drive, with a test restore
 - [x] Alerts by email when a job fails, cron goes quiet or a build fails
 - [x] An email when an account signs in from a new browser, or with a recovery code
+- [x] People in the panel: add, reset and remove people; change your own password, or email yourself a link when it's forgotten
 - [ ] Choose when the visit report comes: daily, weekly or monthly, at an hour
 - [ ] Panel self-update
 - [ ] First client site live on its own hosting (already moved to Astro 7)
