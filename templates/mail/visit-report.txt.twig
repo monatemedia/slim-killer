@@ -1,9 +1,9 @@
 {% extends 'mail/layout.txt.twig' %}
 
 {% block content %}
-Visits on {{ date }}
+{{ title|default('Visits on ' ~ date) }}
 
-{{ '%-18s %10s %16s'|format('', 'That day', '7-day average') }}
+{{ '%-18s %10s %16s'|format('', column_now|default('That day'), column_before|default('7-day average')) }}
 {% for measure in measures %}
 {{ '%-18s %10d %16.1f'|format(measure.label, measure.day, measure.average) }}
 {% endfor %}
@@ -16,8 +16,8 @@ Visits on {{ date }}
 {% endfor %}
 {% if lists is empty %}
 
-Nobody was counted that day.
+{{ nobody|default('Nobody was counted that day.') }}
 {% endif %}
 {% endblock %}
 
-{% block why %}You get this every morning because your address is VISIT_REPORT_TO in this website's settings. Counted by Slim Killer's visit counter: no cookies, no internet addresses. For longer: php hammer visits --days=30{% endblock %}
+{% block why %}{% if frequency is defined %}You get this {{ {'daily': 'every day', 'weekly': 'every week', 'monthly': 'every month'}[frequency] }} because you chose it in Preferences in the website's control panel, where you can change when it comes or stop it. Counted by Slim Killer's visit counter: no cookies, no internet addresses.{% else %}You get this every morning because your address is VISIT_REPORT_TO in this website's settings. Counted by Slim Killer's visit counter: no cookies, no internet addresses. For longer: php hammer visits --days=30{% endif %}{% endblock %}

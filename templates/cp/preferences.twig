@@ -15,6 +15,8 @@
 
 {% if saved == 'bar' %}
   <p class="read-only-note" role="status">Saved. This browser knows already; on your other devices, open the control panel once.</p>
+{% elseif saved == 'emails' %}
+  <p class="read-only-note" role="status">Saved. {{ report.frequency == 'off' ? 'No visit report.' : 'Next visit report: ' ~ report.next ~ '.' }}</p>
 {% elseif saved == 'two-factor' %}
   <p class="read-only-note" role="status">Two-factor is set up again. Codes from the old app no longer work, and you're signed out on your other devices. Delete the old entry from the old app.</p>
 {% elseif saved == 'password' %}
@@ -38,6 +40,56 @@
       <p class="form-help">Either way, while you're signed in your own visits aren't counted.</p>
     </fieldset>
     <button type="submit" class="btn">Save</button>
+  </div>
+</form>
+
+<form method="post" action="{{ base }}/preferences" class="card" id="emails" novalidate>
+  <div class="card-pad">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="form" value="emails">
+    <h2 class="card-title">Emails</h2>
+    <p class="form-help">The visit report: how many people came to your website, where they came from and what they did. {{ report.frequency == 'off' ? 'You don\'t get it now.' : report.describe ~ ', next on ' ~ report.next ~ '.' }}</p>
+    <div class="form form-spaced">
+      <div class="field">
+        <label for="frequency">The visit report</label>
+        <select id="frequency" name="frequency" data-report-frequency>
+          {% for value, label in {'off': 'Never', 'daily': 'Every day', 'weekly': 'Every week', 'monthly': 'Every month'} %}
+            <option value="{{ value }}"{{ report.frequency == value ? ' selected' }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" data-report-for="weekly">
+        <label for="weekday">On</label>
+        <select id="weekday" name="weekday">
+          {% for number, day in weekdays %}
+            <option value="{{ number }}"{{ report.weekday == number ? ' selected' }}>{{ day }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" data-report-for="monthly">
+        <label for="date">On the</label>
+        <select id="date" name="date">
+          {% for number in 1..last_date %}
+            <option value="{{ number }}"{{ report.date == number ? ' selected' }}>{{ number }}{{ number in [1, 21] ? 'st' : (number in [2, 22] ? 'nd' : (number in [3, 23] ? 'rd' : 'th')) }}</option>
+          {% endfor %}
+          <option value="0"{{ report.date == 0 ? ' selected' }}>Last day of the month</option>
+        </select>
+      </div>
+      <div class="field" data-report-for="daily weekly monthly">
+        <label for="hour">At</label>
+        <select id="hour" name="hour">
+          {% for hour in 0..23 %}
+            <option value="{{ hour }}"{{ report.hour == hour ? ' selected' }}>{{ '%02d:00'|format(hour) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <p class="form-help">A daily report covers the day before; a weekly one the 7 days before; a monthly one the month before. Each is compared with the time before it.</p>
+      <label class="choice">
+        <input type="checkbox" name="alerts" value="1"{{ alerts ? ' checked' }}>
+        <span><strong>Email me when something stops working</strong><br>Like backups, publishing or email itself. One email when it stops, and one when it works again.</span>
+      </label>
+      <div><button type="submit" class="btn">Save</button></div>
+    </div>
   </div>
 </form>
 

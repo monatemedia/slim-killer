@@ -94,7 +94,7 @@ it('sends nothing until both addresses are set', function (string $to, string $f
     expect($job->run(new DateTimeImmutable('2026-11-22T04:30:00Z')))->toBe($said)
         ->and($mailer->sent)->toBe([]);
 })->with([
-    'no reader' => ['', 'website@example.com', 'No visit report: VISIT_REPORT_TO is empty.'],
+    'no reader' => ['', 'website@example.com', 'No visit report: nobody chose it in Preferences, and VISIT_REPORT_TO is empty.'],
     'no sender' => ['owner@example.com', '', 'No visit report: MAIL_FROM is empty.'],
 ]);
 

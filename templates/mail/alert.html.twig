@@ -30,4 +30,4 @@
 {% endif %}
 {% endblock %}
 
-{% block why %}You get this because your address is {{ from_setting }} in this website's settings. Slim Killer emails once when something stops working, and once when it works again.{% endblock %}
+{% block why %}{% if from_setting == 'preferences' %}You get this because you chose emails about problems in Preferences in the website's control panel.{% else %}You get this because your address is {{ from_setting }} in this website's settings.{% endif %} Slim Killer emails once when something stops working, and once when it works again.{% endblock %}

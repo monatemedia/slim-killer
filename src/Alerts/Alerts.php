@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SlimKiller\Alerts;
 
 use DateTimeImmutable;
+use SlimKiller\Auth\UserRepository;
 use SlimKiller\Cron\Heartbeat;
 use SlimKiller\Mail\LetterWriter;
 use SlimKiller\Mail\Mailer;
@@ -25,7 +26,9 @@ use SlimKiller\Visits\SiteTime;
  * - A build that fails on GitHub, at once: the change is saved but the website is
  *   unchanged.
  *
- * Alerts go to ALERTS_TO, or VISIT_REPORT_TO when that is empty, from MAIL_FROM.
+ * Alerts go to everyone who chose them in Preferences (administrators start with them
+ * on). While nobody has, they go to ALERTS_TO, or VISIT_REPORT_TO when that is empty.
+ * Always from MAIL_FROM.
  *
  * When the site sends through its mailbox (SMTP) and that fails, an alert is not lost
  * with it: it goes again through the host's own mail(), and says that email through the
@@ -55,18 +58,36 @@ final readonly class Alerts
         private AppConfig $config,
         private SiteTime $time,
         private ?Mailer $fallback = null,
+        private ?UserRepository $users = null,
     ) {}
 
-    /** Who alerts go to: ALERTS_TO, or VISIT_REPORT_TO; empty when neither is set. */
-    public function recipient(): string
+    /**
+     * Who alerts go to: the people who chose them in Preferences, or else ALERTS_TO, or
+     * else VISIT_REPORT_TO; empty when there is nobody.
+     *
+     * @return list<string>
+     */
+    public function recipients(): array
     {
-        return $this->config->alertsTo !== '' ? $this->config->alertsTo : $this->config->visitReportTo;
+        $people = $this->users?->alertAddresses() ?? [];
+        if ($people !== []) {
+            return $people;
+        }
+        $setting = $this->config->alertsTo !== '' ? $this->config->alertsTo : $this->config->visitReportTo;
+
+        return $setting === '' ? [] : [$setting];
+    }
+
+    /** Who alerts go to, in words, for the doctor and hammer alerts:test. */
+    public function recipientList(): string
+    {
+        return implode(', ', $this->recipients());
     }
 
     /** Can an alert be sent at all: someone to send it to, and a mailbox to send it from? */
     public function canSend(): bool
     {
-        return $this->recipient() !== '' && $this->config->mailFrom !== '';
+        return $this->recipients() !== [] && $this->config->mailFrom !== '';
     }
 
     public function jobFailed(string $job, string $message, DateTimeImmutable $now): void
@@ -203,6 +224,7 @@ final readonly class Alerts
             'test' => 'a test alert',
             default => $what . ' has stopped working',
         };
+        $fromPreferences = ($this->users?->alertAddresses() ?? []) !== [];
         $details = [
             'kind' => $kind,
             'what' => $what,
@@ -210,11 +232,24 @@ final readonly class Alerts
             'fixed' => $this->when((string) ($entry['fixed'] ?? '')),
             'message' => (string) ($entry['message'] ?? ''),
             'next' => $next,
-            'from_setting' => $this->config->alertsTo !== '' ? 'ALERTS_TO' : 'VISIT_REPORT_TO',
+            'from_setting' => $fromPreferences ? 'preferences' : ($this->config->alertsTo !== '' ? 'ALERTS_TO' : 'VISIT_REPORT_TO'),
             'smtp_host' => $this->config->smtpHost,
             'smtp_problem' => '',
         ];
-        if ($this->mailer->send($this->writer->write('alert', $this->recipient(), $subject, $details))) {
+
+        // Sent if it reached at least one person.
+        $sent = false;
+        foreach ($this->recipients() as $to) {
+            $sent = $this->sendTo($to, $subject, $details) || $sent;
+        }
+
+        return $sent;
+    }
+
+    /** @param array<string, mixed> $details */
+    private function sendTo(string $to, string $subject, array $details): bool
+    {
+        if ($this->mailer->send($this->writer->write('alert', $to, $subject, $details))) {
             return true;
         }
         if ($this->fallback === null) {
@@ -226,7 +261,7 @@ final readonly class Alerts
         $problem = $this->mailer->lastProblem();
         $details['smtp_problem'] = $problem !== '' ? $problem : 'no reason given';
 
-        return $this->fallback->send($this->writer->write('alert', $this->recipient(), $subject, $details));
+        return $this->fallback->send($this->writer->write('alert', $to, $subject, $details));
     }
 
     private function when(string $atom): string

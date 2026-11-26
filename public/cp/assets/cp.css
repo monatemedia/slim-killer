@@ -971,3 +971,4 @@ fieldset.choices legend { padding: 0; margin-bottom: 4px; }
 .form-spaced .btn { margin-top: 4px; }
 .form-spaced .form-help { margin-top: 0; }
 .form-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.field[hidden] { display: none; }

@@ -13,6 +13,7 @@ use Slim\Psr7\Factory\ResponseFactory;
 use SlimKiller\Alerts\Alerts;
 use SlimKiller\Auth\BreachedPasswords;
 use SlimKiller\Auth\PwnedPasswords;
+use SlimKiller\Auth\UserRepository;
 use SlimKiller\Backups\BackupEncryption;
 use SlimKiller\Console\Application;
 use SlimKiller\Console\Commands\AlertsTestCommand;
@@ -115,7 +116,11 @@ return [
         default => new PhpMailer(),
     }),
     // When the mailbox (SMTP) fails, an alert still goes out through the host's mail().
-    Alerts::class => autowire()->constructorParameter('fallback', factory(static fn(AppConfig $config): ?Mailer => ! $config->isLocal() && $config->smtpHost !== '' ? new PhpMailer() : null)),
+    Alerts::class => autowire()
+        ->constructorParameter('fallback', factory(static fn(AppConfig $config): ?Mailer => ! $config->isLocal() && $config->smtpHost !== '' ? new PhpMailer() : null))
+        ->constructorParameter('users', get(UserRepository::class)),
+    // The visit report goes to each person who chose it in Preferences.
+    VisitReportJob::class => autowire()->constructorParameter('users', get(UserRepository::class)),
     BreachedPasswords::class => get(PwnedPasswords::class),
     Environment::class => get(RuntimeEnvironment::class),
     AppConfig::class => factory(static fn(): AppConfig => AppConfig::fromEnvironment($_ENV)),

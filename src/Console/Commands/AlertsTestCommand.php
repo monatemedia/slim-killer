@@ -27,13 +27,13 @@ final readonly class AlertsTestCommand implements Command
 
     public function description(): string
     {
-        return 'Send a test alert to ALERTS_TO (or VISIT_REPORT_TO)';
+        return 'Send a test alert to everyone who gets alerts';
     }
 
     public function run(Input $input, Output $output): int
     {
         if (! $this->alerts->canSend()) {
-            $output->line('Alerts go nowhere yet: set ALERTS_TO (or VISIT_REPORT_TO) and MAIL_FROM in .env.', 'red');
+            $output->line('Alerts go nowhere yet: turn them on in Preferences, or set ALERTS_TO (or VISIT_REPORT_TO), and MAIL_FROM in .env.', 'red');
 
             return 1;
         }
@@ -43,7 +43,7 @@ final readonly class AlertsTestCommand implements Command
 
             return 1;
         }
-        $output->line('Sent a test alert to ' . $this->alerts->recipient() . '. Check that it arrived, and not in spam.', 'green');
+        $output->line('Sent a test alert to ' . $this->alerts->recipientList() . '. Check that it arrived, and not in spam.', 'green');
 
         return 0;
     }
